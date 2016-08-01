@@ -30,13 +30,13 @@ from datetime import timedelta
 from random import choice, shuffle
 from collections import defaultdict
 
-from musicbot.playlist import Playlist
-from musicbot.player import MusicPlayer
-from musicbot.config import Config, ConfigDefaults
-from musicbot.permissions import Permissions, PermissionsDefaults
-from musicbot.playlist import Playlist
-from musicbot.utils import load_file, write_file, sane_round_int, extract_user_id
-from musicbot.credentials import app_id
+from ruby.playlist import Playlist
+from ruby.player import MusicPlayer
+from ruby.config import Config, ConfigDefaults
+from ruby.permissions import Permissions, PermissionsDefaults
+from ruby.playlist import Playlist
+from ruby.utils import load_file, write_file, sane_round_int, extract_user_id
+from ruby.credentials import app_id
 
 from . import exceptions
 from . import downloader
@@ -68,7 +68,9 @@ from _operator import contains
 load_opus_lib()
 st = time.time()
 
-stream_shit = discord.Game(name = "Crescent Rose", url = "https://www.twitch.tv/directory", type = 1)
+stream_game = discord.Game(name = "Crescent Rose", url = "https://www.twitch.tv/directory", type = 1)
+
+owner_id = "169597963507728384"
 
 dis_games = [
     discord.Game(name='with fire'),
@@ -261,13 +263,6 @@ insults = [
 ]
 
 honkhonkfgt = [
-    "https://www.youtube.com/watch?v=c3vONDqvayo",
-    "https://www.youtube.com/watch?v=hdss-U0H7fA",
-    "https://www.youtube.com/watch?v=jrTAjJCGrTQ",
-    "https://www.youtube.com/watch?v=im3UMwYQHMw",
-    "https://www.youtube.com/watch?v=KRKDwG0hlwI",
-    "https://www.youtube.com/watch?v=vZUdzaUYaNY",
-    "https://www.youtube.com/watch?v=V4QpQsThqFo",
     "https://i.imgur.com/c53XQCI.gif",
     "https://i.imgur.com/ObWBP14.png",
     "https://i.imgur.com/RZP2tB4.jpg",
@@ -278,6 +273,8 @@ honkhonkfgt = [
     "https://i.imgur.com/HtrRYSS.png",
     "https://i.imgur.com/bvrFQnX.jpg"
 ]
+
+respond = True
 
 class SkipState:
     def __init__(self):
@@ -305,7 +302,7 @@ class Response:
         self.delete_after = delete_after
 
 
-class MusicBot(discord.Client):
+class Ruby(discord.Client):
     def __init__(self, config_file=ConfigDefaults.options_file, perms_file=PermissionsDefaults.perms_file):
         super().__init__()
 
@@ -324,7 +321,6 @@ class MusicBot(discord.Client):
         self.downloader = downloader.Downloader(download_folder='audio_cache')
 
         self.exit_signal = None
-
         if not self.autoplaylist:
             print("Warning: Autoplaylist is empty, disabling.")
             self.config.auto_playlist = False
@@ -719,12 +715,11 @@ class MusicBot(discord.Client):
             pass
 
     async def update_now_playing(self, entry=None, is_paused=False):
-        game = stream_shit
+        game = stream_game
 
         if self.user.bot:
             activeplayers = sum(1 for p in self.players.values() if p.is_playing)
             if activeplayers > 1:
-                game = discord.Game(name="read .updates/.ver - on %s voice channels" % activeplayers)
                 entry = None
 
             elif activeplayers == 1:
@@ -862,8 +857,8 @@ class MusicBot(discord.Client):
             traceback.print_exc()
 
     async def on_ready(self):
-        await self.change_status(stream_shit)
-        print('\rConnected!  RTB System v%s\n' % BOTVERSION)
+        await self.change_status(stream_game)
+        print('\rConnected!  Ruby v%s\n' % BOTVERSION)
 
         if self.config.owner_id == self.user.id:
             raise exceptions.HelpfulError(
@@ -973,6 +968,29 @@ class MusicBot(discord.Client):
 
         print()
         # t-t-th-th-that's all folks!
+
+    @owner_only
+    async def cmd_respond(self, message, dorespond):
+        global respond
+        if dorespond == "false":
+            respond = False
+            await self.change_status(game=None, idle=True)
+            await self.disconnect_all_voice_clients()
+            await self.log(":exclamation: `" + message.author.name + "` disabled command responses. `Not responding to commands.`")
+            return Response("Not responding to commands", delete_after=15)
+        elif dorespond == "true":
+            respond = True
+            await self.change_status(stream_game)
+            await self.log(":exclamation: `" + message.author.name + "` enabled command responses. `Now responding to commands.`")
+            return Response("Responding to commands", delete_after=15)
+        else:
+            return Response("Either \"true\" or \"false\"", delete_after=15)
+        await self._manual_delete_check(message)
+
+    async def cmd_rape(self, message):
+        await self.log(":information_source: " + message.author.name + " just tran the command `/rape`, what the fuck...")
+        return Response(message.author.mention + " what the actual fuck is wrong with you? Holy shit you need to be fucking taken to a concentration camp! Did you really think /rape was going to do something related to rape?")
+            
 
     async def cmd_addrole(self, server, message, username, rolename):
         """
@@ -2149,44 +2167,52 @@ class MusicBot(discord.Client):
                 await self.send_message(message.channel, "Ban failed. Maybe you were trying to ban yourself or someone higher on the role chart?")
 
     @owner_only
-    async def cmd_rtb(self, message, client):
+    async def cmd_ruby(self, message, client):
         """
-        RTB System.
+        Ruby.
+        servers, betamode, defaultstatus, bye, massren, setgame, cleargame, listrtb, dat boi, sysinfo, cb selfspam
         Only CreeperSeth#9790 is allowed, or the Bot Owner if this isn't the main bot, Ruby Rose#2414
         """
-        if message.content[len("/rtb "):].strip() == "servers":
+        if message.content[len("/ruby "):].strip() == "servers":
             return Response("``` \n" + self.servers + "\n ```", delete_after=0)
-        elif message.content[len("/rtb "):].strip() == "betamode":
+        elif message.content[len("/ruby "):].strip() == "betamode":
             discord.Game(name='in Beta Mode')
             await self.change_status(discord.Game(name='in Beta Mode'))
             return Response("(!) Now in Beta mode.", delete_after=0)
-        elif message.content[len("/rtb "):].strip() == "bye":
+        elif message.content[len("/ruby "):].strip() == "defaultstatus":
+            await self.change_status(stream_game)
+            return Response("(!) Set back to default status", delete_after=0)
+        elif message.content[len("/ruby "):].strip() == "bye":
             await self.leave_server(message.server)
-        elif message.content[len("/rtb "):].strip() == "massren":
+        elif message.content[len("/ruby "):].strip() == "massren":
             return Response("NTS: Finish it.", delete_after=0)
-        elif message.content[len("/rtb "):].strip() == "setgame":
+        elif message.content[len("/ruby "):].strip() == "setgame":
             return Response("Use /setgame you idiotic nerd", delete_after=15)
-        elif message.content[len("/rtb "):].strip() == "cleargame":
+        elif message.content[len("/ruby "):].strip() == "cleargame":
             await self.change_status(game=None)
             return Response("done", delete_after=15)
-        elif message.content[len("/rtb "):].strip() == "listrtb":
+        elif message.content[len("/ruby "):].strip() == "listrtb":
             return Response("Current switches: listrtb, setav, cleargame, cb selfspam, setgame, bye, betamode, servers, rename, dat boi, sysinfo", delete_after=15)
-        elif message.content[len("/rtb "):].strip() == "dat boi":
+        elif message.content[len("/ruby "):].strip() == "dat boi":
             return Response("Ayy, it's dat boi!", delete_after=0)
-        elif message.content[len("/rtb "):].strip() == "sysinfo":
+        elif message.content[len("/ruby "):].strip() == "sysinfo":
             await self.safe_send_message(message.channel, platform.uname())
-        elif message.content[len("/rtb "):].strip() == "cb selfspam": #thanks lukkan99 fam
+        elif message.content[len("/ruby "):].strip() == "cb selfspam": #thanks lukkan99 fam
             cb = cleverbot.Cleverbot()
             iask = (cb.ask("Hello."))
             while 1 == 1:
                 await self.send_message(message.channel, iask)
                 iask = (cb.ask(iask))
                 asyncio.sleep(5)#I need some kind of slowdown.
-        elif message.content[len("/rtb "):].strip() == "gsh":
+        elif message.content[len("/ruby "):].strip() == "gsh":
              discord.Game(name='/help for help!')
 
              await self.change_status(discord.Game(name='/help for help!'))
 
+    async def cmd_hentai(self, message):
+        await self.send_message(message.channel, "I know you love fapping to lolis, but come on bro, those lolis are on the internet... not in discord. Just look around and you will find them.")
+        await self.log(":warning: lol attempted hentai detected. Username: `{}` Server: `{}`".format(message.author.name, message.server.name))
+        #Watch Felix be all up in this one first
     async def cmd_e621(self, message):
         await self.send_message(message.channel, "Look, I know you might be horny, but... Though I'm like some furry dragon and the developer is a furry, I'm not going to let you do this, literally, get your shit from the actual website, and get your lazy ass of Discord, and search.")
         asyncio.sleep(2)
@@ -2295,18 +2321,25 @@ class MusicBot(discord.Client):
     async def cmd_throw(self, message):
         if message.content[len("/throw "):].strip() == message.author.mention:
             return Response("throws " + random.choice(throwaf) + " towards you", delete_after=0)
-        elif message.content == ".throw":
+        elif message.content == "/throw":
             return Response("throws " + random.choice(throwaf) + " towards you", delete_after=0)
         elif message.content[len("/throw "):].strip() == "<@!163698730866966528>":
             return Response("you are throwin ***NOTHIN*** to me, ok? ok.", delete_after=15)
         elif message.content[len("/throw "):].strip() != message.author.mention:
             return Response("throws " + random.choice(throwaf) + " to " + message.content[len("/throw "):].strip(), delete_after=0)
 
-    async def cmd_setgame(self, message):
-        trashcan = name=message.content[len("setgame "):].strip()
-        discord.Game(name=message.content[len("/setgame "):].strip())  
-        await self.change_status(discord.Game(name=message.content[len("setgame "):].strip()))
-        return Response("Successful, set as `" + trashcan + "`", delete_after=5)
+    async def cmd_setgame(self, message, name):
+        """
+        Usage:
+            {command_prefix}setstatus name
+
+        Sets the game playing in the bot's status
+        """
+
+        n = message.content[len("/setgame "):].strip()
+        await self.change_status(discord.Game(name=n))
+        await self.log(":information_source: `" + message.author.name + "` set the game name to `" + n + "`")
+        return Response("Game sucessfully changed to `" + n + "`", delete_after=5)
 
     async def cmd_ping(self, message):
         pingtime = time.time()
@@ -2397,10 +2430,10 @@ class MusicBot(discord.Client):
         await self.send_file(message.channel, "imgs/python.png")
 
     async def cmd_help(self):
-        return Response("Help List: https://creeperseth.github.io/ruby Any other help? DM @CreeperSeth#9790 for more help, or do /serverinv to join Bombsite B for some Ruby help somewhere.", delete_after=0)
+        return Response("Help List: https://creeperseth.github.io/ruby Any other help? DM @CreeperSeth#9790 for more help, or do /serverinv to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
     
     async def cmd_serverinv(self, message):
-        await self.safe_send_message(message.channel, "https://discord.gg/CMGnEEG - If you came for Ruby help, ask for CreeperSeth, not for Some Dragon. Or else Robin will turn you into a furry")
+        await self.safe_send_message(message.channel, "https://discord.gg/enDDbMC - If you came for help, ask for CreeperSeth.")
     
     async def cmd_date(self):
         return Response("```xl\n Current Date: " + time.strftime("%A, %B %d, %Y") + '\n Current Time (Eastern): ' + time.strftime("%I:%M:%S %p") + "Happy birthday to the ones today, you'd know who you are. <3 ```", delete_after=0)
@@ -2467,22 +2500,24 @@ class MusicBot(discord.Client):
     async def cmd_createinv(self):
         return Response(str(discord.Invite.url), delete_after=0)
     async def cmd_info(client):
-        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the /help commandor message CreeperSeth from the Discord server Bombsite B\n\n Do not have that? Then do /serverinv to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff most credit goes to Robin!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/rubya"\n```'.format(BUNAME, MVER, BUILD, len(set(client.get_all_members())), len(set(client.messages)), len(client.servers), len(set(client.get_all_channels())), len(set(client.private_channels)), discord.__version__), delete_after=0)
+        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the /help commandor message CreeperSeth from the Discord server Bombsite B\n\n Do not have that? Then do /serverinv to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff most credit goes to Robin!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/ruby"\n```'.format(BUNAME, MVER, BUILD, len(set(client.get_all_members())), len(set(client.messages)), len(client.servers), len(set(client.get_all_channels())), len(set(client.private_channels)), discord.__version__), delete_after=0)
     
     async def cmd_debug(self, message):
-        if(message.content.startswith('/debug')):
-            if message.author.id == '169597963507728384':
+        if (message.content.startswith('/debug ')):
+            if message.author.id == owner_id:
                 debug = message.content[len("/debug "):].strip()
+                py = "```py\n{}\n```"
+                thing = None
                 try:
-                    debug = eval(debug)
-                    debug = str(debug)
-                    await self.send_message(message.channel, "```python\n" + debug + "\n```")
+                    thing = eval(debug)
                 except Exception as e:
-                    debug = traceback.format_exc()
-                    debug = str(debug)
-                    await self.send_message(message.channel, "```python\n" + debug + "\n```")
-            elif self.exceptions.PermissionsError:
-                return Response("Nice try, but I wouldn't let you do this.", delete_after=0)
+                    await self.send_message(message.channel, py.format(type(e).__name__ + ': ' + str(e)))
+                    return
+                if asyncio.iscoroutine(thing):
+                    thing = await thing
+                    await self.send_message(message.channel, py.format(thing))
+            else:
+                pass
 
     async def cmd_disconnect(self, server, message):
         await self.safe_send_message(message.channel, "Disconnected from the voice server.")
@@ -2508,6 +2543,10 @@ class MusicBot(discord.Client):
         message_content = message.content.strip()
         if not message_content.startswith(self.config.command_prefix):
             return
+
+        if respond is False:
+            if not message.author.id == owner_id:
+                return
 
         if message.author == self.user:
             self.safe_print("Ignoring command from myself (%s)" % message.content)
@@ -2731,5 +2770,5 @@ class MusicBot(discord.Client):
 
 
 if __name__ == '__main__':
-    bot = MusicBot()
+    bot = Ruby()
     bot.run()

@@ -1,8 +1,5 @@
-# Ruby
-Source code for the discord bot named Ruby Rose
+#RobTheBoat
 
-# Information
-You can find information at [creeperseth.github.io/ruby](https://creeperseth.github.io/ruby)
+Original repository: https://github.com/SexualRhinoceros/MusicBot (This is using the "review" branch.)
 
-# Issues
-You can report issues at [https://github.com/CreeperSeth/RubyRoseBot/issues](https://github.com/CreeperSeth/RubyRoseBot/issues) such as, questions, bugs, enchancements, and suggestions
+fucking do .help or something on the bot, or go to a website that's on my github

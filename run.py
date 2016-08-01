@@ -109,7 +109,7 @@ def main():
 
         pycom = None
 
-        # Maybe I should check for if the current dir is the musicbot folder, just in case
+        # Maybe I should check for if the current dir is the ruby folder, just in case
 
         if sys.platform.startswith('win'):
             try:
@@ -158,9 +158,9 @@ def main():
         # It'd save me a lot of pain with all that awful exception type checking
 
         try:
-            from musicbot import MusicBot
+            from ruby import Ruby
 
-            m = MusicBot()
+            m = Ruby()
             print("Connecting...", end='', flush=True)
             m.run()
 
@@ -190,7 +190,7 @@ def main():
                 break
 
         except Exception as e:
-            if hasattr(e, '__module__') and e.__module__ == 'musicbot.exceptions':
+            if hasattr(e, '__module__') and e.__module__ == 'ruby.exceptions':
                 if e.__class__.__name__ == 'HelpfulError':
                     print(e.message)
                     break
