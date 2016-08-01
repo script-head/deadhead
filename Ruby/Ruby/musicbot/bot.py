@@ -63,20 +63,23 @@ from _operator import contains
 #merlin is a retard
 #watch him burn his house down
 #-everyone
+#wtf robin? - CreeperSeth
 
 load_opus_lib()
 st = time.time()
 
+stream_shit = discord.Game(name = "Crescent Rose", url = "https://www.twitch.tv/directory", type = 1)
+
 dis_games = [
     discord.Game(name='with fire'),
-    discord.Game(name='with Robin'),
+    discord.Game(name='with Seth'),
     discord.Game(name='baa'),
     discord.Game(name='Denzel Curry - Ultimate'),
     discord.Game(name='Windows XP'),
     discord.Game(name='Drake - Jumpman'),
     discord.Game(name='with Kyle'),
     discord.Game(name='Super Smash Bros. Melee'),
-    discord.Game(name='.help for help!'),
+    discord.Game(name='/help for help!'),
     discord.Game(name='how to lose a phone'),
     discord.Game(name='with memes'),
     discord.Game(name='Sergal'),
@@ -92,7 +95,9 @@ dis_games = [
     discord.Game(name='vaporwave'),
     discord.Game(name='being wierd'),
     discord.Game(name='stalking Twitter'),
-    discord.Game(name='Microsoft Messaging')
+    discord.Game(name='Microsoft Messaging'),
+    discord.Game(name='RWBY - Grimm Eclipse'),
+    discord.Game(name='with lolis'),
 ]
 
 # Regex for IP address
@@ -233,18 +238,45 @@ throwaf = [
     "Ryulise, the stupid smash master",
     "death, at its finest",
     "morth, but not in its final form",
-    "some flaccid sword"
+    "some flaccid sword",
+    "Ruby Rose"
+]
+
+insults = [
+    "is a fucking pedophile",
+    "is a nigger",
+    "is so insecure about his penis size because it is smaller then a babies",
+    "is just a fucking sterotypical 12 year old saying shit like \"I fucked your mom\" and other shit",
+    "is a fucking disguisting, disgraceful, ignorant, pathetic, and discriminative weeaboo!",
+    "is a child molester",
+    "has a kink with 80 year old men",
+    "is the type of person who loves to fap to little girls",
+    "has no other purpose in life other than to be retarded and waste people's time",
+    "needs to kill themself",
+    "is the definition of faggot",
+    "gamertag is I_Like_To_Rape_Children",
+    "loves to fap to discord bots",
+    "wants the d",
+    "has no life"
 ]
 
 honkhonkfgt = [
-    "http://i.imgur.com/c53XQCI.gifv",
     "https://www.youtube.com/watch?v=c3vONDqvayo",
     "https://www.youtube.com/watch?v=hdss-U0H7fA",
     "https://www.youtube.com/watch?v=jrTAjJCGrTQ",
     "https://www.youtube.com/watch?v=im3UMwYQHMw",
     "https://www.youtube.com/watch?v=KRKDwG0hlwI",
     "https://www.youtube.com/watch?v=vZUdzaUYaNY",
-    "https://www.youtube.com/watch?v=V4QpQsThqFo"
+    "https://www.youtube.com/watch?v=V4QpQsThqFo",
+    "https://i.imgur.com/c53XQCI.gif",
+    "https://i.imgur.com/ObWBP14.png",
+    "https://i.imgur.com/RZP2tB4.jpg",
+    "https://i.imgur.com/oxQ083P.gif",
+    "https://i.imgur.com/byBB7ln.jpg",
+    "https://i.imgur.com/NvUiLGG.gif",
+    "https://i.imgur.com/QDyvO4x.jpg",
+    "https://i.imgur.com/HtrRYSS.png",
+    "https://i.imgur.com/bvrFQnX.jpg"
 ]
 
 class SkipState:
@@ -687,7 +719,7 @@ class MusicBot(discord.Client):
             pass
 
     async def update_now_playing(self, entry=None, is_paused=False):
-        game = None
+        game = stream_shit
 
         if self.user.bot:
             activeplayers = sum(1 for p in self.players.values() if p.is_playing)
@@ -830,6 +862,7 @@ class MusicBot(discord.Client):
             traceback.print_exc()
 
     async def on_ready(self):
+        await self.change_status(stream_shit)
         print('\rConnected!  RTB System v%s\n' % BOTVERSION)
 
         if self.config.owner_id == self.user.id:
@@ -941,8 +974,53 @@ class MusicBot(discord.Client):
         print()
         # t-t-th-th-that's all folks!
 
-    async def cmd_hangout(self, author):
-        await self.safe_send_message(author, "Hangout link: discord.gg/014lbMgnygx1IoH6s")
+    async def cmd_addrole(self, server, message, username, rolename):
+        """
+        Usage:
+            {command_prefix}addrole username rolename
+
+        Adds a user to a role 
+        ATTENTION: THIS DOES NOT WORK ON USERS WITH SPACES IN THEIR NAME I'VE TRIED DOING @MENTIONS BUT FAILED!
+        """
+        user = discord.utils.get(server.members, name=username)
+        #if not user:
+            #raise exceptions.CommandError('Invalid user specified', expire_in=30)
+
+        rname = message.content[len("/addrole " + username + " "):].strip()
+        role = discord.utils.get(message.server.roles, name=rname)
+        if not role:
+            raise exceptions.CommandError('Invalid role specified', expire_in=30)
+
+        mauthor = discord.utils.get(server.members, name=message.author.name)
+        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+
+        await self.add_roles(user, role)
+
+    async def cmd_removerole(self, server, message, username, rolename):
+        """
+        Usage:
+            {command_prefix}removerole username rolename
+
+        Removes a user from a role 
+        ATTENTION: THIS DOES NOT WORK ON USERS WITH SPACES IN THEIR NAME I'VE TRIED DOING @MENTIONS BUT FAILED!
+        """
+        user = discord.utils.get(server.members, name=username)
+        #if not user:
+            #raise exceptions.CommandError('Invalid user specified', expire_in=30)
+
+        rname = message.content[len("/removerole " + username + " "):].strip()
+        role = discord.utils.get(message.server.roles, name=rname)
+        if not role:
+            raise exceptions.CommandError('Invalid role specified', expire_in=30)
+
+        mauthor = discord.utils.get(server.members, name=message.author.name)
+        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+
+        await self.remove_roles(user, role)
 
     async def cmd_whitelist(self, message, option, username):
         """
@@ -977,6 +1055,16 @@ class MusicBot(discord.Client):
                 write_file(self.config.whitelist_file, self.whitelist)
 
                 return Response('user has been removed from the whitelist', reply=True, delete_after=10)
+
+    async def cmd_insult(self, username):
+        """
+        Usage:
+            {command_prefix}insult username
+
+        Randomly insults the user specified.
+        """
+
+        return Response(username + " " + random.choice(insults), delete_after=0)
 
     async def cmd_blacklist(self, message, option, username):
         """
@@ -1480,10 +1568,10 @@ class MusicBot(discord.Client):
             prog_str = '`[%s/%s]`' % (song_progress, song_total)
 
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
-                np_text = "Now Playing: **%s** added by **%s** %s\n" % (
+                np_text = "Now Playing\: **%s** added by **%s** %s\n" % (
                     player.current_entry.title, player.current_entry.meta['author'].name, prog_str)
             else:
-                np_text = "Now Playing: **%s** %s\n" % (player.current_entry.title, prog_str)
+                np_text = "Now Playing\: **%s** %s\n" % (player.current_entry.title, prog_str)
 
             self.server_specific_data[server]['last_np_msg'] = await self.safe_send_message(channel, np_text)
             await self._manual_delete_check(message)
@@ -1940,8 +2028,8 @@ class MusicBot(discord.Client):
         Attempt on trying to create a meme command, .memeg (template/line1/line2)
         List: http://memegen.link/templates/
         """
-        genmeme = message.content[len(".memeg "):].strip()
-        if message.content[len(".memeg"):].strip() != 0:
+        genmeme = message.content[len("/memeg "):].strip()
+        if message.content[len("/memeg"):].strip() != 0:
             return Response("http://memegen.link/" +  re.sub(r"\s+", '-', genmeme) + ".jpg", delete_after=0)
         else:
             return Response("You didn't enter a message. Templates: http://memegen.link/templates/", delete_after=0)
@@ -2060,10 +2148,13 @@ class MusicBot(discord.Client):
                     msg_count += 1
 
     async def cmd_ban(self, message, *members:discord.User):
+        botcommander = discord.utils.get(user.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
         for user in members:
             try:
                     await self.ban(discord.User, delete_message_days=7)
-                    await self.send_message(message.channel, user.name + " was rekterino from the server.")
+                    await self.send_message(message.channel, user.name + " was banned from the server.")
             except discord.HTTPException:
                 await self.send_message(message.channel, "Ban failed. Maybe you were trying to ban yourself or someone higher on the role chart?")
 
@@ -2071,40 +2162,40 @@ class MusicBot(discord.Client):
     async def cmd_rtb(self, message, client):
         """
         RTB System.
-        Only Wyndrik#0052 is allowed, or the Bot Owner if this isn't the main bot, RobTheBoat#9091
+        Only CreeperSeth#9790 is allowed, or the Bot Owner if this isn't the main bot, Ruby Rose#2414
         """
-        if message.content[len(".rtb "):].strip() == "servers":
+        if message.content[len("/rtb "):].strip() == "servers":
             return Response("``` \n" + self.servers + "\n ```", delete_after=0)
-        elif message.content[len(".rtb "):].strip() == "betamode":
+        elif message.content[len("/rtb "):].strip() == "betamode":
             discord.Game(name='in Beta Mode')
             await self.change_status(discord.Game(name='in Beta Mode'))
             return Response("(!) Now in Beta mode.", delete_after=0)
-        elif message.content[len(".rtb "):].strip() == "bye":
+        elif message.content[len("/rtb "):].strip() == "bye":
             await self.leave_server(message.server)
-        elif message.content[len(".rtb "):].strip() == "massren":
+        elif message.content[len("/rtb "):].strip() == "massren":
             return Response("NTS: Finish it.", delete_after=0)
-        elif message.content[len(".rtb "):].strip() == "setgame":
-            return Response("Use .setgame you idiotic nerd", delete_after=15)
-        elif message.content[len(".rtb "):].strip() == "cleargame":
+        elif message.content[len("/rtb "):].strip() == "setgame":
+            return Response("Use /setgame you idiotic nerd", delete_after=15)
+        elif message.content[len("/rtb "):].strip() == "cleargame":
             await self.change_status(game=None)
             return Response("done", delete_after=15)
-        elif message.content[len(".rtb "):].strip() == "listrtb":
+        elif message.content[len("/rtb "):].strip() == "listrtb":
             return Response("Current switches: listrtb, setav, cleargame, cb selfspam, setgame, bye, betamode, servers, rename, dat boi, sysinfo", delete_after=15)
-        elif message.content[len(".rtb "):].strip() == "dat boi":
+        elif message.content[len("/rtb "):].strip() == "dat boi":
             return Response("Ayy, it's dat boi!", delete_after=0)
-        elif message.content[len(".rtb "):].strip() == "sysinfo":
+        elif message.content[len("/rtb "):].strip() == "sysinfo":
             await self.safe_send_message(message.channel, platform.uname())
-        elif message.content[len(".rtb "):].strip() == "cb selfspam": #thanks lukkan99 fam
+        elif message.content[len("/rtb "):].strip() == "cb selfspam": #thanks lukkan99 fam
             cb = cleverbot.Cleverbot()
             iask = (cb.ask("Hello."))
             while 1 == 1:
                 await self.send_message(message.channel, iask)
                 iask = (cb.ask(iask))
                 asyncio.sleep(5)#I need some kind of slowdown.
-        elif message.content[len(".rtb "):].strip() == "gsh":
-             discord.Game(name='.help for help!')
+        elif message.content[len("/rtb "):].strip() == "gsh":
+             discord.Game(name='/help for help!')
 
-             await self.change_status(discord.Game(name='.help for help!'))
+             await self.change_status(discord.Game(name='/help for help!'))
 
     async def cmd_e621(self, message):
         await self.send_message(message.channel, "Look, I know you might be horny, but... Though I'm like some furry dragon and the developer is a furry, I'm not going to let you do this, literally, get your shit from the actual website, and get your lazy ass of Discord, and search.")
@@ -2118,13 +2209,13 @@ class MusicBot(discord.Client):
         #Watch Fardin be in this one first.
     async def cmd_yourinfo(self, message):
         try:
-            if not message.content == message.content[len(".yourinfo "):].strip():
+            if not message.content == message.content[len("/yourinfo "):].strip():
                 target = message.author
                 server = message.server
                 inserver = str(len(set([member.server.name for member in self.get_all_members() if member.name == target.name])))
                 x = '```xl\n Your Player Data:\n Username: {0.name}\n ID: {0.id}\n Discriminator: {0.discriminator}\n Avatar URL: {0.avatar_url}\n Current Status: {2}\n Current Game: {3}\n Current VC: {4}\n Mutual servers: {1} \n They joined on: {5}\n Roles: {6}\n```'.format(target,inserver,str(target.status),str(target.game),str(target.voice_channel),str(target.joined_at),', '.join(map(str, target.roles)).replace("@", "@\u200b"))
                 await self.send_message(message.channel, x)
-            elif message.content >= message.content[len(".yourinfo "):].strip():
+            elif message.content >= message.content[len("/yourinfo "):].strip():
                 for user in discord.User:
                     server = message.server
                     inserver = str(len(set([member.server.name for member in self.get_all_members() if member.name == user.name])))
@@ -2148,8 +2239,8 @@ class MusicBot(discord.Client):
         Renames the bot.
             Part from the RTB System.
         """
-        botrenamed = message.content[len(".renamebot "):].strip()
-        await self.edit_profile(username=message.content[len(".renamebot "):].strip())
+        botrenamed = message.content[len("/renamebot "):].strip()
+        await self.edit_profile(username=message.content[len("/renamebot "):].strip())
         return Response("Bot name changed to `" + botrenamed + "`", delete_after=5)
         if discord.errors.ClientException:
             return Response("Either you aren't a bot account, or you didn't put a name in. Either one.", delete_after=0)
@@ -2159,7 +2250,7 @@ class MusicBot(discord.Client):
         Search the infinite pages!
         {}wikipedia (page)
         """
-        cont2 = message.content[len(".wiki "):].strip()
+        cont2 = message.content[len("/wiki "):].strip()
         cont = re.sub(r"\s+", '_', query)
         q = wikipedia.page(query)
         await self.send_typing(channel)
@@ -2186,10 +2277,10 @@ class MusicBot(discord.Client):
         {}rate (player/@mention/name/whatever)
         """
         drewisafurry = random.choice(ratelevel) #I can't say how MUCH of a furry Drew is. Or known as Printendo
-        if message.content[len(".rate "):].strip() == "<@163698730866966528>":
+        if message.content[len("/rate "):].strip() == "<@163698730866966528>":
             await self.safe_send_message(message.channel, "I give myself a ***-1/10***, just because.") #But guess what, Emil's a fucking furry IN DENIAL, so that's even worse. Don't worry, at least Drew's sane.
-        elif message.content[len(".rate "):].strip() != "<@163698730866966528>":
-            await self.safe_send_message(message.channel, "I give `" + message.content[len(".rate "):].strip().replace("@everyone", ">insert attempt to tag everyone here").replace("@here", ">attempt to tag online users here") + "` a ***" + drewisafurry + "/10***")
+        elif message.content[len("/rate "):].strip() != "<@163698730866966528>":
+            await self.safe_send_message(message.channel, "I give `" + message.content[len("/rate "):].strip().replace("@everyone", ">insert attempt to tag everyone here").replace("@here", ">attempt to tag online users here") + "` a ***" + drewisafurry + "/10***")
         
     async def cmd_asshole(self, message):
         await self.send_file(message.channel, "imgs/asshole.jpg")
@@ -2212,18 +2303,18 @@ class MusicBot(discord.Client):
         return Response("bitch please allow what", delete_after=0)
 
     async def cmd_throw(self, message):
-        if message.content[len(".throw "):].strip() == message.author.mention:
+        if message.content[len("/throw "):].strip() == message.author.mention:
             return Response("throws " + random.choice(throwaf) + " towards you", delete_after=0)
         elif message.content == ".throw":
             return Response("throws " + random.choice(throwaf) + " towards you", delete_after=0)
-        elif message.content[len(".throw "):].strip() == "<@!163698730866966528>":
+        elif message.content[len("/throw "):].strip() == "<@!163698730866966528>":
             return Response("you are throwin ***NOTHIN*** to me, ok? ok.", delete_after=15)
-        elif message.content[len(".throw "):].strip() != message.author.mention:
-            return Response("throws " + random.choice(throwaf) + " to " + message.content[len(".throw "):].strip(), delete_after=0)
+        elif message.content[len("/throw "):].strip() != message.author.mention:
+            return Response("throws " + random.choice(throwaf) + " to " + message.content[len("/throw "):].strip(), delete_after=0)
 
     async def cmd_setgame(self, message):
         trashcan = name=message.content[len("setgame "):].strip()
-        discord.Game(name=message.content[len(".setgame "):].strip())  
+        discord.Game(name=message.content[len("/setgame "):].strip())  
         await self.change_status(discord.Game(name=message.content[len("setgame "):].strip()))
         return Response("Successful, set as `" + trashcan + "`", delete_after=5)
 
@@ -2253,16 +2344,16 @@ class MusicBot(discord.Client):
     async def cmd_notifydev(self, message):
         await self.send_typing(message.channel)
         await self.send_message(message.channel, "Alerted, might as well check your PMs.")
-        await self.send_message(discord.User(id='117678528220233731'), "New message from `" + message.author.name + "` Discrim: `" + message.author.discriminator + "` ID: `" + message.author.id + "` Server Name: `" + message.author.server.name + "` Message: `" + message.content[len(".notifydev "):].strip() + "`")
-        await self.send_message(message.author, "You have sent a message to Wyndrik, the developer. Your message that was sent was `" + message.content[len(".notifydev "):].strip() + "`. You are not able to respond via the bot, Wyndrik should send a message back to you shortly via PM.")
-        await self.log(":information_source: Message sent to Wyndrik via the notifydev command: `" + message.content[len(".notifydev "):].strip() + "`")
+        await self.send_message(discord.User(id='117678528220233731'), "New message from `" + message.author.name + "` Discrim: `" + message.author.discriminator + "` ID: `" + message.author.id + "` Server Name: `" + message.author.server.name + "` Message: `" + message.content[len("/notifydev "):].strip() + "`")
+        await self.send_message(message.author, "You have sent a message to Wyndrik, the developer. Your message that was sent was `" + message.content[len("/notifydev "):].strip() + "`. You are not able to respond via the bot, Wyndrik should send a message back to you shortly via PM.")
+        await self.log(":information_source: Message sent to Wyndrik via the notifydev command: `" + message.content[len("/notifydev "):].strip() + "`")
 
     async def cmd_fursecute(self, message, mentions, fursona):
         """
         Fursecution! Command totally not stolen from some Minecraft server.
         .fursecute @mention "furry species"
         """
-        fursona = message.content[len(".fursecute " + mentions):].strip()
+        fursona = message.content[len("/fursecute " + mentions):].strip()
         await self.send_typing(message.channel)
         asyncio.sleep(15)
         await self.send_message(message.channel, "Uh-oh! Retard alert! Retard alert, class!")
@@ -2283,7 +2374,7 @@ class MusicBot(discord.Client):
 
     async def cmd_nick(self, message, username, thingy):
         try:
-            thingy = message.content[len(".nick " + username):].strip()
+            thingy = message.content[len("/nick " + username):].strip()
             await self.change_nickname(username, thingy)
             await self.send_message(message.channel, "Changed nickname of " + username + "to " + thingy)
         except discord.errors.Forbidden:
@@ -2298,7 +2389,7 @@ class MusicBot(discord.Client):
 
     @owner_only
     async def cmd_msgfags(self, message, id, reason):
-        reason = message.content[len(".msgfags " + id):].strip()
+        reason = message.content[len("/msgfags " + id):].strip()
         await self.send_message(discord.User(id=id), reason)
         await self.log(":information_source: Wyndrik sent a warning to ID #: `" + id + "`")
 
@@ -2306,24 +2397,20 @@ class MusicBot(discord.Client):
         """
         Know your meme, {}kym
         """
-        kym = message.content[len(".kym "):].strip()
-        if message.content[len(".kym"):].strip() != 0:
+        kym = message.content[len("/kym "):].strip()
+        if message.content[len("/kym"):].strip() != 0:
             return Response("http://knowyourmeme.com/memes/" +  re.sub(r"\s+", '-', kym) + "/", delete_after=0)
-        elif message.content[len(".kym"):].strip() == 0:
+        elif message.content[len("/kym"):].strip() == 0:
             return Response("You didn't enter a message, or you didn't put in a meme.", delete_after=0)
 
-    async def cmd_uploadfile(self, message):
-        await self.send_file(message.channel, message.content[len(".uploadfile "):].strip())
-        if FileNotFoundError == True:
-            await self.send_message(message.channel, "There was no such thing found in the system.")
     async def cmd_python(self, message):
         await self.send_file(message.channel, "imgs/python.png")
 
     async def cmd_help(self):
-        return Response("Help List: https://dragonfire.me/robtheboat/info.html Any other help? DM @Wyndrik#0052 for more help, or do .serverinv to join #ViralBot and Napsta for some RTB help somewhere.", delete_after=0)
+        return Response("Help List: https://creeperseth.github.io/ruby Any other help? DM @CreeperSeth#9790 for more help, or do /serverinv to join Bombsite B for some Ruby help somewhere.", delete_after=0)
     
     async def cmd_serverinv(self, message):
-        await self.safe_send_message(message.channel, "https://discord.gg/0xyhWAU4n2ji9ACe - If you came for RTB help, ask for Some Dragon, not Music-Napsta. Or else people will implode.")
+        await self.safe_send_message(message.channel, "https://discord.gg/CMGnEEG - If you came for Ruby help, ask for CreeperSeth, not for Some Dragon. Or else Robin will turn you into a furry")
     
     async def cmd_date(self):
         return Response("```xl\n Current Date: " + time.strftime("%A, %B %d, %Y") + '\n Current Time (Eastern): ' + time.strftime("%I:%M:%S %p") + "Happy birthday to the ones today, you'd know who you are. <3 ```", delete_after=0)
@@ -2340,33 +2427,33 @@ class MusicBot(discord.Client):
 
     async def cmd_kill(self, client, message, author):
         """
-        Usage: .kill (person)
+        Usage: /kill (person)
             Pretty self explanitory.
         """
-        if message.content[len(".kill"):].strip() != message.author.mention:
-            await self.safe_send_message(message.channel, "You've killed " + message.content[len(".kill "):].strip() + random.choice(suicidalmemes))
-        elif message.content[len(".kill"):].strip() == "<@163698730866966528>":
+        if message.content[len("/kill"):].strip() != message.author.mention:
+            await self.safe_send_message(message.channel, "You've killed " + message.content[len("/kill "):].strip() + random.choice(suicidalmemes))
+        elif message.content[len("/kill"):].strip() == "<@163698730866966528>":
             await self.safe_send_message(message.channel, "can u not im not gonna die")
-        elif message.content[len(".kill"):].strip() == message.author.mention:
+        elif message.content[len("/kill"):].strip() == message.author.mention:
             await self.safe_send_message(message.channel, "<@" + message.author.id + ">" + " Nice one on your suicide. Just, it's so great.")
 
     async def cmd_say(self, client, message):
         """
-        Usage: .say (faggot)
+        Usage: /say (faggot)
         """
-        troyhasnodongs = message.content[len(".say "):].strip()
+        troyhasnodongs = message.content[len("/say "):].strip()
         return Response(troyhasnodongs.replace("@everyone", "everyone"), delete_after=0)
 
     async def cmd_ship(self, client, message, content):
         """
-        Usage: .ship (person) x (person)
+        Usage: /ship (person) x (person)
         """
-        if message.content[len(".ship "):].strip() == '<@163698730866966528> x <@163698730866966528>':
+        if message.content[len("/ship "):].strip() == '<@163698730866966528> x <@163698730866966528>':
             return Response("I hereby ship, myself.... forever.... alone........ ;-;", delete_after=0)
-        elif message.content[len(".ship "):].strip() == message.author.id == message.author.id:
+        elif message.content[len("/ship "):].strip() == message.author.id == message.author.id:
             return Response("hah, loner", delete_after=0)
-        elif message.content[len(".ship "):].strip() != '<@163698730866966528> x <@163698730866966528>':
-            return Response("I hereby ship " + message.content[len(".ship"):].strip() + "!", delete_after=0)
+        elif message.content[len("/ship "):].strip() != '<@163698730866966528> x <@163698730866966528>':
+            return Response("I hereby ship " + message.content[len("/ship"):].strip() + "!", delete_after=0)
         #todo: remove messages that wont make sense, like "no"
 
     async def cmd_nope(self):
@@ -2390,12 +2477,12 @@ class MusicBot(discord.Client):
     async def cmd_createinv(self):
         return Response(str(discord.Invite.url), delete_after=0)
     async def cmd_info(client):
-        return Response('```xl\n ~~~~~~~~~Lucy~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the /help command, or message Robin or CreeperSeth from the Discord server #ViralBot and Napasta or Lucy Hangout\n\n Do not have that? Then do /serverinv to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Lucy with more commands and other stuff most credit goes to Robin!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/lucy :shit:\n"```'.format(BUNAME, MVER, BUILD, len(set(client.get_all_members())), len(set(client.messages)), len(client.servers), len(set(client.get_all_channels())), len(set(client.private_channels)), discord.__version__), delete_after=0)
+        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the /help commandor message CreeperSeth from the Discord server Bombsite B\n\n Do not have that? Then do /serverinv to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff most credit goes to Robin!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/rubyrosebot"\n```'.format(BUNAME, MVER, BUILD, len(set(client.get_all_members())), len(set(client.messages)), len(client.servers), len(set(client.get_all_channels())), len(set(client.private_channels)), discord.__version__), delete_after=0)
     
     async def cmd_debug(self, message):
-        if(message.content.startswith('.debug')):
-            if message.author.id == '117678528220233731':
-                debug = message.content[len(".debug "):].strip()
+        if(message.content.startswith('/debug')):
+            if message.author.id == '169597963507728384':
+                debug = message.content[len("/debug "):].strip()
                 try:
                     debug = eval(debug)
                     debug = str(debug)
