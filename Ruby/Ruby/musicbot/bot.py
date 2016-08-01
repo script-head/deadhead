@@ -252,9 +252,9 @@ insults = [
     "has a kink with 80 year old men",
     "is the type of person who loves to fap to little girls",
     "has no other purpose in life other than to be retarded and waste people's time",
-    "needs to kill themself",
+    "needs to kill itself",
     "is the definition of faggot",
-    "gamertag is I_Like_To_Rape_Children",
+    "has a gamertag, and it is I_Like_To_Rape_Children",
     "loves to fap to discord bots",
     "wants the d",
     "has no life"
@@ -1124,16 +1124,6 @@ class MusicBot(discord.Client):
         else:
             usr = user_mentions[0]
             return Response("%s's Discord ID is: `%s`" % (usr.name, usr.id), reply=True, delete_after=35)
-
-    async def cmd_joinserver(self, message):
-        """
-        Usage:
-            {command_prefix}joinserver
-        Tells you how to join a server.
-
-        OAuth Link:  http://inv.rtb.dragonfire.me
-        """
-        return Response("http://inv.rtb.dragonfire.me - OAuth Link - If it doesn't work, report with .notifydev", delete_after=0)
 
     async def cmd_play(self, player, channel, author, permissions, leftover_args, song_url):
         """
@@ -2344,9 +2334,9 @@ class MusicBot(discord.Client):
     async def cmd_notifydev(self, message):
         await self.send_typing(message.channel)
         await self.send_message(message.channel, "Alerted, might as well check your PMs.")
-        await self.send_message(discord.User(id='117678528220233731'), "New message from `" + message.author.name + "` Discrim: `" + message.author.discriminator + "` ID: `" + message.author.id + "` Server Name: `" + message.author.server.name + "` Message: `" + message.content[len("/notifydev "):].strip() + "`")
-        await self.send_message(message.author, "You have sent a message to Wyndrik, the developer. Your message that was sent was `" + message.content[len("/notifydev "):].strip() + "`. You are not able to respond via the bot, Wyndrik should send a message back to you shortly via PM.")
-        await self.log(":information_source: Message sent to Wyndrik via the notifydev command: `" + message.content[len("/notifydev "):].strip() + "`")
+        await self.send_message(discord.User(id='169597963507728384'), "New message from `" + message.author.name + "` Discrim: `" + message.author.discriminator + "` ID: `" + message.author.id + "` Server Name: `" + message.author.server.name + "` Message: `" + message.content[len("/notifydev "):].strip() + "`")
+        await self.send_message(message.author, "You have sent a message to CreeperSeth, the developer. Your message that was sent was `" + message.content[len("/notifydev "):].strip() + "`. You are not able to respond via the bot, CreeperSeth should send a message back to you shortly via PM.")
+        await self.log(":information_source: Message sent to CreeperSeth via the notifydev command: `" + message.content[len("/notifydev "):].strip() + "`")
 
     async def cmd_fursecute(self, message, mentions, fursona):
         """
@@ -2477,7 +2467,7 @@ class MusicBot(discord.Client):
     async def cmd_createinv(self):
         return Response(str(discord.Invite.url), delete_after=0)
     async def cmd_info(client):
-        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the /help commandor message CreeperSeth from the Discord server Bombsite B\n\n Do not have that? Then do /serverinv to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff most credit goes to Robin!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/rubyrosebot"\n```'.format(BUNAME, MVER, BUILD, len(set(client.get_all_members())), len(set(client.messages)), len(client.servers), len(set(client.get_all_channels())), len(set(client.private_channels)), discord.__version__), delete_after=0)
+        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the /help commandor message CreeperSeth from the Discord server Bombsite B\n\n Do not have that? Then do /serverinv to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff most credit goes to Robin!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/rubya"\n```'.format(BUNAME, MVER, BUILD, len(set(client.get_all_members())), len(set(client.messages)), len(client.servers), len(set(client.get_all_channels())), len(set(client.private_channels)), discord.__version__), delete_after=0)
     
     async def cmd_debug(self, message):
         if(message.content.startswith('/debug')):
