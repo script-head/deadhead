@@ -1,5 +1,5 @@
-#RobTheBoat
+#Ruby
 
-Original repository: https://github.com/SexualRhinoceros/MusicBot (This is using the "review" branch.)
+Original repository: [https://github.com/RobinGall2910/RobTheBoat](https://github.com/RobinGall2910/RobTheBoat)
 
-fucking do .help or something on the bot, or go to a website that's on my github
+tbh idek do /help or look at the docs on [https://creeperseth.github.io/ruby](https://creeperseth.github.io/ruby)
