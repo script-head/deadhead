@@ -17,6 +17,9 @@ import platform
 import wikipedia
 import wikipedia.exceptions
 import wolframalpha
+import requests
+import threading
+import cat
 
 from discord import utils
 from discord.object import Object
@@ -29,6 +32,7 @@ from textwrap import dedent
 from datetime import timedelta
 from random import choice, shuffle
 from collections import defaultdict
+from threading import Timer;
 
 from ruby.playlist import Playlist
 from ruby.player import MusicPlayer
@@ -71,6 +75,12 @@ st = time.time()
 stream_game = discord.Game(name = "Crescent Rose", url = "https://www.twitch.tv/directory", type = 1)
 
 owner_id = "169597963507728384"
+
+xl = "```xl\n{0}\n```"
+
+ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
+
+respond = True
 
 dis_games = [
     discord.Game(name='with fire'),
@@ -274,8 +284,6 @@ honkhonkfgt = [
     "https://i.imgur.com/bvrFQnX.jpg"
 ]
 
-respond = True
-
 class SkipState:
     def __init__(self):
         self.skippers = set()
@@ -325,8 +333,7 @@ class Ruby(discord.Client):
             print("Warning: Autoplaylist is empty, disabling.")
             self.config.auto_playlist = False
 
-        #self.headers['user-agent'] += ' RobTheBoat/%s' % BOTVERSION # Now it's reverse.
-        self.http.user_agent += ' RobTheBoat/%s' % BOTVERSION 
+        self.http.user_agent += ' Ruby/%s' % BOTVERSION 
         # ^ for somewhat reason
 
         # TODO: Fix these
@@ -715,7 +722,7 @@ class Ruby(discord.Client):
             pass
 
     async def update_now_playing(self, entry=None, is_paused=False):
-        game = stream_game
+        game = stream_game;
 
         if self.user.bot:
             activeplayers = sum(1 for p in self.players.values() if p.is_playing)
@@ -859,6 +866,18 @@ class Ruby(discord.Client):
     async def on_ready(self):
         await self.change_status(stream_game)
         print('\rConnected!  Ruby v%s\n' % BOTVERSION)
+        if self.config._abaltoken:
+            print('Updating DBots Statistics...')
+            abalscount = len(self.servers)
+            r = requests.post('https://bots.discord.pw/api/bots/' + self.user.id + '/stats', json={"server_count": abalscount},
+                              headers={
+                                  'Authorization': self.config._abaltoken})
+            if r.status_code == "200":
+                print('Discord Bots Server count updated.')
+            elif r.status_code == "401":
+                print('An error occurred!')
+
+
 
         if self.config.owner_id == self.user.id:
             raise exceptions.HelpfulError(
@@ -968,77 +987,6 @@ class Ruby(discord.Client):
 
         print()
         # t-t-th-th-that's all folks!
-
-    @owner_only
-    async def cmd_respond(self, message, dorespond):
-        global respond
-        if dorespond == "false":
-            respond = False
-            await self.change_status(game=None, idle=True)
-            await self.disconnect_all_voice_clients()
-            await self.log(":exclamation: `" + message.author.name + "` disabled command responses. `Not responding to commands.`")
-            return Response("Not responding to commands", delete_after=15)
-        elif dorespond == "true":
-            respond = True
-            await self.change_status(stream_game)
-            await self.log(":exclamation: `" + message.author.name + "` enabled command responses. `Now responding to commands.`")
-            return Response("Responding to commands", delete_after=15)
-        else:
-            return Response("Either \"true\" or \"false\"", delete_after=15)
-        await self._manual_delete_check(message)
-
-    async def cmd_rape(self, message):
-        await self.log(":information_source: " + message.author.name + " just tran the command `/rape`, what the fuck...")
-        return Response(message.author.mention + " what the actual fuck is wrong with you? Holy shit you need to be fucking taken to a concentration camp! Did you really think /rape was going to do something related to rape?")
-            
-
-    async def cmd_addrole(self, server, message, username, rolename):
-        """
-        Usage:
-            {command_prefix}addrole username rolename
-
-        Adds a user to a role 
-        ATTENTION: THIS DOES NOT WORK ON USERS WITH SPACES IN THEIR NAME I'VE TRIED DOING @MENTIONS BUT FAILED!
-        """
-        user = discord.utils.get(server.members, name=username)
-        #if not user:
-            #raise exceptions.CommandError('Invalid user specified', expire_in=30)
-
-        rname = message.content[len("/addrole " + username + " "):].strip()
-        role = discord.utils.get(message.server.roles, name=rname)
-        if not role:
-            raise exceptions.CommandError('Invalid role specified', expire_in=30)
-
-        mauthor = discord.utils.get(server.members, name=message.author.name)
-        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
-        if not botcommander:
-            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
-
-        await self.add_roles(user, role)
-
-    async def cmd_removerole(self, server, message, username, rolename):
-        """
-        Usage:
-            {command_prefix}removerole username rolename
-
-        Removes a user from a role 
-        ATTENTION: THIS DOES NOT WORK ON USERS WITH SPACES IN THEIR NAME I'VE TRIED DOING @MENTIONS BUT FAILED!
-        """
-        user = discord.utils.get(server.members, name=username)
-        #if not user:
-            #raise exceptions.CommandError('Invalid user specified', expire_in=30)
-
-        rname = message.content[len("/removerole " + username + " "):].strip()
-        role = discord.utils.get(message.server.roles, name=rname)
-        if not role:
-            raise exceptions.CommandError('Invalid role specified', expire_in=30)
-
-        mauthor = discord.utils.get(server.members, name=message.author.name)
-        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
-        if not botcommander:
-            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
-
-        await self.remove_roles(user, role)
 
     async def cmd_whitelist(self, message, option, username):
         """
@@ -2155,24 +2103,42 @@ class Ruby(discord.Client):
                     await self.delete_message(msg)
                     msg_count += 1
 
-    async def cmd_ban(self, message, *members:discord.User):
-        botcommander = discord.utils.get(user.roles, name="Bot Commander")
-        if not botcommander:
-            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
-        for user in members:
-            try:
-                    await self.ban(discord.User, delete_message_days=7)
-                    await self.send_message(message.channel, user.name + " was banned from the server.")
-            except discord.HTTPException:
-                await self.send_message(message.channel, "Ban failed. Maybe you were trying to ban yourself or someone higher on the role chart?")
+    async def cmd_ban(self, message, username):
+        """
+        Usage: {command_prefix}ban @Username
+        Bans the user, and deletes 7 days of messages from the user prior to using the command.
+        """
+        user_id = extract_user_id(username)
+        member = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
+        try:
+            await self.ban(member, delete_message_days=7)
+        except discord.Forbidden:
+            return Response("You do not have the proper permissions to ban.", reply=True)
+        except discord.HTTPException:
+            return Response("Banning failed due to HTTPException error.", reply=True)
+
+    async def cmd_unban(self, message, username):
+        """
+        Usage: {command_prefix}unban @Username
+        Command to unban the user for 7 days if the bot has permissions to authorize
+        """
+        user_id = extract_user_id(username)
+        member = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
+        try:
+            await self.unban(member)
+        except discord.Forbidden:
+            return Response("You do not have the proper permissions to unban.", reply=True)
+        except discord.HTTPException:
+                return Response("Unbanning failed due to HTTPException error.", reply=True)
 
     @owner_only
     async def cmd_ruby(self, message, client):
         """
         Ruby.
-        servers, betamode, defaultstatus, bye, massren, setgame, cleargame, listrtb, dat boi, sysinfo, cb selfspam
+        servers, betamode, defaultstatus, bye, massren, setgame, cleargame, listrtb, dat boi, sysinfo, cb selfspam, dbupdate
         Only CreeperSeth#9790 is allowed, or the Bot Owner if this isn't the main bot, Ruby Rose#2414
         """
+        global random_game
         if message.content[len("/ruby "):].strip() == "servers":
             return Response("``` \n" + self.servers + "\n ```", delete_after=0)
         elif message.content[len("/ruby "):].strip() == "betamode":
@@ -2206,8 +2172,18 @@ class Ruby(discord.Client):
                 asyncio.sleep(5)#I need some kind of slowdown.
         elif message.content[len("/ruby "):].strip() == "gsh":
              discord.Game(name='/help for help!')
-
              await self.change_status(discord.Game(name='/help for help!'))
+        elif message.content[len("/ruby "):].strip() == "dbupdate":
+            if not self.config._abaltoken:
+                return Response("No Authorization token was specified in the config")
+            abalscount = len(self.servers)
+            r = requests.post('https://bots.discord.pw/api/bots/' + self.user.id + '/stats', json={"server_count": abalscount}, headers={'Authorization': self.config._abaltoken})
+            if r.status_code == int(200):
+                print('DBots Stats updated manually via ruby')
+                await self.send_message(message.channel, "Updated Discord Bots server count!")
+            else:
+                print('Error occured while trying to update stats')
+                await self.send_message(message.channel, "Error occurred when trying to update, here's the error code: {}".format(r.status_code))
 
     async def cmd_hentai(self, message):
         await self.send_message(message.channel, "I know you love fapping to lolis, but come on bro, those lolis are on the internet... not in discord. Just look around and you will find them.")
@@ -2432,8 +2408,8 @@ class Ruby(discord.Client):
     async def cmd_help(self):
         return Response("Help List: https://creeperseth.github.io/ruby Any other help? DM @CreeperSeth#9790 for more help, or do /serverinv to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
     
-    async def cmd_serverinv(self, message):
-        await self.safe_send_message(message.channel, "https://discord.gg/enDDbMC - If you came for help, ask for CreeperSeth.")
+    async def cmd_serverinv(self, author):
+        await self.safe_send_message(author, "https://discord.gg/enDDbMC - If you came for help, ask for CreeperSeth.")
     
     async def cmd_date(self):
         return Response("```xl\n Current Date: " + time.strftime("%A, %B %d, %Y") + '\n Current Time (Eastern): ' + time.strftime("%I:%M:%S %p") + "Happy birthday to the ones today, you'd know who you are. <3 ```", delete_after=0)
@@ -2497,10 +2473,12 @@ class Ruby(discord.Client):
         day, hour = divmod(hour, 24)
         week, day = divmod(day, 7)
         return Response("I have been up for %dw :" % (week) + " %dd :" % (day) + " %dh :" % (hour) + " %dm :" % (minute) + " %ds" % (second), delete_after=0)
+
     async def cmd_createinv(self):
         return Response(str(discord.Invite.url), delete_after=0)
+
     async def cmd_info(client):
-        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the /help commandor message CreeperSeth from the Discord server Bombsite B\n\n Do not have that? Then do /serverinv to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff most credit goes to Robin!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/ruby"\n```'.format(BUNAME, MVER, BUILD, len(set(client.get_all_members())), len(set(client.messages)), len(client.servers), len(set(client.get_all_channels())), len(set(client.private_channels)), discord.__version__), delete_after=0)
+        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the /help commandor message CreeperSeth from the Discord server Ruby\'s Fallout Shelter\n\n Don\'t have that? Then do /serverinv to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff most credit goes to Robin!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/ruby"\n```'.format(BUNAME, MVER, BUILD, len(set(client.get_all_members())), len(set(client.messages)), len(client.servers), len(set(client.get_all_channels())), len(set(client.private_channels)), discord.__version__), delete_after=0)
     
     async def cmd_debug(self, message):
         if (message.content.startswith('/debug ')):
@@ -2525,17 +2503,138 @@ class Ruby(discord.Client):
         await self.disconnect_voice_client(server)
         await self._manual_delete_check(message)
 
+    @owner_only
     async def cmd_reboot(self, message):
         await self.safe_send_message(message.channel, "Bot is restarting, please wait...")
         await self.log(":warning: Bot is restarting")
         await self.disconnect_all_voice_clients()
         raise exceptions.RestartSignal
 
+    @owner_only
     async def cmd_timetodie(self, message):
         await self.safe_send_message(message.channel, "Bot is shutting down...")
         await self.log(":warning: Bot is shutting down")
         await self.disconnect_all_voice_clients()
         raise exceptions.TerminateSignal
+
+    @owner_only
+    async def cmd_respond(self, author, dorespond):
+        global respond
+        if dorespond == "false":
+            respond = False
+            await self.change_status(game=None, idle=True)
+            await self.disconnect_all_voice_clients()
+            await self.log(":exclamation: `" + author.name + "` disabled command responses. `Not responding to commands.`")
+            return Response("Not responding to commands", delete_after=15)
+        elif dorespond == "true":
+            respond = True
+            await self.change_status(stream_game)
+            await self.log(":exclamation: `" + author.name + "` enabled command responses. `Now responding to commands.`")
+            return Response("Responding to commands", delete_after=15)
+        else:
+            return Response("Either \"true\" or \"false\"", delete_after=15)
+        await self._manual_delete_check(message)
+
+    async def cmd_rape(self, author):
+        await self.log(":information_source: " + author.name + " just ran the command `/rape`, what the fuck...")
+        return Response(author.mention + " what the actual fuck is wrong with you? Holy shit you need to be fucking taken to a concentration camp! Did you really think /rape was going to do something related to rape?")
+            
+
+    async def cmd_addrole(self, server, author, message, username, rolename):
+        """
+        Usage:
+            {command_prefix}addrole @UserName rolename
+
+        Adds a user to a role 
+        """
+        user_id = extract_user_id(username)
+        user = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
+        if not user:
+            raise exceptions.CommandError('Invalid user specified', expire_in=30)
+
+        rname = message.content[len("/addrole " + username + " "):].strip()
+        role = discord.utils.get(message.server.roles, name=rname)
+        if not role:
+            raise exceptions.CommandError('Invalid role specified', expire_in=30)
+
+        mauthor = discord.utils.get(server.members, name=author.name)
+        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+
+        await self.add_roles(user, role)
+
+    async def cmd_removerole(self, server, author, message, username, rolename):
+        """
+        Usage:
+            {command_prefix}removerole @UserName rolename
+
+        Removes a user from a role 
+        """
+        user_id = extract_user_id(username)
+        user = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
+        if not user:
+            raise exceptions.CommandError('Invalid user specified', expire_in=30)
+
+        rname = message.content[len("/removerole " + username + " "):].strip()
+        role = discord.utils.get(message.server.roles, name=rname)
+        if not role:
+            raise exceptions.CommandError('Invalid role specified', expire_in=30)
+
+        mauthor = discord.utils.get(server.members, name=author.name)
+        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+
+        await self.remove_roles(user, role)
+
+    async def cmd_terminal(self, channel, message):
+        if message.author.id == owner_id or "117673914460536838":
+            try:
+                await self.send_typing(channel)
+                msg = message.content[len("/terminal "):].strip()
+                input = os.popen(msg)
+                output = input.read()
+                await self.send_message(channel, xl.format(output))
+            except:
+                return Response("Error, couldn't send command", delete_after=0)
+        else:
+            await self.send_message(channel, "No dumbass you can't use that, do you think I would just let you access the terminal?")
+
+    @owner_only
+    async def cmd_uploadfile(self, message):
+        await self.send_file(message.channel, message.content[len("/uploadfile "):].strip())
+        if FileNotFoundError == True:
+            await self.send_message(message.channel, "There was no such thing found in the system.")
+
+    async def cmd_deval(self, message):
+        if(message.content.startswith('/deval')):
+            if message.author.id == owner_id:
+                debug = message.content[len("/deval "):].strip()
+                try:
+                    debug = eval(debug)
+                    debug = str(debug)
+                    await self.send_message(message.channel, "```python\n" + debug + "\n```")
+                except Exception as e:
+                    debug = traceback.format_exc()
+                    debug = str(debug)
+                    await self.send_message(message.channel, "```python\n" + debug + "\n```")
+            else:
+                pass
+
+    async def cmd_stats(client, message):
+        await client.send_message(message.channel,
+        "```xl\n ~~~~~~Ruby Stats~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n Status: ok \n Date: {}\n Time: {}\n ~~~~~~~~~~~~~~~~~~~~~~~~~~\n```".format(
+        BUNAME, MVER, BUILD, len(set(client.get_all_members())),
+        len(set(client.messages)), len(client.servers),
+        len(set(client.get_all_channels())), len(set(client.private_channels)),
+        discord.__version__, time.strftime("%A, %B %d, %Y"),
+        time.strftime("%I:%M:%S %p")))
+
+    async def cmd_randomasscat(self, channel):
+        await self.send_typing(channel)
+        cat.getCat(directory='imgs', filename='cat', format='gif')
+        await self.send_file(channel, "imgs/cat.gif")
 
     async def on_message(self, message):
         await self.wait_until_ready()
@@ -2581,7 +2680,7 @@ class Ruby(discord.Client):
             return
 
         else:
-            self.safe_print("[Command] {0.id}/{0.name} ({1})".format(message.author, message_content))
+            self.safe_print("[Command] {0.id}/{0.name}#{0.discriminator} ({1})".format(message.author, message_content))
 
         user_permissions = self.permissions.for_user(message.author)
 
