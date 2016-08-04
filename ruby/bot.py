@@ -32,7 +32,6 @@ from textwrap import dedent
 from datetime import timedelta
 from random import choice, shuffle
 from collections import defaultdict
-from threading import Timer;
 
 from ruby.playlist import Playlist
 from ruby.player import MusicPlayer
@@ -282,6 +281,31 @@ honkhonkfgt = [
     "https://i.imgur.com/QDyvO4x.jpg",
     "https://i.imgur.com/HtrRYSS.png",
     "https://i.imgur.com/bvrFQnX.jpg"
+]
+
+rubyshit = [
+    "http://i.imgur.com/REtCqUO.gif",
+    "http://i.imgur.com/yoc2AQk.gif",
+    "http://i.imgur.com/tA07mlA.gif",
+    "http://i.imgur.com/PMdpTO4.png",
+    "http://i.imgur.com/e4B0qhY.jpg",
+    "http://i.imgur.com/srgbPCX.gif",
+    "http://i.imgur.com/osS1g42.gif",
+    "http://i.imgur.com/qRUuMHv.png",
+    "http://i.imgur.com/hsxgEzP.gif",
+    "http://i.imgur.com/XbrofbY.gif",
+    "http://i.imgur.com/ejD61ju.gif",
+    "http://i.imgur.com/5R2rJjY.gif",
+    "http://i.imgur.com/veuPR57.gif",
+    "http://i.imgur.com/OQ7Cl5j.gif",
+    "http://i.imgur.com/MuUyWnj.gif",
+    "http://i.imgur.com/Hrto0aR.gif",
+    "http://i.imgur.com/ueQMNbV.gif",
+    "http://i.imgur.com/Ad6E834.gif",
+    "http://i.imgur.com/5ZcLiqK.gif",
+    "http://i.imgur.com/GOiRtlh.gif",
+    "http://i.imgur.com/rqxkH3z.gif",
+    "http://i.imgur.com/MvNwOGy.gif"
 ]
 
 class SkipState:
@@ -2390,7 +2414,7 @@ class Ruby(discord.Client):
     async def cmd_msgfags(self, message, id, reason):
         reason = message.content[len("/msgfags " + id):].strip()
         await self.send_message(discord.User(id=id), reason)
-        await self.log(":information_source: Wyndrik sent a warning to ID #: `" + id + "`")
+        await self.log(":information_source: CreeperSeth sent a warning to ID #: `" + id + "`")
 
     async def cmd_kym(self, message):
         """
@@ -2409,7 +2433,7 @@ class Ruby(discord.Client):
         return Response("Help List: https://creeperseth.github.io/ruby Any other help? DM @CreeperSeth#9790 for more help, or do /serverinv to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
     
     async def cmd_serverinv(self, author):
-        await self.safe_send_message(author, "https://discord.gg/enDDbMC - If you came for help, ask for CreeperSeth.")
+        await self.safe_send_message(author, "https://discord.gg/enDDbMC - If you came for help, ask for CreeperSeth. If the link is expired do `/notifydev` and report it")
     
     async def cmd_date(self):
         return Response("```xl\n Current Date: " + time.strftime("%A, %B %d, %Y") + '\n Current Time (Eastern): ' + time.strftime("%I:%M:%S %p") + "Happy birthday to the ones today, you'd know who you are. <3 ```", delete_after=0)
@@ -2635,9 +2659,20 @@ class Ruby(discord.Client):
         await self.send_typing(channel)
         cat.getCat(directory='imgs', filename='cat', format='gif')
         await self.send_file(channel, "imgs/cat.gif")
+        #Watch Nero spam this command until the bot crashes
+
+    async def cmd_rubyrose(self):
+        return Response("Here is a picture of Ruby Rose: " + random.choice(rubyshit))
+
+    async def cmd_joinserver(self, author):
+        await self.send_message(author, "Here is the link to add me to your server: https://discordapp.com/oauth2/authorize?&client_id=209469933346750464&scope=bot")
+        return Response(author.name + " I sent the link to add me to your server in a DM")
 
     async def on_message(self, message):
         await self.wait_until_ready()
+
+        if message.channel.is_private:
+            self.send_message(message.author, "I'm sorry, but I can't respond to private messages")
 
         message_content = message.content.strip()
         if not message_content.startswith(self.config.command_prefix):
@@ -2662,9 +2697,8 @@ class Ruby(discord.Client):
             return
 
         if message.channel.is_private:
-            if not (message.author.id == self.config.owner_id and command == 'joinserver'):
-                await self.send_message(message.channel, 'You cannot use this bot in private messages.')
-                return
+            await self.send_message(message.channel, 'You cannot use this bot in private messages.')
+            return
 
         if message.author.id in self.blacklist and message.author.id != self.config.owner_id:
             self.safe_print("[User blacklisted] {0.id}/{0.name} ({1})".format(message.author, message_content))
