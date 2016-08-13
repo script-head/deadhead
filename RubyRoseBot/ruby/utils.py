@@ -32,7 +32,8 @@ def write_file(filename, contents):
 
 
 def extract_user_id(argument):
-    match = _USER_ID_MATCH.match(argument)
+    arg = argument.replace("!", "")
+    match = _USER_ID_MATCH.match(arg)
     if match:
         return int(match.group(1))
 
