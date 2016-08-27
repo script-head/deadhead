@@ -32,13 +32,14 @@ from textwrap import dedent
 from datetime import timedelta
 from random import choice, shuffle
 from collections import defaultdict
+from xml.dom import minidom
 
 from ruby.playlist import Playlist
 from ruby.player import MusicPlayer
 from ruby.config import Config, ConfigDefaults
 from ruby.permissions import Permissions, PermissionsDefaults
 from ruby.playlist import Playlist
-from ruby.utils import load_file, write_file, sane_round_int, extract_user_id
+from ruby.utils import load_file, write_file, download_file, sane_round_int, extract_user_id
 from ruby.credentials import app_id
 
 from . import exceptions
@@ -71,7 +72,7 @@ from _operator import contains
 load_opus_lib()
 st = time.time()
 
-stream_game = discord.Game(name = "Crescent Rose", url = "https://www.twitch.tv/directory", type = 1)
+default_status = discord.Game(name = "Crescent Rose", url = "https://www.twitch.tv/directory", type = 1)
 
 owner_id = "169597963507728384"
 
@@ -115,19 +116,6 @@ dis_games = [
 ipv4_regex = re.compile(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b')
 ipv6_regex = re.compile(r'(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))')
 
-ratelevel = [
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10"
-]
-
 tweetsthatareokhand = [
     "http://i.imgur.com/lkMJ1O9.png",
     "http://i.imgur.com/rbGmZqV.png",
@@ -145,7 +133,7 @@ tweetsthatareokhand = [
     "https://cdn.discordapp.com/attachments/173887966031118336/177222711867604993/disturbing_fetish.PNG",
 #    "here's a message from the coder of this: I FUCKING RAN OUT NEEDS MORE CHEESE",
 # not anymore, its like what 21 links 
-   "â€‹https://cdn.discordapp.com/attachments/173886531080159234/176425292426903553/f20e683862a17ef49633eed742fc2b22eb17220eef5a1d607cda2e7a7758720b_1.jpg",
+    "https://cdn.discordapp.com/attachments/173886531080159234/176425292426903553/f20e683862a17ef49633eed742fc2b22eb17220eef5a1d607cda2e7a7758720b_1.jpg",
     "http://i.imgur.com/m71nJAg.png",
     "http://i.imgur.com/m5fx7U9.png",
     "https://cdn.discordapp.com/attachments/173887966031118336/177518766781890562/your-resistance-only-makes-my-penis-harder.jpg",
@@ -256,7 +244,7 @@ throwaf = [
 insults = [
     "is a fucking pedophile",
     "is a nigger",
-    "is so insecure about his penis size because it is smaller then a babies",
+    "is so insecure about his penis size because it is smaller than a babies",
     "is just a fucking sterotypical 12 year old saying shit like \"I fucked your mom\" and other shit",
     "is a fucking disguisting, disgraceful, ignorant, pathetic, and discriminative weeaboo!",
     "is a child molester",
@@ -268,7 +256,12 @@ insults = [
     "has a gamertag, and it is I_Like_To_Rape_Children",
     "loves to fap to discord bots",
     "wants the d",
-    "has no life"
+    "has no life",
+    "is a furry",
+    "is a furfag",
+    "is a worthless piece of shit",
+    "80 year old man",
+    "lost his virginity to his grandpa"
 ]
 
 honkhonkfgt = [
@@ -305,10 +298,36 @@ rubyshit = [
     "http://i.imgur.com/5ZcLiqK.gif",
     "http://i.imgur.com/GOiRtlh.gif",
     "http://i.imgur.com/rqxkH3z.gif",
-    "http://i.imgur.com/MvNwOGy.gif"
+    "http://i.imgur.com/MvNwOGy.gif",
+    "http://i.imgur.com/Dd5x9Af.gif"
+]
+
+magic_conch_shell = [
+    "It is certain", 
+    "It is decidedly so", 
+    "Without a doubt", 
+    "Yes definitely", 
+    "You may rely on it", 
+    "As I see it yes", 
+    "Most likely", 
+    "Outlook good", 
+    "Yes", 
+    "Signs point to yes", 
+    "Reply hazy try again", 
+    "Ask again later", 
+    "Better not tell you now", 
+    "Cannot predict now", 
+    "Concentrate and ask again", 
+    "Don't count on it", 
+    "My reply is no", 
+    "My sources say no", 
+    "Outlook not so good", 
+    "Very doubtful"
 ]
 
 no_perm = "You do not have permission to use that command"
+
+music_disabled = "Sorry, but the music bot has been disabled until further notice due to some issues with ffmpeg"
 
 class SkipState:
     def __init__(self):
@@ -749,7 +768,7 @@ class Ruby(discord.Client):
             pass
 
     async def update_now_playing(self, entry=None, is_paused=False):
-        game = stream_game
+        game = default_status
 
         if self.user.bot:
             activeplayers = sum(1 for p in self.players.values() if p.is_playing)
@@ -892,7 +911,7 @@ class Ruby(discord.Client):
             traceback.print_exc()
 
     async def on_ready(self):
-        await self.change_status(stream_game)
+        await self.change_status(default_status)
         print('\rConnected!  Ruby v%s\n' % BOTVERSION)
         if self.config._abaltoken:
             print('Updating DBots Statistics...')
@@ -1019,7 +1038,7 @@ class Ruby(discord.Client):
     async def cmd_whitelist(self, message, option, username):
         """
         Usage:
-            {command_prefix}whitelist [ + | - | add | remove ] @UserName
+            {command_prefix}whitelist [ + | - | add | remove ] @user
 
         Adds or removes the user to the whitelist.
         When the whitelist is enabled, whitelisted users are permitted to use bot commands.
@@ -1050,7 +1069,7 @@ class Ruby(discord.Client):
 
                 return Response('user has been removed from the whitelist', reply=True, delete_after=10)
 
-    async def cmd_insult(self, username):
+    async def cmd_insult(self, message, username):
         """
         Usage:
             {command_prefix}insult username
@@ -1058,12 +1077,13 @@ class Ruby(discord.Client):
         Randomly insults the user specified.
         """
 
-        return Response(username + " " + random.choice(insults), delete_after=0)
+        tbhidfucknero = message.content[len(self.command_prefix + "insult "):].strip()
+        return Response(tbhidfucknero + " " + random.choice(insults), delete_after=0)
 
     async def cmd_blacklist(self, message, option, username):
         """
         Usage:
-            {command_prefix}blacklist [ + | - | add | remove ] @UserName
+            {command_prefix}blacklist [ + | - | add | remove ] @user
 
         Adds or removes the user to the blacklist.
         Blacklisted users are forbidden from using bot commands. Blacklisting a user also removes them from the whitelist.
@@ -1106,197 +1126,198 @@ class Ruby(discord.Client):
 
                 return Response('user has been removed from the blacklist', reply=True, delete_after=10)
 
-    async def cmd_play(self, player, channel, author, permissions, leftover_args, song_url):
-        """
-        Usage:
-            {command_prefix}play song_link
-            {command_prefix}play text to search for
+    async def cmd_play(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}play song_link
+            #{command_prefix}play text to search for
 
-        Adds the song to the playlist.  If a link is not provided, the first
-        result from a youtube search is added to the queue.
-        """
+        #Adds the song to the playlist.  If a link is not provided, the first
+        #result from a youtube search is added to the queue.
+        #"""
 
-        song_url = song_url.strip('<>')
+        #song_url = song_url.strip('<>')
 
-        if permissions.max_songs and player.playlist.count_for_user(author) >= permissions.max_songs:
-            raise exceptions.PermissionsError(
-                "You have reached your playlist item limit (%s)" % permissions.max_songs, expire_in=30
-            )
+        #if permissions.max_songs and player.playlist.count_for_user(author) >= permissions.max_songs:
+            #raise exceptions.PermissionsError(
+                #"You have reached your playlist item limit (%s)" % permissions.max_songs, expire_in=30
+            #)
 
-        await self.send_typing(channel)
+        #await self.send_typing(channel)
 
-        if leftover_args:
-            song_url = ' '.join([song_url, *leftover_args])
+        #if leftover_args:
+            #song_url = ' '.join([song_url, *leftover_args])
 
-        try:
-            info = await self.downloader.extract_info(player.playlist.loop, song_url, download=False, process=False)
-        except Exception as e:
-            raise exceptions.CommandError(e, expire_in=30)
+        #try:
+            #info = await self.downloader.extract_info(player.playlist.loop, song_url, download=False, process=False)
+        #except Exception as e:
+            #raise exceptions.CommandError(e, expire_in=30)
 
-        if not info:
-            raise exceptions.CommandError("That video cannot be played.", expire_in=30)
+        #if not info:
+            #raise exceptions.CommandError("That video cannot be played.", expire_in=30)
 
         # abstract the search handling away from the user
         # our ytdl options allow us to use search strings as input urls
-        if info.get('url', '').startswith('ytsearch'):
+        #if info.get('url', '').startswith('ytsearch'):
             # print("[Command:play] Searching for \"%s\"" % song_url)
-            info = await self.downloader.extract_info(
-                player.playlist.loop,
-                song_url,
-                download=False,
-                process=True,    # ASYNC LAMBDAS WHEN
-                on_error=lambda e: asyncio.ensure_future(
-                    self.safe_send_message(channel, "```\n%s\n```" % e, expire_in=120), loop=self.loop),
-                retry_on_error=True
-            )
+            #info = await self.downloader.extract_info(
+                #player.playlist.loop,
+                #song_url,
+                #download=False,
+                #process=True,    # ASYNC LAMBDAS WHEN
+                #on_error=lambda e: asyncio.ensure_future(
+                    #self.safe_send_message(channel, "```\n%s\n```" % e, expire_in=120), loop=self.loop),
+                #retry_on_error=True
+            #)
 
-            if not info:
-                raise exceptions.CommandError(
-                    "Error extracting info from search string, youtubedl returned no data.  "
-                    "You may need to restart the bot if this continues to happen.", expire_in=30
-                )
+            #if not info:
+                #raise exceptions.CommandError(
+                    #"Error extracting info from search string, youtubedl returned no data.  "
+                    #"You may need to restart the bot if this continues to happen.", expire_in=30
+                #)
 
-            if not all(info.get('entries', [])):
+            #if not all(info.get('entries', [])):
                 # empty list, no data
-                return
+                #return
 
-            song_url = info['entries'][0]['webpage_url']
-            info = await self.downloader.extract_info(player.playlist.loop, song_url, download=False, process=False)
+            #song_url = info['entries'][0]['webpage_url']
+            #info = await self.downloader.extract_info(player.playlist.loop, song_url, download=False, process=False)
             # Now I could just do: return await self.cmd_play(player, channel, author, song_url)
             # But this is probably fine
 
         # TODO: Possibly add another check here to see about things like the bandcamp issue
         # TODO: Where ytdl gets the generic extractor version with no processing, but finds two different urls
 
-        if 'entries' in info:
+        #if 'entries' in info:
             # I have to do exe extra checks anyways because you can request an arbitrary number of search results
-            if not permissions.allow_playlists and ':search' in info['extractor'] and len(info['entries']) > 1:
-                raise exceptions.PermissionsError("You are not allowed to request playlists", expire_in=30)
+            #if not permissions.allow_playlists and ':search' in info['extractor'] and len(info['entries']) > 1:
+                #raise exceptions.PermissionsError("You are not allowed to request playlists", expire_in=30)
 
             # The only reason we would use this over `len(info['entries'])` is if we add `if _` to this one
-            num_songs = sum(1 for _ in info['entries'])
+            #num_songs = sum(1 for _ in info['entries'])
 
-            if permissions.max_playlist_length and num_songs > permissions.max_playlist_length:
-                raise exceptions.PermissionsError(
-                    "Playlist has too many songs. (%s > %s)" % (num_songs, permissions.max_playlist_length),
-                    expire_in=30
-                )
+            #if permissions.max_playlist_length and num_songs > permissions.max_playlist_length:
+                #raise exceptions.PermissionsError(
+                    #"Playlist has too many songs. (%s > %s)" % (num_songs, permissions.max_playlist_length),
+                    #expire_in=30
+                #)
 
             # This is a little bit weird when it says (x + 0 > y), I might add the other check back in
-            if permissions.max_songs and player.playlist.count_for_user(author) + num_songs > permissions.max_songs:
-                raise exceptions.PermissionsError(
-                    "Playlist entries + your already queued songs reached limit (%s + %s > %s)" % (
-                        num_songs, player.playlist.count_for_user(author), permissions.max_songs),
-                    expire_in=30
-                )
+            #if permissions.max_songs and player.playlist.count_for_user(author) + num_songs > permissions.max_songs:
+                #raise exceptions.PermissionsError(
+                    #"Playlist entries + your already queued songs reached limit (%s + %s > %s)" % (
+                        #num_songs, player.playlist.count_for_user(author), permissions.max_songs),
+                    #expire_in=30
+                #)
 
-            if info['extractor'].lower() in ['youtube:playlist', 'soundcloud:set', 'bandcamp:album']:
-                try:
-                    return await self._cmd_play_playlist_async(player, channel, author, permissions, song_url, info['extractor'])
-                except exceptions.CommandError:
-                    raise
-                except Exception as e:
-                    traceback.print_exc()
-                    raise exceptions.CommandError("Error queuing playlist:\n%s" % e, expire_in=30)
+            #if info['extractor'].lower() in ['youtube:playlist', 'soundcloud:set', 'bandcamp:album']:
+                #try:
+                    #return await self._cmd_play_playlist_async(player, channel, author, permissions, song_url, info['extractor'])
+                #except exceptions.CommandError:
+                    #raise
+                #except Exception as e:
+                    #traceback.print_exc()
+                    #raise exceptions.CommandError("Error queuing playlist:\n%s" % e, expire_in=30)
 
-            t0 = time.time()
+            #t0 = time.time()
 
             # My test was 1.2 seconds per song, but we maybe should fudge it a bit, unless we can
             # monitor it and edit the message with the estimated time, but that's some ADVANCED SHIT
             # I don't think we can hook into it anyways, so this will have to do.
             # It would probably be a thread to check a few playlists and get the speed from that
             # Different playlists might download at different speeds though
-            wait_per_song = 1.2
+            #wait_per_song = 1.2
 
-            procmesg = await self.safe_send_message(
-                channel,
-                'Gathering playlist information for {} songs{}'.format(
-                    num_songs,
-                    ', ETA: {} seconds'.format(self._fixg(
-                        num_songs * wait_per_song)) if num_songs >= 10 else '.'))
+            #procmesg = await self.safe_send_message(
+                #channel,
+                #'Gathering playlist information for {} songs{}'.format(
+                    #num_songs,
+                    #', ETA: {} seconds'.format(self._fixg(
+                        #num_songs * wait_per_song)) if num_songs >= 10 else '.'))
 
             # We don't have a pretty way of doing this yet.  We need either a loop
             # that sends these every 10 seconds or a nice context manager.
-            await self.send_typing(channel)
+            #await self.send_typing(channel)
 
             # TODO: I can create an event emitter object instead, add event functions, and every play list might be asyncified
             #       Also have a "verify_entry" hook with the entry as an arg and returns the entry if its ok
 
-            entry_list, position = await player.playlist.import_from(song_url, channel=channel, author=author)
+            #entry_list, position = await player.playlist.import_from(song_url, channel=channel, author=author)
 
-            tnow = time.time()
-            ttime = tnow - t0
-            listlen = len(entry_list)
-            drop_count = 0
+            #tnow = time.time()
+            #ttime = tnow - t0
+            #listlen = len(entry_list)
+            #drop_count = 0
 
-            if permissions.max_song_length:
-                for e in entry_list.copy():
-                    if e.duration > permissions.max_song_length:
-                        player.playlist.entries.remove(e)
-                        entry_list.remove(e)
-                        drop_count += 1
+            #if permissions.max_song_length:
+                #for e in entry_list.copy():
+                    #if e.duration > permissions.max_song_length:
+                        #player.playlist.entries.remove(e)
+                        #entry_list.remove(e)
+                        #drop_count += 1
                         # Im pretty sure there's no situation where this would ever break
                         # Unless the first entry starts being played, which would make this a race condition
-                if drop_count:
-                    print("Dropped %s songs" % drop_count)
+                #if drop_count:
+                    #print("Dropped %s songs" % drop_count)
 
-            print("Processed {} songs in {} seconds at {:.2f}s/song, {:+.2g}/song from expected ({}s)".format(
-                listlen,
-                self._fixg(ttime),
-                ttime / listlen,
-                ttime / listlen - wait_per_song,
-                self._fixg(wait_per_song * num_songs))
-            )
+            #print("Processed {} songs in {} seconds at {:.2f}s/song, {:+.2g}/song from expected ({}s)".format(
+                #listlen,
+                #self._fixg(ttime),
+                #ttime / listlen,
+                #ttime / listlen - wait_per_song,
+                #self._fixg(wait_per_song * num_songs))
+            #)
 
-            await self.safe_delete_message(procmesg)
+            #await self.safe_delete_message(procmesg)
 
-            if not listlen - drop_count:
-                raise exceptions.CommandError(
-                    "No songs were added, all songs were over max duration (%ss)" % permissions.max_song_length,
-                    expire_in=30
-                )
+            #if not listlen - drop_count:
+                #raise exceptions.CommandError(
+                    #"No songs were added, all songs were over max duration (%ss)" % permissions.max_song_length,
+                    #expire_in=30
+                #)
 
-            reply_text = "Added **%s** songs to be played. Position in queue list: %s"
-            btext = str(listlen - drop_count)
+            #reply_text = "Added **%s** songs to be played. Position in queue list: %s"
+            #btext = str(listlen - drop_count)
 
-        else:
-            if permissions.max_song_length and info.get('duration', 0) > permissions.max_song_length:
-                raise exceptions.PermissionsError(
-                    "Song duration exceeds limit (%s > %s)" % (info['duration'], permissions.max_song_length),
-                    expire_in=30
-                )
+        #else:
+            #if permissions.max_song_length and info.get('duration', 0) > permissions.max_song_length:
+                #raise exceptions.PermissionsError(
+                    #"Song duration exceeds limit (%s > %s)" % (info['duration'], permissions.max_song_length),
+                    #expire_in=30
+               # )
 
-            try:
-                entry, position = await player.playlist.add_entry(song_url, channel=channel, author=author)
+            #try:
+                #entry, position = await player.playlist.add_entry(song_url, channel=channel, author=author)
 
-            except exceptions.WrongEntryTypeError as e:
-                if e.use_url == song_url:
-                    print("[Warning] Determined incorrect entry type, but suggested url is the same.  Help.")
+            #except exceptions.WrongEntryTypeError as e:
+                #if e.use_url == song_url:
+                    #print("[Warning] Determined incorrect entry type, but suggested url is the same.  Help.")
 
-                if self.config.debug_mode:
-                    print("[Info] Assumed url \"%s\" was a single entry, was actually a playlist" % song_url)
-                    print("[Info] Using \"%s\" instead" % e.use_url)
+                #if self.config.debug_mode:
+                    #print("[Info] Assumed url \"%s\" was a single entry, was actually a playlist" % song_url)
+                    #print("[Info] Using \"%s\" instead" % e.use_url)
 
-                return await self.cmd_play(player, channel, author, permissions, leftover_args, e.use_url)
+                #return await self.cmd_play(player, channel, author, permissions, leftover_args, e.use_url)
 
-            reply_text = "Added **%s** to be played. Position in queue list: %s"
-            btext = entry.title
+            #reply_text = "Added **%s** to be played. Position in queue list: %s"
+            #btext = entry.title
 
-        if position == 1 and player.is_stopped:
-            position = 'Up next!'
-            reply_text %= (btext, position)
+        #if position == 1 and player.is_stopped:
+            #position = 'Up next!'
+            #reply_text %= (btext, position)
 
-        else:
-            try:
-                time_until = await player.playlist.estimate_time_until(position, player)
-                reply_text += ' - estimated time until playing: %s'
-            except:
-                traceback.print_exc()
-                time_until = ''
+        #else:
+            #try:
+                #time_until = await player.playlist.estimate_time_until(position, player)
+                #reply_text += ' - estimated time until playing: %s'
+            #except:
+                #traceback.print_exc()
+                #time_until = ''
 
-            reply_text %= (btext, position, time_until)
+            #reply_text %= (btext, position, time_until)
 
-        return Response(reply_text, delete_after=30)
+        #return Response(reply_text, delete_after=30)
 
     async def _cmd_play_playlist_async(self, player, channel, author, permissions, playlist_url, extractor_type):
         """
@@ -1392,519 +1413,537 @@ class Ruby(discord.Client):
             songs_added, self._fixg(ttime, 1)), delete_after=30)
 
     async def cmd_search(self, player, channel, author, permissions, leftover_args):
-        """
-        Usage:
-            {command_prefix}search [service] [number] query
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}search [service] [number] query
 
-        Searches a service for a video and adds it to the queue.
-        - service: any one of the following services:
-            - youtube (yt) (default if unspecified)
-            - soundcloud (sc)
-            - yahoo (yh)
-        - number: return a number of video results and waits for user to choose one
-          - defaults to 1 if unspecified
-          - note: If your search query starts with a number,
-                  you must put your query in quotes
-            - ex: {command_prefix}search 2 "I ran seagulls"
-        """
+        #Searches a service for a video and adds it to the queue.
+        #- service: any one of the following services:
+            #- youtube (yt) (default if unspecified)
+            #- soundcloud (sc)
+            #- yahoo (yh)
+        #- number: return a number of video results and waits for user to choose one
+          #- defaults to 1 if unspecified
+          #- note: If your search query starts with a number,
+                  #you must put your query in quotes
+            #- ex: {command_prefix}search 2 "I ran seagulls"
+        #"""
 
-        if permissions.max_songs and player.playlist.count_for_user(author) > permissions.max_songs:
-            raise exceptions.PermissionsError(
-                "You have reached your playlist item limit (%s)" % permissions.max_songs,
-                expire_in=30
-            )
+        #if permissions.max_songs and player.playlist.count_for_user(author) > permissions.max_songs:
+            #raise exceptions.PermissionsError(
+                #"You have reached your playlist item limit (%s)" % permissions.max_songs,
+                #expire_in=30
+            #)
 
-        def argcheck():
-            if not leftover_args:
-                raise exceptions.CommandError(
-                    "Please specify a search query.\n%s" % dedent(
-                        self.cmd_search.__doc__.format(command_prefix=self.config.command_prefix)),
-                    expire_in=60
-                )
+        #def argcheck():
+            #if not leftover_args:
+                #raise exceptions.CommandError(
+                    #"Please specify a search query.\n%s" % dedent(
+                        #self.cmd_search.__doc__.format(command_prefix=self.config.command_prefix)),
+                    #expire_in=60
+                #)
 
-        argcheck()
+        #argcheck()
 
-        try:
-            leftover_args = shlex.split(' '.join(leftover_args))
-        except ValueError:
-            raise exceptions.CommandError("Please quote your search query properly.", expire_in=30)
+        #try:
+            #leftover_args = shlex.split(' '.join(leftover_args))
+        #except ValueError:
+            #raise exceptions.CommandError("Please quote your search query properly.", expire_in=30)
 
-        service = 'youtube'
-        items_requested = 3
-        max_items = 10  # this can be whatever, but since ytdl uses about 1000, a small number might be better
-        services = {
-            'youtube': 'ytsearch',
-            'soundcloud': 'scsearch',
-            'yahoo': 'yvsearch',
-            'yt': 'ytsearch',
-            'sc': 'scsearch',
-            'yh': 'yvsearch'
-        }
+        #service = 'youtube'
+        #items_requested = 3
+        #max_items = 10  # this can be whatever, but since ytdl uses about 1000, a small number might be better
+        #services = {
+            #'youtube': 'ytsearch',
+            #'soundcloud': 'scsearch',
+            #'yahoo': 'yvsearch',
+            #'yt': 'ytsearch',
+            #'sc': 'scsearch',
+            #'yh': 'yvsearch'
+        #}
 
-        if leftover_args[0] in services:
-            service = leftover_args.pop(0)
-            argcheck()
+       # if leftover_args[0] in services:
+            #service = leftover_args.pop(0)
+            #argcheck()
 
-        if leftover_args[0].isdigit():
-            items_requested = int(leftover_args.pop(0))
-            argcheck()
+        #if leftover_args[0].isdigit():
+            #items_requested = int(leftover_args.pop(0))
+            #argcheck()
 
-            if items_requested > max_items:
-                raise exceptions.CommandError("You cannot search for more than %s videos" % max_items)
+            #if items_requested > max_items:
+                #raise exceptions.CommandError("You cannot search for more than %s videos" % max_items)
 
         # Look jake, if you see this and go "what the fuck are you doing"
         # and have a better idea on how to do this, i'd be delighted to know.
         # I don't want to just do ' '.join(leftover_args).strip("\"'")
         # Because that eats both quotes if they're there
         # where I only want to eat the outermost ones
-        if leftover_args[0][0] in '\'"':
-            lchar = leftover_args[0][0]
-            leftover_args[0] = leftover_args[0].lstrip(lchar)
-            leftover_args[-1] = leftover_args[-1].rstrip(lchar)
+        #if leftover_args[0][0] in '\'"':
+            #lchar = leftover_args[0][0]
+            #leftover_args[0] = leftover_args[0].lstrip(lchar)
+            #leftover_args[-1] = leftover_args[-1].rstrip(lchar)
 
-        search_query = '%s%s:%s' % (services[service], items_requested, ' '.join(leftover_args))
+        #search_query = '%s%s:%s' % (services[service], items_requested, ' '.join(leftover_args))
 
-        search_msg = await self.send_message(channel, "Searching for videos...")
-        await self.send_typing(channel)
+        #search_msg = await self.send_message(channel, "Searching for videos...")
+        #await self.send_typing(channel)
 
-        try:
-            info = await self.downloader.extract_info(player.playlist.loop, search_query, download=False, process=True)
+        #try:
+            #info = await self.downloader.extract_info(player.playlist.loop, search_query, download=False, process=True)
 
-        except Exception as e:
-            await self.safe_edit_message(search_msg, str(e), send_if_fail=True)
-            return
-        else:
-            await self.safe_delete_message(search_msg)
+        #except Exception as e:
+            #await self.safe_edit_message(search_msg, str(e), send_if_fail=True)
+            #return
+        #else:
+            #await self.safe_delete_message(search_msg)
 
-        if not info:
-            return Response("No videos found.", delete_after=30)
+        #if not info:
+            #return Response("No videos found.", delete_after=30)
 
-        def check(m):
-            return (
-                m.content.lower()[0] in 'yn' or
+        #def check(m):
+            #return (
+                #m.content.lower()[0] in 'yn' or
                 # hardcoded function name weeee
-                m.content.lower().startswith('{}{}'.format(self.config.command_prefix, 'search')) or
-                m.content.lower().startswith('exit'))
+               # m.content.lower().startswith('{}{}'.format(self.config.command_prefix, 'search')) or
+               # m.content.lower().startswith('exit'))
 
-        for e in info['entries']:
-            result_message = await self.safe_send_message(channel, "Result %s/%s: %s" % (
-                info['entries'].index(e) + 1, len(info['entries']), e['webpage_url']))
+        #for e in info['entries']:
+           # result_message = await self.safe_send_message(channel, "Result %s/%s: %s" % (
+                #info['entries'].index(e) + 1, len(info['entries']), e['webpage_url']))
 
-            confirm_message = await self.safe_send_message(channel, "Is this ok? Type `y`, `n` or `exit`")
-            response_message = await self.wait_for_message(30, author=author, channel=channel, check=check)
+            #confirm_message = await self.safe_send_message(channel, "Is this ok? Type `y`, `n` or `exit`")
+            #response_message = await self.wait_for_message(30, author=author, channel=channel, check=check)
 
-            if not response_message:
-                await self.safe_delete_message(result_message)
-                await self.safe_delete_message(confirm_message)
-                return Response("Ok nevermind.", delete_after=30)
+            #if not response_message:
+                #await self.safe_delete_message(result_message)
+                #await self.safe_delete_message(confirm_message)
+                #return Response("Ok nevermind.", delete_after=30)
 
             # They started a new search query so lets clean up and bugger off
-            elif response_message.content.startswith(self.config.command_prefix) or \
-                    response_message.content.lower().startswith('exit'):
+            #elif response_message.content.startswith(self.config.command_prefix) or \
+                    #response_message.content.lower().startswith('exit'):
 
-                await self.safe_delete_message(result_message)
-                await self.safe_delete_message(confirm_message)
-                return
+                #await self.safe_delete_message(result_message)
+                #await self.safe_delete_message(confirm_message)
+                #return
 
-            if response_message.content.lower().startswith('y'):
-                await self.safe_delete_message(result_message)
-                await self.safe_delete_message(confirm_message)
-                await self.safe_delete_message(response_message)
+            #if response_message.content.lower().startswith('y'):
+                #await self.safe_delete_message(result_message)
+                #await self.safe_delete_message(confirm_message)
+                #await self.safe_delete_message(response_message)
 
-                await self.cmd_play(player, channel, author, permissions, [], e['webpage_url'])
+                #await self.cmd_play(player, channel, author, permissions, [], e['webpage_url'])
 
-                return Response("Alright, coming right up!", delete_after=30)
-            else:
-                await self.safe_delete_message(result_message)
-                await self.safe_delete_message(confirm_message)
-                await self.safe_delete_message(response_message)
+                #return Response("Alright, coming right up!", delete_after=30)
+            #else:
+                #await self.safe_delete_message(result_message)
+                #await self.safe_delete_message(confirm_message)
+                #await self.safe_delete_message(response_message)
 
-        return Response("Oh well :frowning:", delete_after=30)
+        #return Response("Oh well :frowning:", delete_after=30)
 
-    async def cmd_np(self, player, channel, server, message):
-        """
-        Usage:
-            {command_prefix}np
+    #async def cmd_np(self, player, channel, server, message):
+    async def cmd_np(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}np
 
-        Displays the current song in chat.
-        """
+        #Displays the current song in chat.
+        #"""
 
-        if player.current_entry:
-            if self.server_specific_data[server]['last_np_msg']:
-                await self.safe_delete_message(self.server_specific_data[server]['last_np_msg'])
-                self.server_specific_data[server]['last_np_msg'] = None
+        #if player.current_entry:
+            #if self.server_specific_data[server]['last_np_msg']:
+                #await self.safe_delete_message(self.server_specific_data[server]['last_np_msg'])
+                #self.server_specific_data[server]['last_np_msg'] = None
 
-            song_progress = str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
-            song_total = str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
-            prog_str = '`[%s/%s]`' % (song_progress, song_total)
+            #song_progress = str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
+            #song_total = str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
+            #prog_str = '`[%s/%s]`' % (song_progress, song_total)
 
-            if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
-                np_text = "Now Playing\: **%s** added by **%s** %s\n" % (
-                    player.current_entry.title, player.current_entry.meta['author'].name, prog_str)
-            else:
-                np_text = "Now Playing\: **%s** %s\n" % (player.current_entry.title, prog_str)
+            #if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
+                #np_text = "Now Playing\: **%s** added by **%s** %s\n" % (
+                    #player.current_entry.title, player.current_entry.meta['author'].name, prog_str)
+            #else:
+                #np_text = "Now Playing\: **%s** %s\n" % (player.current_entry.title, prog_str)
 
-            self.server_specific_data[server]['last_np_msg'] = await self.safe_send_message(channel, np_text)
-            await self._manual_delete_check(message)
-        else:
-            return Response(
-                'There are no songs queued! Queue something with {}play.'.format(self.config.command_prefix),
-                delete_after=30
-            )
+            #self.server_specific_data[server]['last_np_msg'] = await self.safe_send_message(channel, np_text)
+            #await self._manual_delete_check(message)
+        #else:
+            #return Response(
+                #'There are no songs queued! Queue something with {}play.'.format(self.config.command_prefix),
+                #delete_after=30
+            #)
 
     async def cmd_summon(self, message, channel, author, voice_channel):
-        """
-        Usage:
-            {command_prefix}summon
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}summon
 
-        Call the bot to the summoner's voice channel.
-        """
+        #Call the bot to the summoner's voice channel.
+        #"""
+        #if not author.voice_channel:
+            #raise exceptions.CommandError("Get your lazy good for nothing ass in a voice channel before giving me demands bitch. (AUTHOR_NOT_IN_CHANNEL)")
 
-        if not author.voice_channel:
-            raise exceptions.CommandError("Get your lazy good for nothing ass in a voice channel before giving me demands bitch. (AUTHOR_NOT_IN_CHANNEL)")
-
-        voice_client = self.the_voice_clients.get(channel.server.id, None)
-        if voice_client and voice_client.channel.server == author.voice_channel.server:
-            await self.safe_send_message(message.channel, "Joined ***" + message.author.voice_channel.name + "***.")
-            await self.move_voice_client(author.voice_channel)
-            return
+        #voice_client = self.the_voice_clients.get(channel.server.id, None)
+        #if voice_client and voice_client.channel.server == author.voice_channel.server:
+            #await self.safe_send_message(message.channel, "Joined ***" + message.author.voice_channel.name + "***.")
+            #await self.move_voice_client(author.voice_channel)
+            #return
 
         # move to _verify_vc_perms?
-        chperms = author.voice_channel.permissions_for(author.voice_channel.server.me)
+        #chperms = author.voice_channel.permissions_for(author.voice_channel.server.me)
 
-        if not chperms.connect:
-            self.safe_print("Cannot join channel \"%s\", no permission." % author.voice_channel.name)
-            return Response(
-                "```Cannot join channel \"%s\", no permission.```" % author.voice_channel.name,
-                delete_after=25
-            )
+        #if not chperms.connect:
+            #self.safe_print("Cannot join channel \"%s\", no permission." % author.voice_channel.name)
+            #return Response(
+                #"```Cannot join channel \"%s\", no permission.```" % author.voice_channel.name,
+                #delete_after=25
+            #)
 
-        elif not chperms.speak:
-            self.safe_print("Will not join channel \"%s\", no permission to speak." % author.voice_channel.name)
-            return Response(
-                "```Will not join channel \"%s\", no permission to speak.```" % author.voice_channel.name,
-                delete_after=25
-            )
+        #elif not chperms.speak:
+            #self.safe_print("Will not join channel \"%s\", no permission to speak." % author.voice_channel.name)
+            #return Response(
+                #"```Will not join channel \"%s\", no permission to speak.```" % author.voice_channel.name,
+                #delete_after=25
+            #)
 
-        player = await self.get_player(author.voice_channel, create=True)
+        #player = await self.get_player(author.voice_channel, create=True)
 
-        if player.is_stopped:
-            player.play()
+        #if player.is_stopped:
+            #player.play()
 
-        if self.config.auto_playlist:
-            await self.on_finished_playing(player)
+        #if self.config.auto_playlist:
+            #await self.on_finished_playing(player)
 
-    async def cmd_pause(self, message, player):
-        """
-        Usage:
-            {command_prefix}pause
+    #async def cmd_pause(self, message, player):
+    async def cmd_pause(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}pause
 
-        Pauses playback of the current song.
-        """
+        #Pauses playback of the current song.
+        #"""
 
-        if player.is_playing:
-            await self.safe_send_message(message.channel, "Song paused.")
-            player.pause()
+        #if player.is_playing:
+            #await self.safe_send_message(message.channel, "Song paused.")
+            #player.pause()
 
-        else:
-            raise exceptions.CommandError("I'm not playing anything.", expire_in=30)
+        #else:
+            #raise exceptions.CommandError("I'm not playing anything.", expire_in=30)
 
-    async def cmd_resume(self, message, player):
-        """
-        Usage:
-            {command_prefix}resume
+    # async def cmd_resume(self, message, player):
+    async def cmd_resume(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}resume
 
-        Resumes playback of a paused song.
-        """
+        #Resumes playback of a paused song.
+        #"""
 
-        if player.is_paused:
-            await self.safe_send_message(message.channel, "Song resumed.")
-            player.resume()
+        #if player.is_paused:
+            #await self.safe_send_message(message.channel, "Song resumed.")
+            #player.resume()
 
-        else:
-            raise exceptions.CommandError("I'm not playing anything, nor its not paused.", expire_in=30)
+        #else:
+            #raise exceptions.CommandError("I'm not playing anything, nor its not paused.", expire_in=30)
 
-    async def cmd_shuffle(self, channel, player):
-        """
-        Usage:
-            {command_prefix}shuffle
+    #async def cmd_shuffle(self, channel, player):
+    async def cmd_shuffle(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}shuffle
 
-        Shuffles the playlist.
-        """
+        #Shuffles the playlist.
+        #"""
 
-        player.playlist.shuffle()
+        #player.playlist.shuffle()
 
-        cards = [':spades:',':clubs:',':hearts:',':diamonds:']
-        hand = await self.send_message(channel, ' '.join(cards))
-        await asyncio.sleep(0.6)
+        #cards = [':spades:',':clubs:',':hearts:',':diamonds:']
+        #hand = await self.send_message(channel, ' '.join(cards))
+        #await asyncio.sleep(0.6)
 
-        for x in range(4):
-            shuffle(cards)
-            await self.safe_edit_message(hand, ' '.join(cards))
-            await asyncio.sleep(0.6)
+        #for x in range(4):
+            #shuffle(cards)
+            #await self.safe_edit_message(hand, ' '.join(cards))
+            #await asyncio.sleep(0.6)
 
-        await self.safe_delete_message(hand, quiet=True)
-        return Response(":ok_hand: shuffled af", delete_after=15)
+        #await self.safe_delete_message(hand, quiet=True)
+        #return Response(":ok_hand: shuffled af", delete_after=15)
 
-    async def cmd_clear(self, player, author):
-        """
-        Usage:
-            {command_prefix}clear
+    #async def cmd_clear(self, channel, player, author):
+    async def cmd_clear(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}clear
 
-        Clears the playlist.
-        """
+        #Clears the playlist.
+        #"""
 
-        player.playlist.clear()
-        return Response('Cleared the playlist.... I bet there\'s some stupid songs in there that killed it. Oh well, what happen must happen.', delete_after=20)
+        #player.playlist.clear()
+        #return Response('Cleared the playlist.... I bet there\'s some stupid songs in there that killed it. Oh well, what happen must happen.', delete_after=20)
 
-    async def cmd_skip(self, player, channel, author, message, permissions, voice_channel):
-        """
-        Usage:
-            {command_prefix}skip
+    #async def cmd_skip(self, player, channel, author, message, permissions, voice_channel):
+    async def cmd_skip(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}skip
 
-        Skips the current song when enough votes are cast, or by the bot owner.
-        """
+        #Skips the current song when enough votes are cast, or by the bot owner.
+        #"""
 
-        if player.is_stopped:
-            raise exceptions.CommandError("Can't skip....? I'm not playing anything!", expire_in=20)
+        #if player.is_stopped:
+            #raise exceptions.CommandError("Can't skip....? I'm not playing anything!", expire_in=20)
 
-        if not player.current_entry:
-            if player.playlist.peek():
-                if player.playlist.peek()._is_downloading:
-                    print(player.playlist.peek()._waiting_futures[0].__dict__)
-                    return Response("The next song (%s) is downloading, please wait." % player.playlist.peek())
+        #if not player.current_entry:
+            #if player.playlist.peek():
+                #if player.playlist.peek()._is_downloading:
+                    #print(player.playlist.peek()._waiting_futures[0].__dict__)
+                    #return Response("The next song (%s) is downloading, please wait." % player.playlist.peek())
 
-                elif player.playlist.peek().is_downloaded:
-                    print("The next song will be played shortly.  Please wait.")
-                else:
-                    print("Something odd is happening.  "
-                          "You might want to restart the bot if it doesn't start working.")
-            else:
-                print("Something strange is happening.  "
-                      "You might want to restart the bot if it doesn't start working.")
+                #elif player.playlist.peek().is_downloaded:
+                    #print("The next song will be played shortly.  Please wait.")
+                #else:
+                    #print("Something odd is happening.  "
+                          #"You might want to restart the bot if it doesn't start working.")
+            #else:
+                #print("Something strange is happening.  "
+                      #"You might want to restart the bot if it doesn't start working.")
 
-        if author.id == self.config.owner_id or permissions.instaskip:
-            player.skip()  # check autopause stuff here
-            await self._manual_delete_check(message)
-            return
+        #if author.id == self.config.owner_id or permissions.instaskip:
+            #player.skip()  # check autopause stuff here
+            #await self._manual_delete_check(message)
+            #return
 
         # TODO: ignore person if they're deaf or take them out of the list or something?
         # Currently is recounted if they vote, deafen, then vote
 
-        num_voice = sum(1 for m in voice_channel.voice_members if not (
-            m.deaf or m.self_deaf or m.id in [self.config.owner_id, self.user.id]))
+        #num_voice = sum(1 for m in voice_channel.voice_members if not (
+            #m.deaf or m.self_deaf or m.id in [self.config.owner_id, self.user.id]))
 
-        num_skips = player.skip_state.add_skipper(author.id, message)
+        #num_skips = player.skip_state.add_skipper(author.id, message)
 
-        skips_remaining = min(self.config.skips_required,
-                              sane_round_int(num_voice * self.config.skip_ratio_required)) - num_skips
+        #skips_remaining = min(self.config.skips_required,
+                              #sane_round_int(num_voice * self.config.skip_ratio_required)) - num_skips
 
-        if skips_remaining <= 0:
-            player.skip()  # check autopause stuff here
-            return Response(
-                'your skip for **{}** was acknowledged.'
-                '\nThe vote to skip has been passed.{}'.format(
-                    player.current_entry.title,
-                    ' Next song coming up!' if player.playlist.peek() else ''
-                ),
-                reply=True,
-                delete_after=20
-            )
+        #if skips_remaining <= 0:
+            #player.skip()  # check autopause stuff here
+            #return Response(
+                #'your skip for **{}** was acknowledged.'
+                #'\nThe vote to skip has been passed.{}'.format(
+                    #player.current_entry.title,
+                    #' Next song coming up!' if player.playlist.peek() else ''
+                #),
+                #reply=True,
+                #delete_after=20
+            #)
 
-        else:
-            # TODO: When a song gets skipped, delete the old x needed to skip messages
-            return Response(
-                'your skip for **{}** was acknowledged.'
-                '\n**{}** more {} required to vote to skip this song.'.format(
-                    player.current_entry.title,
-                    skips_remaining,
-                    'person is' if skips_remaining == 1 else 'people are'
-                ),
-                reply=True,
-                delete_after=20
-            )
+        #else:
+            ## TODO: When a song gets skipped, delete the old x needed to skip messages
+            #return Response(
+                #'your skip for **{}** was acknowledged.'
+                #'\n**{}** more {} required to vote to skip this song.'.format(
+                    #player.current_entry.title,
+                    #skips_remaining,
+                    #'person is' if skips_remaining == 1 else 'people are'
+                #),
+                #reply=True,
+                #delete_after=20)
 
-    async def cmd_volume(self, message, player, new_volume=None):
-        """
-        Usage:
-            {command_prefix}volume (+/-)[volume]
+    #async def cmd_volume(self, message, new_volume=None):
+    async def cmd_volume(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}volume (+/-)[volume]
 
-        Sets the playback volume. Accepted values are from 1 to 100.
-        Putting + or - before the volume will make the volume change relative to the current volume.
-        """
+        #Sets the playback volume. Accepted values are from 1 to 100.
+        #Putting + or - before the volume will make the volume change relative to the current volume.
+        #"""
 
-        if not new_volume:
-            return Response('Current volume: `%s%%`' % int(player.volume * 100), reply=True, delete_after=20)
+        #if not new_volume:
+            #return Response('Current volume: `%s%%`' % int(player.volume * 100), reply=True, delete_after=20)
 
-        relative = False
-        if new_volume[0] in '+-':
-            relative = True
+        #relative = False
+        #if new_volume[0] in '+-':
+            #relative = True
 
-        try:
-            new_volume = int(new_volume)
+        #try:
+            #new_volume = int(new_volume)
 
-        except ValueError:
-            raise exceptions.CommandError('{} <-- Really? I know you can do better. It\'s obviously some shameful decimal number, or it\'s not a fucking number. Think harder next time.'.format(new_volume), expire_in=20)
+        #except ValueError:
+            #raise exceptions.CommandError('{} <-- Really? I know you can do better. It\'s obviously some shameful decimal number, or it\'s not a fucking number. Think harder next time.'.format(new_volume), expire_in=20)
 
-        if relative:
-            vol_change = new_volume
-            new_volume += (player.volume * 100)
+        #if relative:
+            #vol_change = new_volume
+            #new_volume += (player.volume * 100)
 
-        old_volume = int(player.volume * 100)
+        #old_volume = int(player.volume * 100)
 
-        if 0 < new_volume <= 100:
-            player.volume = new_volume / 100.0
+        #if 0 < new_volume <= 100:
+            #player.volume = new_volume / 100.0
 
-            return Response('updated volume from %d to %d' % (old_volume, new_volume), reply=True, delete_after=20)
+            #return Response('updated volume from %d to %d' % (old_volume, new_volume), reply=True, delete_after=20)
 
-        else:
-            if relative:
-                raise exceptions.CommandError(
-                    'Unreasonable volume change provided: {}{:+} -> {}%.  Provide a change between {} and {:+}.'.format(
-                        old_volume, vol_change, old_volume + vol_change, 1 - old_volume, 100 - old_volume), expire_in=20)
-            else:
-                raise exceptions.CommandError(
-                    'Unreasonable volume provided: {}%. Choose a number that\'s 1-100.'.format(new_volume), expire_in=20)
+        #else:
+            #if relative:
+                #raise exceptions.CommandError(
+                    #'Unreasonable volume change provided: {}{:+} -> {}%.  Provide a change between {} and {:+}.'.format(
+                        #old_volume, vol_change, old_volume + vol_change, 1 - old_volume, 100 - old_volume), expire_in=20)
+            #else:
+                #raise exceptions.CommandError(
+                    #'Unreasonable volume provided: {}%. Choose a number that\'s 1-100.'.format(new_volume), expire_in=20)
 
-    async def cmd_queue(self, channel, player):
-        """
-        Usage:
-            {command_prefix}queue
+    #async def cmd_queue(self, channel, player):
+    async def cmd_queue(self, channel):
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}queue
 
-        Prints the current song queue.
-        """
+        #Prints the current song queue.
+        #"""
 
-        lines = []
-        unlisted = 0
-        andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
+        #lines = []
+        #unlisted = 0
+        #andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
 
-        if player.current_entry:
-            song_progress = str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
-            song_total = str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
-            prog_str = '`[%s/%s]`' % (song_progress, song_total)
+        #if player.current_entry:
+            #song_progress = str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
+           # song_total = str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
+            #prog_str = '`[%s/%s]`' % (song_progress, song_total)
 
-            if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
-                lines.append("Now Playing: **%s** added by **%s** %s\n" % (
-                    player.current_entry.title, player.current_entry.meta['author'].name, prog_str))
-            else:
-                lines.append("Now Playing: **%s** %s\n" % (player.current_entry.title, prog_str))
+            #if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
+                #lines.append("Now Playing: **%s** added by **%s** %s\n" % (
+                    #player.current_entry.title, player.current_entry.meta['author'].name, prog_str))
+            #else:
+                #lines.append("Now Playing: **%s** %s\n" % (player.current_entry.title, prog_str))
 
-        for i, item in enumerate(player.playlist, 1):
-            if item.meta.get('channel', False) and item.meta.get('author', False):
-                nextline = '`{}.` **{}** added by **{}**'.format(i, item.title, item.meta['author'].name).strip()
-            else:
-                nextline = '`{}.` **{}**'.format(i, item.title).strip()
+        #for i, item in enumerate(player.playlist, 1):
+            #if item.meta.get('channel', False) and item.meta.get('author', False):
+                #nextline = '`{}.` **{}** added by **{}**'.format(i, item.title, item.meta['author'].name).strip()
+            #else:
+                #nextline = '`{}.` **{}**'.format(i, item.title).strip()
 
-            currentlinesum = sum(len(x) + 1 for x in lines)  # +1 is for newline char
+            #currentlinesum = sum(len(x) + 1 for x in lines)  # +1 is for newline char
 
-            if currentlinesum + len(nextline) + len(andmoretext) > DISCORD_MSG_CHAR_LIMIT:
-                if currentlinesum + len(andmoretext):
-                    unlisted += 1
-                    continue
+            #if currentlinesum + len(nextline) + len(andmoretext) > DISCORD_MSG_CHAR_LIMIT:
+                #if currentlinesum + len(andmoretext):
+                    #unlisted += 1
+                    #continue
 
-            lines.append(nextline)
+            #lines.append(nextline)
 
-        if unlisted:
-            lines.append('\n*... and %s more*' % unlisted)
+        #if unlisted:
+            #lines.append('\n*... and %s more*' % unlisted)
 
-        if not lines:
-            lines.append(
-                'No songs, queue something with {}play.'.format(self.config.command_prefix))
+        #if not lines:
+            #lines.append(
+                #'No songs, queue something with {}play.'.format(self.config.command_prefix))
 
-        message = '\n'.join(lines)
-        return Response(message, delete_after=30)
+        #message = '\n'.join(lines)
+        #return Response(message, delete_after=30)
 
     async def cmd_clean(self, message, channel, author, search_range=50):
-        """
-        Usage:
-            {command_prefix}clean [range]
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}clean [range]
 
-        Removes up to [range] messages the bot has posted in chat. Default: 50, Max: 1000
-        """
+        #Removes up to [range] messages the bot has posted in chat. Default: 50, Max: 1000
+        #"""
 
-        try:
-            float(search_range)  # lazy check
-            search_range = min(int(search_range), 1000)
-        except:
-            return Response("enter. a number. ***A NUMBER.*** like `100`. pls.", reply=True, delete_after=8)
+        #try:
+            #float(search_range)  # lazy check
+           # search_range = min(int(search_range), 1000)
+        #except:
+            #return Response("enter. a number. ***A NUMBER.*** like `100`. pls.", reply=True, delete_after=8)
 
-        await self.safe_delete_message(message, quiet=True)
+        #await self.safe_delete_message(message, quiet=True)
 
-        def is_possible_command_invoke(entry):
-            valid_call = any(
-                entry.content.startswith(prefix) for prefix in [self.config.command_prefix])  # can be expanded
-            return valid_call and not entry.content[1:2].isspace()
+        #def is_possible_command_invoke(entry):
+            #valid_call = any(
+                #entry.content.startswith(prefix) for prefix in [self.config.command_prefix])  # can be expanded
+            #return valid_call and not entry.content[1:2].isspace()
 
-        msgs = 0
-        delete_invokes = True
-        delete_all = channel.permissions_for(author).manage_messages or self.config.owner_id == author.id
+        #msgs = 0
+        #delete_invokes = True
+        #delete_all = channel.permissions_for(author).manage_messages or self.config.owner_id == author.id
 
-        async for entry in self.logs_from(channel, search_range, before=message):
-            if entry == self.server_specific_data[channel.server]['last_np_msg']:
-                continue
+        #async for entry in self.logs_from(channel, search_range, before=message):
+            #if entry == self.server_specific_data[channel.server]['last_np_msg']:
+                #continue
 
-            if entry.author == self.user:
-                await self.safe_delete_message(entry)
-                msgs += 1
+            #if entry.author == self.user:
+                #await self.safe_delete_message(entry)
+                #msgs += 1
 
-            if is_possible_command_invoke(entry) and delete_invokes:
-                if delete_all or entry.author == author:
-                    try:
-                        await self.delete_message(entry)
-                        await asyncio.sleep(.35)
-                        msgs += 1
-                    except discord.Forbidden:
-                        delete_invokes = False
-                    except discord.HTTPException:
-                        return Response("Being rate limited, yeah.", delete_after=0)
-        if self.config.log_interaction:
-            await self.log(':bomb: Purged `{}` message{} in #`{}`'.format(len(deleted), 's' * bool(deleted), channel.name), channel)
-        return Response('Cleaned up {} message{}.'.format(msgs, '' if msgs == 1 else 's'), delete_after=15)
+            #if is_possible_command_invoke(entry) and delete_invokes:
+                #if delete_all or entry.author == author:
+                    #try:
+                        #await self.delete_message(entry)
+                        #await asyncio.sleep(.35)
+                       #msgs += 1
+                    #except discord.Forbidden:
+                        #delete_invokes = False
+                    #except discord.HTTPException:
+                        #return Response("Being rate limited, yeah.", delete_after=0)
+        #if self.config.log_interaction:
+            #await self.log(':bomb: Purged `{}` message{} in #`{}`'.format(len(deleted), 's' * bool(deleted), channel.name), channel)
+        #return Response('Cleaned up {} message{}.'.format(msgs, '' if msgs == 1 else 's'), delete_after=15)
 
     async def cmd_pldump(self, channel, song_url):
-        """
-        Usage:
-            {command_prefix}pldump url
+        await self.send_message(channel, music_disabled)
+        #"""
+        #Usage:
+            #{command_prefix}pldump url
 
-        Dumps the individual urls of a playlist
-        """
+        #Dumps the individual urls of a playlist
+        #"""
 
-        try:
-            info = await self.downloader.extract_info(self.loop, song_url.strip('<>'), download=False, process=False)
-        except Exception as e:
-            raise exceptions.CommandError("Could not extract info from input url\n%s\n" % e, expire_in=25)
+        #try:
+            #info = await self.downloader.extract_info(self.loop, song_url.strip('<>'), download=False, process=False)
+        #except Exception as e:
+            #raise exceptions.CommandError("Could not extract info from input url\n%s\n" % e, expire_in=25)
 
-        if not info:
-            raise exceptions.CommandError("Could not extract info from input url, no data.", expire_in=25)
+        #if not info:
+            #raise exceptions.CommandError("Could not extract info from input url, no data.", expire_in=25)
 
-        if not info.get('entries', None):
+        #if not info.get('entries', None):
             # TODO: Retarded playlist checking
             # set(url, webpageurl).difference(set(url))
 
-            if info.get('url', None) != info.get('webpage_url', info.get('url', None)):
-                raise exceptions.CommandError("This does not seem to be a playlist.", expire_in=25)
-            else:
-                return await self.cmd_pldump(channel, info.get(''))
+            #if info.get('url', None) != info.get('webpage_url', info.get('url', None)):
+                #raise exceptions.CommandError("This does not seem to be a playlist.", expire_in=25)
+            #else:
+                #return await self.cmd_pldump(channel, info.get(''))
 
-        linegens = defaultdict(lambda: None, **{
-            "youtube":    lambda d: 'https://www.youtube.com/watch?v=%s' % d['id'],
-            "soundcloud": lambda d: d['url'],
-            "bandcamp":   lambda d: d['url']
-        })
+        #linegens = defaultdict(lambda: None, **{
+            #"youtube":    lambda d: 'https://www.youtube.com/watch?v=%s' % d['id'],
+            #"soundcloud": lambda d: d['url'],
+            #"bandcamp":   lambda d: d['url']
+        #})
 
-        exfunc = linegens[info['extractor'].split(':')[0]]
+        #exfunc = linegens[info['extractor'].split(':')[0]]
 
-        if not exfunc:
-            raise exceptions.CommandError("Could not extract info from input url, unsupported playlist type.", expire_in=25)
+        #if not exfunc:
+            #raise exceptions.CommandError("Could not extract info from input url, unsupported playlist type.", expire_in=25)
 
-        with BytesIO() as fcontent:
-            for item in info['entries']:
-                fcontent.write(exfunc(item).encode('utf8') + b'\n')
+        #with BytesIO() as fcontent:
+            #for item in info['entries']:
+                #fcontent.write(exfunc(item).encode('utf8') + b'\n')
 
-            fcontent.seek(0)
-            await self.send_file(channel, fcontent, filename='playlist.txt', content="Here's the url dump for <%s>" % song_url)
+            #fcontent.seek(0)
+            #await self.send_file(channel, fcontent, filename='playlist.txt', content="Here's the url dump for <%s>" % song_url)
 
-        return Response(":mailbox_with_mail:", delete_after=20)
+        #return Response(":mailbox_with_mail:", delete_after=20)
 
     async def cmd_listids(self, server, author, leftover_args, cat='all'):
         """
@@ -1983,16 +2022,8 @@ class Ruby(discord.Client):
         await self.send_message(author, '\n'.join(lines))
         return Response("Check them PMs fam", delete_after=20)
 
-    async def cmd_kys(self, message):
-        #return Response("kill yourself and never _EVER_ come back to me again, you stupid peasant. how dare you ask me to die. like fucking hell, why not do it yourself to satisfy yourself?", delete_after=0)
-        return Response("Seriously? You're such a fucking faggot. Kill yourself, unironically, hell, I'd kill you myself you fucking little shit, stupid fucking shitrag.", delete_after=0)
-        #return Response("kill yourself and don't come back again to ask me to kill myself, stupid peasant.", delete_after=0)
     async def cmd_dab(self, message):
         return Response("http://i.giphy.com/lae7QSMFxEkkE.gif", delete_after=0)
-
-    @owner_only
-    async def cmd_spamthefuckoutofeveryone(self, message):
-        return Response("( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ( ͡° ͜ʖ ͡°) ", delete_after=0)
    
     async def cmd_memeg(author, self, message):
         """
@@ -2022,7 +2053,7 @@ class Ruby(discord.Client):
 
         helpmsg += ", ".join(commands)
         helpmsg += "```"
-        helpmsg += "https://dragonfire.me/robtheboat/info.html"
+        helpmsg += "http://ruby.creeperseth.com"
 
         return Response(helpmsg, reply=True, delete_after=60)
 
@@ -2120,13 +2151,15 @@ class Ruby(discord.Client):
 
     async def cmd_ban(self, message, username):
         """
-        Usage: {command_prefix}ban @Username
+        Usage: {command_prefix}ban @user
         Bans the user, and deletes 7 days of messages from the user prior to using the command.
         """
         user_id = extract_user_id(username)
         member = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
-        mauthor = discord.utils.get(message.channel.server.members, name=message.author.name)
-        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        if not member:
+            await self.send_message(message.channel, "User not found, make sure you are using a @mention")
+            return
+        botcommander = discord.utils.get(message.author.roles, name="Bot Commander")
         if not botcommander:
             raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
         try:
@@ -2143,7 +2176,7 @@ class Ruby(discord.Client):
     async def cmd_ruby(self, message, client):
         """
         Ruby.
-        servers, betamode, defaultstatus, bye, massren, setgame, cleargame, listrtb, dat boi, sysinfo, cb selfspam, dbupdate
+        servers, betamode, default status, bye, massren, setgame, cleargame, listrtb, dat boi, sysinfo, cb selfspam, dbupdate
         Only CreeperSeth#9790 is allowed, or the Bot Owner if this isn't the main bot, Ruby Rose#2414
         """
         global random_game
@@ -2153,8 +2186,8 @@ class Ruby(discord.Client):
             discord.Game(name='in Beta Mode')
             await self.change_status(discord.Game(name='in Beta Mode'))
             return Response("(!) Now in Beta mode.", delete_after=0)
-        elif message.content[len(self.command_prefix + "ruby "):].strip() == "defaultstatus":
-            await self.change_status(stream_game)
+        elif message.content[len(self.command_prefix + "ruby "):].strip() == "default status":
+            await self.change_status(default_status)
             return Response("(!) Set back to default status", delete_after=0)
         elif message.content[len(self.command_prefix + "ruby "):].strip() == "bye":
             await self.leave_server(message.server)
@@ -2203,29 +2236,26 @@ class Ruby(discord.Client):
         asyncio.sleep(2)
         await self.send_message(message.channel, "yeah, just uh... do that... and if you aren't horny... then, STOP TRYING.")
         await self.log(":warning: lol attempted furry porn detected. Username: `{}` Server: `{}`".format(message.author.name, message.server.name))
-        #Drew's a furry, watch him be the first one to try this command.
-
-    async def cmd_rule34(self, message):
-        await self.send_message(message.channel, "If you really want porn, there's the fucking internet. Like, there's Google Chrome and Mozilla Firefox. You can fap on those browsers. Even on mobile. Get your porn from somewhere else, pls.")
-        await self.log(":warning: lol attempted rule34 porn detected. Username: `{}` Server: `{}`".format(message.author.name, message.server.name))
-        #Watch Fardin be in this one first.
-
-    async def cmd_yourinfo(self, message):
-        try:
-            if not message.content == message.content[len(self.command_prefix + "yourinfo "):].strip():
-                target = message.author
-                server = message.server
-                inserver = str(len(set([member.server.name for member in self.get_all_members() if member.name == target.name])))
-                x = '```xl\n Your Player Data:\n Username: {0.name}\n ID: {0.id}\n Discriminator: {0.discriminator}\n Avatar URL: {0.avatar_url}\n Current Status: {2}\n Current Game: {3}\n Current VC: {4}\n Mutual servers: {1} \n They joined on: {5}\n Roles: {6}\n```'.format(target,inserver,str(target.status),str(target.game),str(target.voice_channel),str(target.joined_at),', '.join(map(str, target.roles)).replace("@", "@\u200b"))
-                await self.send_message(message.channel, x)
-            elif message.content >= message.content[len(self.command_prefix + "yourinfo "):].strip():
-                for user in discord.User:
-                    server = message.server
-                    inserver = str(len(set([member.server.name for member in self.get_all_members() if member.name == user.name])))
-                    x = '```xl\n Player Data:\n Username: {}\n ID: {}\n Discriminator: {}\n Avatar URL: {}\n Current Status: {}\n Current Game: {}\n Current VC: {}\n Mutual Servers: {}\n They joined on: {}\n Roles: {}\n```'.format(user.name,user.id,user.discriminator,user.avatar_url,str(user.status),str(user.game),str(user.voice_channel),inserver,str(user.joined_at),', '.join(map(str, user.roles)).replace("@", "@\u200b"))
-                    await self.send_message(message.channel, x)
-        except Exception as e:
-            self.safe_send_message(message.channel, wrap.format(type(e).__name__ + ': ' + str(e)))
+        # Drew's a furry, watch him be the first one to try this command.
+        
+    async def cmd_rule34(self, channel, message, tags):
+        bot = discord.utils.get(message.server.members, name=self.user.name)
+        nsfw = discord.utils.get(bot.roles, name="NSFW")
+        if not channel.name == "nsfw":
+            if not nsfw:
+                raise exceptions.CommandError('I must have the \"NSFW\" role in order to use that command in other channels that are not named \"nsfw\"')
+        await self.send_typing(message.channel)
+        boobs = message.content[len(self.command_prefix + "rule34 "):].strip()
+        download_file("http://rule34.xxx/index.php?page=dapi&s=post&q=index&tags=" + boobs, "data/rule34.xml")
+        xmldoc = minidom.parse("data/rule34.xml")
+        itemlist = xmldoc.getElementsByTagName("post")
+        count = xmldoc.getElementsByTagName("posts")
+        cnt = count[0].attributes["count"].value
+        if (len(itemlist) == 0):
+            await self.send_message(message.channel, "No results found for " + boobs)
+            return
+        selected_post_image = "http:" + itemlist[random.randint(1, len(itemlist))].attributes["file_url"].value
+        await self.send_message(message.channel, "Showing 1 of " + cnt + " results for " + boobs + "\n" + selected_post_image)
 
     @owner_only
     async def cmd_renamebot(self, message):
@@ -2271,7 +2301,7 @@ class Ruby(discord.Client):
         Rate you or your idiot friends! They might not be idiots but still. It's with love <3
         {}rate (player/@mention/name/whatever)
         """
-        drewisafurry = random.choice(ratelevel) #I can't say how MUCH of a furry Drew is. Or known as Printendo
+        drewisafurry = random.randint(1, 10) #I can't say how MUCH of a furry Drew is. Or known as Printendo
         if message.content[len(self.command_prefix + "rate "):].strip() == "<@163698730866966528>":
             await self.safe_send_message(message.channel, "I give myself a ***-1/10***, just because.") #But guess what, Emil's a fucking furry IN DENIAL, so that's even worse. Don't worry, at least Drew's sane.
         elif message.content[len(self.command_prefix + "rate "):].strip() != "<@163698730866966528>":
@@ -2347,8 +2377,8 @@ class Ruby(discord.Client):
         await self.send_typing(message.channel)
         await self.send_message(message.channel, "Alerted, might as well check your PMs.")
         await self.send_message(discord.User(id='169597963507728384'), "New message from `" + message.author.name + "` Discrim: `" + message.author.discriminator + "` ID: `" + message.author.id + "` Server Name: `" + message.author.server.name + "` Message: `" + message.content[len(self.command_prefix + "notifydev "):].strip() + "`")
-        await self.send_message(message.author, "You have sent a message to CreeperSeth, the developer. Your message that was sent was `" + message.content[len(self.command_prefix + "notifydev "):].strip() + "`. You are not able to respond via the bot, CreeperSeth should send a message back to you shortly via PM.")
-        await self.log(":information_source: Message sent to CreeperSeth via the notifydev command: `" + message.content[len(self.command_prefix + "notifydev "):].strip() + "`")
+        await self.send_message(message.author, "You have sent a message to <@169597963507728384>, the developer. Your message that was sent was `" + message.content[len(self.command_prefix + "notifydev "):].strip() + "`. You are not able to respond via the bot, <@169597963507728384> should send a message back to you shortly via PM.")
+        await self.log(":information_source: Message sent to <@169597963507728384> via the notifydev command: `" + message.content[len(self.command_prefix + "notifydev "):].strip() + "`")
 
     async def cmd_fursecute(self, message, mentions, fursona):
         """
@@ -2406,7 +2436,7 @@ class Ruby(discord.Client):
             return Response("You didn't enter a message, or you didn't put in a meme.", delete_after=0)
 
     async def cmd_help(self):
-        return Response("Help List: https://creeperseth.github.io/ruby Any other help? DM @CreeperSeth#9790 for more help, or do `" + self.command_prefix + "serverinv` to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
+        return Response("Help List: http://ruby.creeperseth.com Any other help? DM @CreeperSeth#9790 for more help, or do `" + self.command_prefix + "serverinv` to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
     
     async def cmd_serverinv(self, author):
         await self.safe_send_message(author, "https://discord.gg/enDDbMC - If you came for help, ask for CreeperSeth. If the link is expired do `" + self.command_prefix + "notifydev` and report it")
@@ -2422,9 +2452,6 @@ class Ruby(discord.Client):
         answer = (cb1.ask(split))
         await client.send_message(message.channel, message.author.name + ": " + answer)
 
-    async def cmd_test(self):
-        return Response("( Í¡Â° ÍœÊ– Í¡Â°) I love you", delete_after=0)
-
     async def cmd_kill(self, client, message, author):
         """
         Usage: /kill (person)
@@ -2439,7 +2466,7 @@ class Ruby(discord.Client):
 
     async def cmd_say(self, client, message):
         """
-        Usage: /say (faggot)
+        Usage: /say (message)
         """
         troyhasnodongs = message.content[len(self.command_prefix + "say "):].strip()
         return Response(troyhasnodongs.replace("@everyone", "everyone"), delete_after=0)
@@ -2448,11 +2475,11 @@ class Ruby(discord.Client):
         """
         Usage: /ship (person) x (person)
         """
-        if message.content[len(self.command_prefix + "ship "):].strip() == '<@163698730866966528> x <@163698730866966528>':
+        if message.content[len(self.command_prefix + "ship "):].strip() == "<@" + self.user.id + "> x <@" + self.user.id + ">":
             return Response("I hereby ship, myself.... forever.... alone........ ;-;", delete_after=0)
         elif message.content[len(self.command_prefix + "ship "):].strip() == message.author.id == message.author.id:
             return Response("hah, loner", delete_after=0)
-        elif message.content[len(self.command_prefix + "ship "):].strip() != '<@163698730866966528> x <@163698730866966528>':
+        elif message.content[len(self.command_prefix + "ship "):].strip() != "<@" + self.user.id + "> x <@" + self.user.id + ">":
             return Response("I hereby ship " + message.content[len(self.command_prefix + "ship"):].strip() + "!", delete_after=0)
         #todo: remove messages that wont make sense, like "no"
 
@@ -2471,7 +2498,7 @@ class Ruby(discord.Client):
         return Response(str(discord.Invite.url), delete_after=0)
 
     async def cmd_info(self):
-        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the "{}help" command or message CreeperSeth from the Discord server Rubys Fallout Shelter\n\n Do not have that? Then do "{}serverinv" to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff, thank Robin for most of the features in the bot!\n\nWant to find even more information? Then vist "https://creeperseth.github.io/ruby"\n```'.format(BUNAME, MVER, BUILD, len(set(self.get_all_members())), len(set(self.messages)), len(self.servers), len(set(self.get_all_channels())), len(set(self.private_channels)), discord.__version__, self.command_prefix, self.command_prefix), delete_after=0)
+        return Response('```xl\n ~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the "{}help" command or message CreeperSeth from the Discord server Rubys Fallout Shelter\n\n Do not have that? Then do "{}serverinv" to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff, thank Robin for most of the features in the bot!\n\nWant to find even more information? Then vist "http://ruby.creeperseth.com"\n```'.format(BUNAME, MVER, BUILD, len(set(self.get_all_members())), len(set(self.messages)), len(self.servers), len(set(self.get_all_channels())), len(set(self.private_channels)), discord.__version__, self.command_prefix, self.command_prefix), delete_after=0)
     
     async def cmd_debug(self, message):
         if (message.content.startswith(self.command_prefix + 'debug ')):
@@ -2491,10 +2518,11 @@ class Ruby(discord.Client):
                 await self.send_message(message.channel, no_perm)
 
     async def cmd_disconnect(self, server, message):
-        await self.safe_send_message(message.channel, "Disconnected from the voice server.")
-        await self.log(":mega: Disconnected from: `%s`" % server.name)
-        await self.disconnect_voice_client(server)
-        await self._manual_delete_check(message)
+        await self.send_message(channel, music_disabled)
+        #await self.safe_send_message(message.channel, "Disconnected from the voice server.")
+        #await self.log(":mega: Disconnected from: `%s`" % server.name)
+        #await self.disconnect_voice_client(server)
+        #await self._manual_delete_check(message)
 
     @owner_only
     async def cmd_reboot(self, message):
@@ -2521,7 +2549,7 @@ class Ruby(discord.Client):
             return Response("Not responding to commands", delete_after=15)
         elif dorespond == "true":
             respond = True
-            await self.change_status(stream_game)
+            await self.change_status(default_status)
             await self.log(":exclamation: `" + author.name + "` enabled command responses. `Now responding to commands.`")
             return Response("Responding to commands", delete_after=15)
         else:
@@ -2536,65 +2564,63 @@ class Ruby(discord.Client):
     async def cmd_addrole(self, server, author, message, username, rolename):
         """
         Usage:
-            {command_prefix}addrole @UserName rolename
+            {command_prefix}addrole @user rolename
 
         Adds a user to a role 
         """
         user_id = extract_user_id(username)
-        user = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
+        user = discord.utils.find(lambda mem: mem.id == str(user_id), server.members)
         if not user:
-            raise exceptions.CommandError('Invalid user specified', expire_in=30)
+            raise exceptions.CommandError("Invalid user specified")
 
         rname = message.content[len(self.command_prefix + "addrole " + username + " "):].strip()
-        role = discord.utils.get(message.server.roles, name=rname)
+        role = discord.utils.get(server, name=rname)
         if not role:
-            raise exceptions.CommandError('Invalid role specified', expire_in=30)
+            raise exceptions.CommandError("Invalid role specified")
 
-        mauthor = discord.utils.get(server.members, name=author.name)
-        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        botcommander = discord.utils.get(author.roles, name="Bot Commander")
         if not botcommander:
-            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+            raise exceptions.CommandError("You must have the \"Bot Commander\" role in order to use that command.']")
         try:
             await self.add_roles(user, role)
-            return Response("Successfully added the role " + role.name + " to " + user.name + "#" + user.discriminator, expire_in=30)
+            return Response("Successfully added the role `" + role.name + "` to " + user.name + "#" + user.discriminator)
         except discord.errors.HTTPException: 
-            raise exceptions.CommandError('I do not have the \"Manage Roles\" permission or the role you specified is higher than my highest role', expire_in=30)
+            raise exceptions.CommandError("I do not have the \"Manage Roles\" permission or the role you specified is higher than my highest role")
 
     async def cmd_removerole(self, server, author, message, username, rolename):
         """
         Usage:
-            {command_prefix}removerole @UserName rolename
+            {command_prefix}removerole @user rolename
 
         Removes a user from a role 
         """
         user_id = extract_user_id(username)
-        user = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
+        user = discord.utils.find(lambda mem: mem.id == str(user_id), server.members)
         if not user:
-            raise exceptions.CommandError('Invalid user specified', expire_in=30)
+            raise exceptions.CommandError("Invalid user specified")
 
         rname = message.content[len(self.command_prefix + "removerole " + username + " "):].strip()
-        role = discord.utils.get(message.server.roles, name=rname)
+        role = discord.utils.get(server.roles, name=rname)
         if not role:
-            raise exceptions.CommandError('Invalid role specified', expire_in=30)
+            raise exceptions.CommandError("Invalid role specified")
 
-        mauthor = discord.utils.get(server.members, name=author.name)
-        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        botcommander = discord.utils.get(author.roles, name="Bot Commander")
         if not botcommander:
-            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+            raise exceptions.CommandError("You must have the \"Bot Commander\" role in order to use that command.")
         try:
             await self.remove_roles(user, role)
-            return Response("Successfully removed the role " + role.name + " from " + user.name + "#" + user.discriminator, expire_in=30)
+            return Response("Successfully removed the role `" + role.name + "` from " + user.name + "#" + user.discriminator)
         except discord.errors.HTTPException: 
-            raise exceptions.CommandError('I do not have the \"Manage Roles\" permission or the role you specified is higher than my highest role', expire_in=30)
+            raise exceptions.CommandError('I do not have the \"Manage Roles\" permission or the role you specified is higher than my highest role')
 
     @owner_only
-    async def cmd_terminal(self, channel, message):
+    async def cmd_terminal(self, message):
         try:
-            await self.send_typing(channel)
+            await self.send_typing(message.channel)
             msg = message.content[len(self.command_prefix + "terminal "):].strip()
             input = os.popen(msg)
             output = input.read()
-            await self.send_message(channel, xl.format(output))
+            await self.send_message(message.channel, xl.format(output))
         except:
             return Response("Error, couldn't send command", delete_after=0)
 
@@ -2627,11 +2653,6 @@ class Ruby(discord.Client):
         len(set(client.get_all_channels())), len(set(client.private_channels)),
         discord.__version__, time.strftime("%A, %B %d, %Y"),
         time.strftime("%I:%M:%S %p")))
-
-    async def cmd_randomasscat(self, channel):
-        await self.send_typing(channel)
-        cat.getCat(directory='imgs', filename='cat', format='gif')
-        await self.send_file(channel, "imgs/cat.gif")
         #Watch Nero spam this command until the bot crashes
 
     async def cmd_rubyrose(self):
@@ -2672,10 +2693,12 @@ class Ruby(discord.Client):
         user = discord.utils.find(lambda mem: mem.id == str(user_id), channel.server.members)
         if not user:
             raise exceptions.CommandError("Invalid user specified", expire_in=30)
-        highest_role = user.top_role.name
-        if highest_role == "@everyone":
-            highest_role = "None"
-        await self.send_message(channel, "```xl\n~~~~~~~~~{}~~~~~~~~\nUsername: {}\nDiscriminator: {}\nID: {}\nBot: {}\nAvatar URL: {}\nAccount created: {}\nServer muted: {}\nServer deafened: {}\nHighest role: {}```".format(user.name + "#" + user.discriminator, user.name, user.discriminator, user.id, user.bot, user.avatar_url, user.created_at, user.mute, user.deaf, highest_role))
+        roles = ", ".join(map(str, user.roles))
+        if roles == "@everyone":
+            roles = None
+        else:
+            roles = roles[len("@everyone, "):].strip()
+        await self.send_message(channel, "```xl\n~~~~~~~~~{}~~~~~~~~\nUsername: {}\nDiscriminator: {}\nID: {}\nBot: {}\nAvatar URL: {}\nAccount created: {}\nGame: {}\nStatus: {}\nVoice channel: {}\nServer muted: {}\nServer deafened: {}\nRoles: {}```".format(user.name + "#" + user.discriminator, user.name, user.discriminator, user.id, user.bot, user.avatar_url, user.created_at, str(user.game), str(user.status), str(user.voice_channel), user.mute, user.deaf, roles))
 
     async def cmd_serverinfo(self, channel, server):
         owner = server.owner.name + "#" + server.owner.discriminator
@@ -2688,13 +2711,12 @@ class Ruby(discord.Client):
 
     async def cmd_kick(self, message, username):
         """
-        Usage: {command_prefix}kick @Username
+        Usage: {command_prefix}kick @user
         Kicks the user prior to using the command.
         """
         user_id = extract_user_id(username)
         member = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
-        mauthor = discord.utils.get(message.channel.server.members, name=message.author.name)
-        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        botcommander = discord.utils.get(message.author.roles, name="Bot Commander")
         if not botcommander:
             raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
         try:
@@ -2715,8 +2737,7 @@ class Ruby(discord.Client):
         Usage: {command_prefix}furry @user
         Adds the specified user to the \"Furry\" role, if it does not exist it will create one
         """
-        mauthor = discord.utils.get(message.channel.server.members, name=message.author.name)
-        botcommander = discord.utils.get(mauthor.roles, name="Bot Commander")
+        botcommander = discord.utils.get(message.author.roles, name="Bot Commander")
         if not botcommander:
             raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
         try:
@@ -2730,8 +2751,8 @@ class Ruby(discord.Client):
                 raise exceptions.CommandError('Invalid user specified', expire_in=30)
             await self.add_roles(member, furryrole)
             await self.send_message(message.channel, "FURRY ALERT! " + member.name.upper() + " IS A FURRY! HIDE THE FUCKING CHILDREN!!!!!111!11")
-        except discord.HTTPException:
-            raise exceptions.CommandError('I do not have the \"Manage Roles\" permission or the \"Furry\" role is higher than my highest role', expire_in=30)
+        except discord.Forbidden:
+            raise exceptions.CommandError('I do not have the \"Manage Roles\" permission or \"Furry\" role is higher than my highest role', expire_in=30)
 
     async def cmd_allahuakbar(self, channel):
         await self.send_message(channel, "http://i.imgur.com/2mmCbQz.gif")
@@ -2740,6 +2761,126 @@ class Ruby(discord.Client):
         meme = message.content[len(self.command_prefix + "onlytime "):].strip()
         await self.send_message(message.channel, meme + ": https://www.youtube.com/watch?v=7wfYIMyS_dI")
 
+    async def cmd_nicememe(self):
+        return Response("http://niceme.me", delete_after=0)
+
+    async def cmd_github(self):
+        return Response("https://github.com/CreeperSeth/RubyDiscordBot", delete_after=0)
+
+    async def cmd_kys(self, message, name):
+        WorthlessPieceOfShit = message.content[len(self.command_prefix + "kys "):].strip()
+        return Response(WorthlessPieceOfShit + " you seriously need to go fucking kill yourself you worthless piece of shit!")
+
+    async def cmd_thehood(self, channel):
+        await self.send_typing(channel)
+        await self.send_file(channel, "imgs/TheHood.gif")
+        await self.send_message(channel, "I look good in a hood don't I?")
+
+    async def cmd_tts(self, channel, message, msg):
+        bot = discord.utils.get(channel.server.members, name=self.user.name)
+        perms = channel.permissions_for(message.author)
+        bot_perms = channel.permissions_for(bot)
+        msg = message.content[len(self.command_prefix + "tts "):].strip()
+        if perms.send_tts_messages is False:
+            await self.send_message(channel, "You do not have permissions to send tts messages")
+            return
+        if bot_perms.send_tts_messages is False:
+            await self.send_message(channel, "I do not have permissions to send tts messages")
+            return
+        await self.send_message(channel, msg, tts=True)
+        await self._manual_delete_check(message)
+
+    async def cmd_lenny(self):
+        return Response("( ͡° ͜ʖ ͡°)")
+
+    async def cmd_8ball(self, message):
+        await self.send_message(message.channel, message.author.mention + " " + random.choice(magic_conch_shell))
+
+    async def cmd_whydidievenmakethiscommand(self, channel):
+        await self.send_message(channel, "\"In all honestly, why did I take 30 seconds out of my day to write this command?\" - CreeperSeth")
+
+    async def cmd_makemeowner(self, channel, author, server):
+        await self.send_message(channel, "Did you actually think that transfers ownership to you? HOW RETARDED ARE YOU!? This has been logged via the bot's logging channel and a PM was sent to the owner of this discord server.")
+        await self.send_message(server.owner, "`" + author.name + "#" + author.discriminator + "` tried to make himself owner of your discord server using the command `" + self.command_prefix + "makemeowner` but failed.")
+        await self.log(":information_source: `" + author.name + "#" + author.discriminator + "` literally tried to make himself owner of `" + server.name + "`! What a retard!")
+
+    async def cmd_createchannel(self, server, author, message, name):
+        botcommander = discord.utils.get(author.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+        tehname = message.content[len(self.command_prefix + "createchannel "):].strip().lower().replace(" ", "")
+        try:
+            noticemenero = await self.create_channel(server, tehname, type="text")
+            noperm = discord.PermissionOverwrite(read_messages = False)
+            neroisacat = discord.PermissionOverwrite(read_messages = True, manage_channels = True, manage_roles = True, manage_messages = True)
+            await self.edit_channel_permissions(noticemenero, server.default_role, noperm)
+            await self.edit_channel_permissions(noticemenero, message.author, neroisacat)
+            await self.send_message(message.channel, "Sucessfully created the text channel " + noticemenero.mention + " You can fully manage this channel, currently only you can see it, you can change this in the channel permissions")
+        except discord.HTTPException:
+            await self.send_message(message.channel, "Could not create channel, check the name, names can not contain spaces and must be alphanumeric but dashes and underscores are allowed. **If you are sure the name is properly formatted, then I do not have permission to manage channels.**")
+
+    async def cmd_createvoicechannel(self, server, author, message, name):
+        botcommander = discord.utils.get(author.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+        tehname = message.content[len(self.command_prefix + "createvoicechannel "):].strip()
+        try:
+            noticemenero = await self.create_channel(server, tehname, type="voice")
+            noperm = discord.PermissionOverwrite(connect = False)
+            neroisacat = discord.PermissionOverwrite(connect = True, manage_channels = True, manage_roles = True, move_members = True, mute_members = True, deafen_members = True)
+            await self.edit_channel_permissions(noticemenero, server.default_role, noperm)
+            await self.edit_channel_permissions(noticemenero, message.author, neroisacat)
+            await self.send_message(message.channel, "Sucessfully created the voice channel `" + noticemenero.name + "` You can fully manage this channel, currently only you can join it, you can change this in the channel permissions")
+        except discord.HTTPException:
+            await self.send_message(message.channel, "Could not create channel, I do not have permission to manage channels")
+
+    async def cmd_mute(self, message, user):
+        """
+        Usage: {command_prefix}mute @user
+        Adds the user to the \"Muted\" role
+        """
+        botcommander = discord.utils.get(message.author.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+        user_id = extract_user_id(user)
+        member = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
+        if not member:
+            await self.send_message(message.channel, "User not found, make sure you are using a @mention")
+            return
+        mute_role = discord.utils.find(lambda role: role.name == "Muted", message.server.roles)
+        if mute_role == None:
+            await self.send_message(message.channel, "The `Muted` role was not found")
+            return
+        try:
+            await self.add_roles(member, mute_role)
+            await self.send_message(message.channel, "Sucessfully muted `" + member.name + "#" + member.discriminator + "`")
+        except discord.errors.Forbidden:
+            await self.send_message(message.channel, "I do not have permission to manage roles or the `Muted` role is higher than my highest role")
+
+    async def cmd_unmute(self, message, user):
+        """
+        Usage: {command_prefix}unmute @user
+        Removes the user from the \"Muted\" role
+        """
+        botcommander = discord.utils.get(message.author.roles, name="Bot Commander")
+        if not botcommander:
+            raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
+        user_id = extract_user_id(user)
+        member = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
+        if not member:
+            await self.send_message(message.channel, "User not found, make sure you are using a @mention")
+            return
+        mute_role = discord.utils.find(lambda role: role.name == "Muted", message.server.roles)
+        if mute_role == None:
+            await self.send_message(message.channel, "The `Muted` role was not found")
+            return
+        try:
+            await self.remove_roles(member, mute_role)
+            await self.send_message(message.channel, "Sucessfully unmuted `" + member.name + "#" + member.discriminator + "`")
+        except discord.errors.Forbidden:
+            await self.send_message(message.channel, "I do not have permission to manage roles or the `Muted` role is higher than my highest role")
+        
+        
     async def on_message(self, message):
         await self.wait_until_ready()
 
