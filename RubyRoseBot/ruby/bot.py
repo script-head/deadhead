@@ -71,76 +71,58 @@ from _operator import contains
 
 load_opus_lib()
 st = time.time()
-
-default_status = discord.Game(name = "Crescent Rose", url = "https://www.twitch.tv/directory", type = 1)
-
-owner_id = "169597963507728384"
-
-xl = "```xl\n{0}\n```"
-
-ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
-
-respond = True
-
-dis_games = [
-    discord.Game(name='with fire'),
-    discord.Game(name='with Seth'),
-    discord.Game(name='baa'),
-    discord.Game(name='Denzel Curry - Ultimate'),
-    discord.Game(name='Windows XP'),
-    discord.Game(name='Drake - Jumpman'),
-    discord.Game(name='with Kyle'),
-    discord.Game(name='Super Smash Bros. Melee'),
-    discord.Game(name='/help for help!'),
-    discord.Game(name='how to lose a phone'),
-    discord.Game(name='with memes'),
-    discord.Game(name='Sergal'),
-    discord.Game(name='Fox'),
-    discord.Game(name='Dragon'),
-    discord.Game(name='with some floof'),
-    discord.Game(name='with Napstabot'),
-    discord.Game(name='Doom (1993)'),
-    discord.Game(name='Doom (2016)'),
-    discord.Game(name='DramaNation'),
-    discord.Game(name='browsing 4chan'),
-    discord.Game(name="Guns N' Roses"),
-    discord.Game(name='vaporwave'),
-    discord.Game(name='being wierd'),
-    discord.Game(name='stalking Twitter'),
-    discord.Game(name='Microsoft Messaging'),
-    discord.Game(name='RWBY - Grimm Eclipse'),
-    discord.Game(name='with lolis'),
+default_status = discord.Game(name = "with team RWBY", url = "https://www.twitch.tv/directory", type = 1)
+#Fookin fantastic amirite?
+change_log = [
+    "Commands:",
+    "+ cykablyat",
+    "+ cykablyatsong",
+    "+ changelog",
+    "- perf",
+    "- force",
+    "- deny",
+    "- allow",
+    "+ suggest",
+    "+ e621",
+    "- f",
+    "+ wakemeup",
+    "+ fuckherrightinthepussy",
+    "Other stuff:",
+    "+ Cycling status",
+    "+ Logging of moderator actions if a mod-log text channel exists",
+    "+ Locking status",
+    "+ If a user has the \"Grimm\" role, the bot will ignore that user's commands on that discord server",
+    "+ In addition to the mod logging, the bot will also log the following server modifications: name changes, region changes, icon changes, server ownership transfers, afk channel changes, and afk timeout changes"
 ]
-
+owner_id = "169597963507728384"
+xl = "```xl\n{0}\n```"
+ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
+respond = True
+cycle = True
+lock_status = False
+dis_games = [
+    discord.Game(name="with Seth"),
+    discord.Game(name="on Windows XP"),
+    discord.Game(name="with Robin"),
+    discord.Game(name="Super Smash Bros. Melee"),
+    discord.Game(name="/help for help!"),
+    discord.Game(name="with memes"),
+    discord.Game(name="with some floof"),
+    discord.Game(name="Doom (1993)"),
+    discord.Game(name="Doom (2016)"),
+    discord.Game(name="DramaNation"),
+    discord.Game(name="browsing 4chan"),
+    discord.Game(name="Guns N' Roses"),
+    discord.Game(name="stalking Twitter"),
+    discord.Game(name="Microsoft Messaging"),
+    discord.Game(name="RWBY - Grimm Eclipse"),
+    discord.Game(name="with lolis"),
+    discord.Game(name="with team RWBY"),
+    discord.Game(name="Cyka Strike: Blyat Offensive")
+]
 # Regex for IP address
 ipv4_regex = re.compile(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b')
 ipv6_regex = re.compile(r'(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))')
-
-tweetsthatareokhand = [
-    "http://i.imgur.com/lkMJ1O9.png",
-    "http://i.imgur.com/rbGmZqV.png",
-    "http://i.imgur.com/hYzNxVR.png",
-    "http://i.imgur.com/JuVsIMg.png",
-    "http://i.imgur.com/2NYwUcj.png",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222734961442817/uh_semen.PNG",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222732260442113/train_of_horses.PNG",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222728338636802/they_wshiper.PNG",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222725977243650/thats_my_boyfriend.PNG",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222723175579650/pinned.PNG",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222720667385858/list.PNG",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222717743824907/idea_of_music.PNG",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222715147550721/goals.PNG",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177222711867604993/disturbing_fetish.PNG",
-#    "here's a message from the coder of this: I FUCKING RAN OUT NEEDS MORE CHEESE",
-# not anymore, its like what 21 links 
-    "https://cdn.discordapp.com/attachments/173886531080159234/176425292426903553/f20e683862a17ef49633eed742fc2b22eb17220eef5a1d607cda2e7a7758720b_1.jpg",
-    "http://i.imgur.com/m71nJAg.png",
-    "http://i.imgur.com/m5fx7U9.png",
-    "https://cdn.discordapp.com/attachments/173887966031118336/177518766781890562/your-resistance-only-makes-my-penis-harder.jpg",
-    "http://i.imgur.com/21bV05w.png",
-    "http://i.imgur.com/7Y94F7L.png"
-]
-
 suicidalmemes = [
     "what the hell did you do idiot",
     "wtf ok idiot fool",
@@ -149,7 +131,6 @@ suicidalmemes = [
     "party on his death? lit",
     "fuckin fag wtf no.... y..."
 ]
-
 throwaf = [
     "a keyboard",
     "a Playstation 4",
@@ -231,7 +212,6 @@ throwaf = [
     "a Mexican called Ambrosio",
     "the most obvious dick master",
     "Motopuffs",
-    "Motopuffs",
     "the dick master called Motopuffs",
     "a weeaboo",
     "Ryulise, the stupid smash master",
@@ -240,7 +220,6 @@ throwaf = [
     "some flaccid sword",
     "Crescent Rose"
 ]
-
 insults = [
     "is a fucking pedophile",
     "is a nigger",
@@ -263,7 +242,6 @@ insults = [
     "80 year old man",
     "lost his virginity to his grandpa"
 ]
-
 honkhonkfgt = [
     "https://i.imgur.com/c53XQCI.gif",
     "https://i.imgur.com/ObWBP14.png",
@@ -275,7 +253,6 @@ honkhonkfgt = [
     "https://i.imgur.com/HtrRYSS.png",
     "https://i.imgur.com/bvrFQnX.jpg"
 ]
-
 rubyshit = [
     "http://i.imgur.com/REtCqUO.gif",
     "http://i.imgur.com/yoc2AQk.gif",
@@ -301,7 +278,6 @@ rubyshit = [
     "http://i.imgur.com/MvNwOGy.gif",
     "http://i.imgur.com/Dd5x9Af.gif"
 ]
-
 magic_conch_shell = [
     "It is certain", 
     "It is decidedly so", 
@@ -324,9 +300,7 @@ magic_conch_shell = [
     "Outlook not so good", 
     "Very doubtful"
 ]
-
 no_perm = "You do not have permission to use that command"
-
 music_disabled = "Sorry, but the music bot has been disabled until further notice due to some issues with ffmpeg"
 
 class SkipState:
@@ -845,6 +819,19 @@ class Ruby(discord.Client):
             if self.config.debug_mode:
                 print("Could not send typing to %s, no permssion" % destination)
 
+    async def cycle_status(self):
+        if cycle is True:
+            await self.change_status(random.choice(dis_games))
+            await asyncio.sleep(15)
+            await self.cycle_status()
+
+    async def mod_log(self, server, thingtolog):
+        log_channel = discord.utils.get(server.channels, name="mod-log")
+        if log_channel:
+            await self.send_message(log_channel, ":information_source: Moderator action: " + thingtolog)
+
+    def format_user(self, insertnerovar):
+        return insertnerovar.name + "#" + insertnerovar.discriminator
 
     def _cleanup(self):
         try:
@@ -911,7 +898,6 @@ class Ruby(discord.Client):
             traceback.print_exc()
 
     async def on_ready(self):
-        await self.change_status(default_status)
         print('\rConnected!  Ruby v%s\n' % BOTVERSION)
         if self.config._abaltoken:
             print('Updating DBots Statistics...')
@@ -1031,6 +1017,10 @@ class Ruby(discord.Client):
                 print("Owner not found in a voice channel, could not autosummon.")
                 if self.config.log_exceptions:
                     await self.log(":warning: Tried to autosummon, owner not found in a channel")
+        if cycle is True:
+            await self.cycle_status()
+        else:
+            await self.change_status(default_status)
 
         print()
         # t-t-th-th-that's all folks!
@@ -2057,16 +2047,8 @@ class Ruby(discord.Client):
 
         return Response(helpmsg, reply=True, delete_after=60)
 
-    async def cmd_perf(self):
-        rt = random.choice(tweetsthatareokhand)
-        return Response(rt, delete_after=0)
-
     async def cmd_ver(self):
         return Response("`Ver. " + VER + " " + BUILD + "`", delete_after=0)
-
-    # always remember to update this everytime you do an edit
-    async def cmd_updates(self):
-        return Response("What's new in " + VER + ": `.wiki fix and .f & ver incrementation, and .python`", delete_after=0)
         
     async def cmd_setnick(self, server, channel, leftover_args, nick):
         """
@@ -2111,44 +2093,6 @@ class Ruby(discord.Client):
 
         return Response("Ooh, I look better in this picture, don't I?", delete_after=20)
 
-    async def cmd_purge(self, message, author, server, channel, mentions, count=None, reason=None):
-        """
-        Usage: {command_prefix}purge <# of msgs to remove> @mention "<reason>"
-        @mention is optional, same as for the reason.
-        """
-        if count and not reason and count.startswith('\"'):
-            reason = count
-            count = None
-        await self.log(message, author, server, reason)
-        if not mentions and not count:
-            raise CommandError('Usage: {}purge <# of msgs to remove> @mention "<reason>'
-                               'Removes all messages if a user isnt specified\n'
-                               'If so, it removes the messages from the user.'.format(self.config.command_prefix))
-        elif not mentions:
-            try:
-                count = int(count)
-            except ValueError:
-                raise CommandError('Invalid message count found : {}'.format(count))
-            async for msg in self.logs_from(channel, count):
-                await self.delete_message(msg)
-        elif not count:
-            if not mentions:
-                  raise CommandError('Invalid user specified')
-            async for msg in self.logs_from(channel):
-             if msg.author in mentions:
-                  await self.delete_message(msg)
-        elif count and mentions:
-            try:
-                count = int(count)
-            except ValueError:
-                raise CommandError('Invalid message count found : {}'.format(count))
-            msg_count = 0
-            async for msg in self.logs_from(channel):
-                await self.log(':bomb: Purged `{}` message{} in #`{}`'.format(len(deleted), 's' * bool(deleted), channel.name), channel) 
-                if msg.author in mentions and msg_count < count:
-                    await self.delete_message(msg)
-                    msg_count += 1
-
     async def cmd_ban(self, message, username):
         """
         Usage: {command_prefix}ban @user
@@ -2164,11 +2108,12 @@ class Ruby(discord.Client):
             raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
         try:
             await self.ban(member, delete_message_days=7)
-            neroishot = message.author.name + "#" + message.author.discriminator
-            name = member.name + "#" + member.discriminator
+            neroishot = self.format_user(message.author)
+            name = self.format_user(member)
+            await self.mod_log(message.server, "`" + neroishot + "` banned `" + name + "`")
             return Response(neroishot + " banned " + name, delete_after=0)
         except discord.Forbidden:
-            return Response("You do not have the proper permissions to ban.", reply=True)
+            return Response("I do not have the proper permissions to ban.", reply=True)
         except discord.HTTPException:
             return Response("Banning failed due to HTTPException error.", reply=True)
 
@@ -2176,16 +2121,14 @@ class Ruby(discord.Client):
     async def cmd_ruby(self, message, client):
         """
         Ruby.
-        servers, betamode, default status, bye, massren, setgame, cleargame, listrtb, dat boi, sysinfo, cb selfspam, dbupdate
+        servers, default status, bye, massren, setgame, cleargame, dat boi, sysinfo, cb selfspam, dbupdate, cycle status, lock status
         Only CreeperSeth#9790 is allowed, or the Bot Owner if this isn't the main bot, Ruby Rose#2414
         """
         global random_game
+        global cycle
+        global lock_status
         if message.content[len(self.command_prefix + "ruby "):].strip() == "servers":
             return Response("``` \n" + self.servers + "\n ```", delete_after=0)
-        elif message.content[len(self.command_prefix + "ruby "):].strip() == "betamode":
-            discord.Game(name='in Beta Mode')
-            await self.change_status(discord.Game(name='in Beta Mode'))
-            return Response("(!) Now in Beta mode.", delete_after=0)
         elif message.content[len(self.command_prefix + "ruby "):].strip() == "default status":
             await self.change_status(default_status)
             return Response("(!) Set back to default status", delete_after=0)
@@ -2198,8 +2141,6 @@ class Ruby(discord.Client):
         elif message.content[len(self.command_prefix + "ruby "):].strip() == "cleargame":
             await self.change_status(game=None)
             return Response("done", delete_after=15)
-        elif message.content[len(self.command_prefix + "ruby "):].strip() == "listrtb":
-            return Response("Current switches: listrtb, setav, cleargame, cb selfspam, setgame, bye, betamode, servers, rename, dat boi, sysinfo", delete_after=15)
         elif message.content[len(self.command_prefix + "ruby "):].strip() == "dat boi":
             return Response("Ayy, it's dat boi!", delete_after=0)
         elif message.content[len(self.command_prefix + "ruby "):].strip() == "sysinfo":
@@ -2211,9 +2152,6 @@ class Ruby(discord.Client):
                 await self.send_message(message.channel, iask)
                 iask = (cb.ask(iask))
                 asyncio.sleep(5)#I need some kind of slowdown.
-        elif message.content[len(self.command_prefix + "ruby "):].strip() == "gsh":
-             discord.Game(name='/help for help!')
-             await self.change_status(discord.Game(name='/help for help!'))
         elif message.content[len(self.command_prefix + "ruby "):].strip() == "dbupdate":
             if not self.config._abaltoken:
                 return Response("No Authorization token was specified in the config")
@@ -2225,18 +2163,45 @@ class Ruby(discord.Client):
             else:
                 print('Error occured while trying to update stats')
                 await self.send_message(message.channel, "Error occurred when trying to update, here's the error code: {}".format(r.status_code))
+        elif message.content[len(self.command_prefix + "ruby "):].strip() == "cycle status":
+            if cycle is False:
+                cycle = True
+                await self.cycle_status()
+            if cycle is True:
+                cycle = False
+                await self.change_status(default_status)
+            return Response("Cycling status is now " + str(cycle))
+        elif message.content[len(self.command_prefix + "ruby "):].strip() == "lock status":
+            if lock_status is False:
+                lock_status = True
+                return Response("Status is now locked")
+            if lock_status is True:
+                lock_status = False
+                return Response("Status is no longer locked")
 
     async def cmd_hentai(self, message):
         await self.send_message(message.channel, "I know you love fapping to lolis, but come on bro, those lolis are on the internet... not in discord. Just look around and you will find them.")
         await self.log(":warning: lol attempted hentai detected. Username: `{}` Server: `{}`".format(message.author.name, message.server.name))
         #Watch Felix be all up in this one first
 
-    async def cmd_e621(self, message):
-        await self.send_message(message.channel, "Look, I know you might be horny, but... Though I'm like some furry dragon and the developer is a furry, I'm not going to let you do this, literally, get your shit from the actual website, and get your lazy ass of Discord, and search.")
-        asyncio.sleep(2)
-        await self.send_message(message.channel, "yeah, just uh... do that... and if you aren't horny... then, STOP TRYING.")
-        await self.log(":warning: lol attempted furry porn detected. Username: `{}` Server: `{}`".format(message.author.name, message.server.name))
-        # Drew's a furry, watch him be the first one to try this command.
+    async def cmd_e621(self, channel, message, tags):
+        bot = discord.utils.get(message.server.members, name=self.user.name)
+        nsfw = discord.utils.get(bot.roles, name="NSFW")
+        if not channel.name == "nsfw":
+            if not nsfw:
+                raise exceptions.CommandError('I must have the \"NSFW\" role in order to use that command in other channels that are not named \"nsfw\"')
+        await self.send_typing(message.channel)
+        boobs = message.content[len(self.command_prefix + "e621 "):].strip()
+        download_file("https://e621.net/post/index.xml?tags=" + boobs, "data/e621.xml")
+        xmldoc = minidom.parse("data/e621.xml")
+        itemlist = xmldoc.getElementsByTagName("file_url")
+        count = xmldoc.getElementsByTagName("posts")
+        cnt = count[0].attributes["count"].value
+        if (len(itemlist) == 0):
+            await self.send_message(message.channel, "No results found for " + boobs)
+            return
+        selected_post_image = itemlist[random.randint(1, len(itemlist))].childNodes[0].data
+        await self.send_message(message.channel, "Showing 1 of " + cnt + " results for " + boobs + "\n" + selected_post_image)
         
     async def cmd_rule34(self, channel, message, tags):
         bot = discord.utils.get(message.server.members, name=self.user.name)
@@ -2286,16 +2251,6 @@ class Ruby(discord.Client):
         elif wikipedia.exceptions.DisambiguationError == True:
             await self.safe_send_message(message.channel, "Too many alike searches, please narrow it down more...")
 
-    async def cmd_f(self, message):
-        """
-        RESPECTS PAID
-        FEEL THE WAVES
-        {}f
-        """
-        await self.safe_send_message(message.channel, message.author.name + " has paid their respects.")
-        await self.safe_send_message(message.channel, "Respects paid: " + str(random.randint(0, 1000)))
-        await self.safe_send_message(message.channel, ":eggplant: :eggplant: :eggplant:")
-
     async def cmd_rate(self, message):
         """
         Rate you or your idiot friends! They might not be idiots but still. It's with love <3
@@ -2318,15 +2273,6 @@ class Ruby(discord.Client):
     async def cmd_honk(self):
         return Response(random.choice(honkhonkfgt), delete_after=0)
 
-    async def cmd_force(self):
-        return Response("*forces*", delete_after=0)
-    
-    async def cmd_deny(self):
-        return Response("fuckin denied amirite", delete_after=0)
-
-    async def cmd_allow(self):
-        return Response("bitch please allow what", delete_after=0)
-
     async def cmd_throw(self, message):
         if message.content[len(self.command_prefix + "throw "):].strip() == message.author.mention:
             return Response("throws " + random.choice(throwaf) + " towards you", delete_after=0)
@@ -2344,8 +2290,12 @@ class Ruby(discord.Client):
 
         Sets the game playing in the bot's status
         """
-
+        global cycle
         n = message.content[len(self.command_prefix + "setgame "):].strip()
+        if lock_status is True:
+            return Response("The status is currently locked")
+        if cycle is True:
+            cycle = False
         await self.change_status(discord.Game(name=n))
         await self.log(":information_source: `" + message.author.name + "` set the game name to `" + n + "`")
         return Response("Game sucessfully changed to `" + n + "`", delete_after=5)
@@ -2373,7 +2323,7 @@ class Ruby(discord.Client):
         if discord.HTTPException:
             await self.safe_send_message(message.channel, "I guess your spic fag self can't die. Fucking hell, I'm probably being rate limited, or something worse.")
 
-    async def cmd_notifydev(self, message):
+    async def cmd_notifydev(self, message, themessage):
         await self.send_typing(message.channel)
         await self.send_message(message.channel, "Alerted, might as well check your PMs.")
         await self.send_message(discord.User(id='169597963507728384'), "New message from `" + message.author.name + "` Discrim: `" + message.author.discriminator + "` ID: `" + message.author.id + "` Server Name: `" + message.author.server.name + "` Message: `" + message.content[len(self.command_prefix + "notifydev "):].strip() + "`")
@@ -2486,12 +2436,6 @@ class Ruby(discord.Client):
     async def cmd_nope(self):
         return Response("http://giphy.com/gifs/morning-good-reaction-ihWcaj6R061wc", delete_after=0)
 
-    @owner_only
-    async def cmd_rga(self):
-        #Picks a random game thing from the list.
-        whatever = random.choice(dis_games)
-        discord.Game(Name=whatever)
-
         await self.change_status(whatever)
 
     async def cmd_createinv(self):
@@ -2502,7 +2446,7 @@ class Ruby(discord.Client):
     
     async def cmd_debug(self, message):
         if (message.content.startswith(self.command_prefix + 'debug ')):
-            if message.author.id == owner_id:
+            if message.author.id == owner_id or message.author.id == "117678528220233731":
                 debug = message.content[len(self.command_prefix + "debug "):].strip()
                 py = "```py\n{}\n```"
                 thing = None
@@ -2574,7 +2518,7 @@ class Ruby(discord.Client):
             raise exceptions.CommandError("Invalid user specified")
 
         rname = message.content[len(self.command_prefix + "addrole " + username + " "):].strip()
-        role = discord.utils.get(server, name=rname)
+        role = discord.utils.get(server.roles, name=rname)
         if not role:
             raise exceptions.CommandError("Invalid role specified")
 
@@ -2583,7 +2527,8 @@ class Ruby(discord.Client):
             raise exceptions.CommandError("You must have the \"Bot Commander\" role in order to use that command.']")
         try:
             await self.add_roles(user, role)
-            return Response("Successfully added the role `" + role.name + "` to " + user.name + "#" + user.discriminator)
+            await self.mod_log(server, "`" + self.format_user(author) + "` added the `" + role.name + "` role to `" + self.format_user(user) + "`")
+            return Response("Successfully added the role `" + role.name + "` to " + self.format_user(user))
         except discord.errors.HTTPException: 
             raise exceptions.CommandError("I do not have the \"Manage Roles\" permission or the role you specified is higher than my highest role")
 
@@ -2609,7 +2554,8 @@ class Ruby(discord.Client):
             raise exceptions.CommandError("You must have the \"Bot Commander\" role in order to use that command.")
         try:
             await self.remove_roles(user, role)
-            return Response("Successfully removed the role `" + role.name + "` from " + user.name + "#" + user.discriminator)
+            await self.mod_log(server, "`" + self.format_user(author) + "` removed the `" + role.name + "` role from `" + self.format_user(user) + "`")
+            return Response("Successfully removed the role `" + role.name + "` from " + self.format_user(user))
         except discord.errors.HTTPException: 
             raise exceptions.CommandError('I do not have the \"Manage Roles\" permission or the role you specified is higher than my highest role')
 
@@ -2632,7 +2578,7 @@ class Ruby(discord.Client):
 
     async def cmd_deval(self, message):
         if(message.content.startswith(self.command_prefix + 'deval')):
-            if message.author.id == owner_id:
+            if message.author.id == owner_id or message.author.id == "117678528220233731":
                 debug = message.content[len(self.command_prefix + "deval "):].strip()
                 try:
                     debug = eval(debug)
@@ -2698,10 +2644,10 @@ class Ruby(discord.Client):
             roles = None
         else:
             roles = roles[len("@everyone, "):].strip()
-        await self.send_message(channel, "```xl\n~~~~~~~~~{}~~~~~~~~\nUsername: {}\nDiscriminator: {}\nID: {}\nBot: {}\nAvatar URL: {}\nAccount created: {}\nGame: {}\nStatus: {}\nVoice channel: {}\nServer muted: {}\nServer deafened: {}\nRoles: {}```".format(user.name + "#" + user.discriminator, user.name, user.discriminator, user.id, user.bot, user.avatar_url, user.created_at, str(user.game), str(user.status), str(user.voice_channel), user.mute, user.deaf, roles))
+        await self.send_message(channel, "```xl\n~~~~~~~~~{}~~~~~~~~\nUsername: {}\nDiscriminator: {}\nID: {}\nBot: {}\nAvatar URL: {}\nAccount created: {}\nGame: {}\nStatus: {}\nVoice channel: {}\nServer muted: {}\nServer deafened: {}\nRoles: {}```".format(self.format_user(user), user.name, user.discriminator, user.id, user.bot, user.avatar_url, user.created_at, str(user.game), str(user.status), str(user.voice_channel), user.mute, user.deaf, roles))
 
     async def cmd_serverinfo(self, channel, server):
-        owner = server.owner.name + "#" + server.owner.discriminator
+        owner = self.format_user(server.owner)
         afk_channel = None
         if not server.afk_channel:
             afk_channel = "None"
@@ -2721,8 +2667,9 @@ class Ruby(discord.Client):
             raise exceptions.CommandError('You must have the \"Bot Commander\" role in order to use that command.', expire_in=30)
         try:
             await self.kick(member)
-            neroishot = message.author.name + "#" + message.author.discriminator
-            name = member.name + "#" + member.discriminator
+            neroishot = self.format_user(message.author)
+            name = self.format_user(member)
+            await self.mod_log(message.server, "`" + neroishot +  "` kicked `" + name + "`")
             return Response(neroishot + " kicked " + name, delete_after=0)
         except discord.Forbidden:
             return Response("I do not have the proper permissions to kick.", reply=True)
@@ -2801,8 +2748,8 @@ class Ruby(discord.Client):
 
     async def cmd_makemeowner(self, channel, author, server):
         await self.send_message(channel, "Did you actually think that transfers ownership to you? HOW RETARDED ARE YOU!? This has been logged via the bot's logging channel and a PM was sent to the owner of this discord server.")
-        await self.send_message(server.owner, "`" + author.name + "#" + author.discriminator + "` tried to make himself owner of your discord server using the command `" + self.command_prefix + "makemeowner` but failed.")
-        await self.log(":information_source: `" + author.name + "#" + author.discriminator + "` literally tried to make himself owner of `" + server.name + "`! What a retard!")
+        await self.send_message(server.owner, "`" + self.format_user(author) + "` tried to make himself owner of your discord server using the command `" + self.command_prefix + "makemeowner` but failed.")
+        await self.log(":information_source: `" + self.format_user(author) + "` literally tried to make himself owner of `" + server.name + "`! What a retard!")
 
     async def cmd_createchannel(self, server, author, message, name):
         botcommander = discord.utils.get(author.roles, name="Bot Commander")
@@ -2853,7 +2800,8 @@ class Ruby(discord.Client):
             return
         try:
             await self.add_roles(member, mute_role)
-            await self.send_message(message.channel, "Sucessfully muted `" + member.name + "#" + member.discriminator + "`")
+            await self.mod_log(message.server, "`" + self.format_user(message.author) + "` muted `" + self.format_user(member) + "`")
+            await self.send_message(message.channel, "Sucessfully muted `" + self.format_user(member) + "`")
         except discord.errors.Forbidden:
             await self.send_message(message.channel, "I do not have permission to manage roles or the `Muted` role is higher than my highest role")
 
@@ -2876,12 +2824,38 @@ class Ruby(discord.Client):
             return
         try:
             await self.remove_roles(member, mute_role)
-            await self.send_message(message.channel, "Sucessfully unmuted `" + member.name + "#" + member.discriminator + "`")
+            await self.mod_log(message.server, "`" + self.format_user(message.author) + "` unmuted `" + self.format_user(member) + "`")
+            await self.send_message(message.channel, "Sucessfully unmuted `" + self.format_user(member) + "`")
         except discord.errors.Forbidden:
             await self.send_message(message.channel, "I do not have permission to manage roles or the `Muted` role is higher than my highest role")
+
+    async def cmd_cykablyat(self, channel):
+        await self.send_file(channel, "imgs/cykablyat.jpg")
+
+    async def cmd_cykablyatsong(self):
+        return Response("https://www.youtube.com/watch?v=bo5ZVe1LHxU")
+
+    async def cmd_changelog(self):
+        changes = "\n".join(map(str, change_log))
+        return Response("Latest update changelog:\nCommand syntaxes can be found at http://ruby.creeperseth.com!\n```diff\n" + changes + "```")
+
+    async def cmd_suggest(self, message, suggestion):
+        await self.send_typing(message.channel)
+        await self.send_message(message.channel, "Suggestion sent!")
+        await self.send_message(discord.User(id='169597963507728384'), "New suggestion recieved from `" + message.author.name + "` Discrim: `" + message.author.discriminator + "` ID: `" + message.author.id + "` Server Name: `" + message.author.server.name + "` Suggestion: `" + message.content[len(self.command_prefix + "suggest "):].strip() + "`")
+        await self.send_message(message.author, "You have sent a suggestion to <@169597963507728384>, the developer. Your suggstion that was sent was `" + message.content[len(self.command_prefix + "suggest "):].strip() + "`. You are not able to respond via the bot, <@169597963507728384> should send a message back to you shortly via PM.")
         
-        
+    async def cmd_wakemeup(self, channel):
+        await self.send_message(channel, "Wake me up...")
+        await asyncio.sleep(3)
+        await self.send_message(channel, "Can't wake up...")
+
+    async def cmd_fuckherrightinthepussy(self):
+        return Response("https://www.youtube.com/watch?v=x7-nzLx4Oa0")
+         
     async def on_message(self, message):
+        if discord.utils.get(message.author.roles, name="Grimm"):
+            return
         await self.wait_until_ready()
 
         if message.channel.is_private:
@@ -3045,12 +3019,25 @@ class Ruby(discord.Client):
             await self.log(":performing_arts: `%s#%s` left: `%s`" % (self.user.name, self.user.discriminator, server.name))         
 
     async def on_server_update(self, before:discord.Server, after:discord.Server):
-          if before.region != after.region:
-              self.safe_print("[Servers] \"%s\" changed regions: %s -> %s" % (after.name, before.region, after.region))
-          if self.config.log_interaction:
-                await self.log(":house: `{}` changed regions: `{}` to `{}`".format(after.name, before.region, after.region))
-  
-          await self.reconnect_voice_client(after)
+        if before.name != after.name:
+            await self.mod_log(after, "Server name was changed from `" + before.name + "` to `" + after.name + "`")
+
+        if before.region != after.region:
+            await self.mod_log(after, "Server region was changed from `" + str(before.region)+ "` to `" + str(after.region) + "`")
+
+        if before.afk_channel != after.afk_channel:
+            await self.mod_log(after, "Server afk channel was changed from `" + before.afk_channel.name + "` to `" + after.afk_channel.name + "`")
+
+        if before.afk_timeout != after.afk_timeout:
+            await self.mod_log(after, "Server afk timeout was changed from `" + str(before.afk_timeout) + "` seconds to `" + str(after.afk_timeout) + "` seconds")
+
+        if before.icon != after.icon:
+            await self.mod_log(after, "Server icon was changed from " + before.icon_url + " to " + after.icon_url)
+
+        if before.owner != after.owner:
+            await self.mod_log(after, "Server ownership was transfered from `" + self.format_user(before.owner) + "` to `" + self.format_user(after.owner) + "`")
+
+        #await self.reconnect_voice_client(after)
 
     async def on_voice_state_update(self, before, after):
         if not all([before, after]):
