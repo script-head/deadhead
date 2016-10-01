@@ -73,6 +73,7 @@ from .unicode import memes
 
 load_opus_lib()
 st = time.time()
+default_game = discord.Game(name="with team RWBY")
 default_status = discord.Status.dnd
 #Fookin fantastic amirite?
 
