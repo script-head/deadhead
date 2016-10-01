@@ -13,9 +13,13 @@ class ConfigDefaults:
     abaltoken = None
 
     owner_id = None
-    command_prefix = '!'
+    command_prefix = "!"
     bound_channels = set()
     autojoin_channels = set()
+
+    mal_enabled = False
+    mal_username = None
+    mal_password = None
 
     default_volume = 0.15
     white_list_check = False
@@ -33,12 +37,12 @@ class ConfigDefaults:
     log_exceptions = False
     log_interaction = False
     log_downloads = False
-    log_timeformat = '%H:%M:%S'
+    log_timeformat = "%H:%M:%S"
 
-    options_file = 'config/options.ini'
-    blacklist_file = 'config/blacklist.txt'
-    whitelist_file = 'config/whitelist.txt'
-    auto_playlist_file = 'config/autoplaylist.txt' # this will change when I add playlists
+    options_file = "config/options.ini"
+    blacklist_file = "config/blacklist.txt"
+    whitelist_file = "config/whitelist.txt"
+    auto_playlist_file = "config/autoplaylist.txt" # this will change when I add playlists
 
 
 class Config:
@@ -46,17 +50,17 @@ class Config:
         self.config_file = config_file
         config = configparser.ConfigParser()
 
-        if not config.read(config_file, encoding='utf-8'):
-            print('[config] Config file not found, copying example_options.ini')
+        if not config.read(config_file, encoding="utf-8"):
+            print("[config] Config file not found, copying example_options.ini")
 
             try:
-                shutil.copy('config/example_options.ini', config_file)
+                shutil.copy("config/example_options.ini", config_file)
 
                 # load the config again and check to see if the user edited that one
                 c = configparser.ConfigParser()
-                c.read(config_file, encoding='utf-8')
+                c.read(config_file, encoding="utf-8")
 
-                if not int(c.get('Permissions', 'OwnerID', fallback=0)): # jake pls no flame
+                if not int(c.get("Permissions", "OwnerID", fallback=0)): # jake pls no flame
                     print("\nPlease configure config/options.ini and restart the bot.", flush=True)
                     os._exit(1)
 
@@ -78,7 +82,7 @@ class Config:
                 os._exit(2)
 
         config = configparser.ConfigParser(interpolation=None)
-        config.read(config_file, encoding='utf-8')
+        config.read(config_file, encoding="utf-8")
 
         confsections = {"Credentials", "Permissions", "Chat", "MusicBot", "Logging"}.difference(config.sections())
         if confsections:
@@ -86,45 +90,49 @@ class Config:
                 "One or more required config sections are missing.",
                 "Fix your config.  Each [Section] should be on its own line with "
                 "nothing else on it.  The following sections are missing: {}".format(
-                    ', '.join(['[%s]' % s for s in confsections])
+                    ", ".join(["[%s]" % s for s in confsections])
                 ),
                 preface="An error has occured parsing the config:\n"
             )
 
-        self._email = config.get('Credentials', 'Email', fallback=ConfigDefaults.email)
-        self._password = config.get('Credentials', 'Password', fallback=ConfigDefaults.password)
-        self._login_token = config.get('Credentials', 'Token', fallback=ConfigDefaults.token)
-        self._abaltoken = config.get('Credentials', 'Authorization', fallback=ConfigDefaults.abaltoken)
+        self._email = config.get("Credentials", "Email", fallback=ConfigDefaults.email)
+        self._password = config.get("Credentials", "Password", fallback=ConfigDefaults.password)
+        self._login_token = config.get("Credentials", "Token", fallback=ConfigDefaults.token)
+        self._abaltoken = config.get("Credentials", "Authorization", fallback=ConfigDefaults.abaltoken)
 
         self.auth = None
 
-        self.owner_id = config.get('Permissions', 'OwnerID', fallback=ConfigDefaults.owner_id)
-        self.command_prefix = config.get('Chat', 'CommandPrefix', fallback=ConfigDefaults.command_prefix)
-        self.bound_channels = config.get('Chat', 'BindToChannels', fallback=ConfigDefaults.bound_channels)
-        self.autojoin_channels = config.get('Chat', 'AutojoinChannels', fallback=ConfigDefaults.autojoin_channels)
+        self.owner_id = config.get("Permissions", "OwnerID", fallback=ConfigDefaults.owner_id)
+        self.command_prefix = config.get("Chat", "CommandPrefix", fallback=ConfigDefaults.command_prefix)
+        self.bound_channels = config.get("Chat", "BindToChannels", fallback=ConfigDefaults.bound_channels)
+        self.autojoin_channels = config.get("Chat", "AutojoinChannels", fallback=ConfigDefaults.autojoin_channels)
 
-        self.default_volume = config.getfloat('MusicBot', 'DefaultVolume', fallback=ConfigDefaults.default_volume)
-        self.white_list_check = config.getboolean('MusicBot', 'WhiteListCheck', fallback=ConfigDefaults.white_list_check)
-        self.skips_required = config.getint('MusicBot', 'SkipsRequired', fallback=ConfigDefaults.skips_required)
-        self.skip_ratio_required = config.getfloat('MusicBot', 'SkipRatio', fallback=ConfigDefaults.skip_ratio_required)
-        self.save_videos = config.getboolean('MusicBot', 'SaveVideos', fallback=ConfigDefaults.save_videos)
-        self.now_playing_mentions = config.getboolean('MusicBot', 'NowPlayingMentions', fallback=ConfigDefaults.now_playing_mentions)
-        self.auto_summon = config.getboolean('MusicBot', 'AutoSummon', fallback=ConfigDefaults.auto_summon)
-        self.auto_playlist = config.getboolean('MusicBot', 'UseAutoPlaylist', fallback=ConfigDefaults.auto_playlist)
-        self.auto_pause = config.getboolean('MusicBot', 'AutoPause', fallback=ConfigDefaults.auto_pause)
-        self.delete_messages  = config.getboolean('MusicBot', 'DeleteMessages', fallback=ConfigDefaults.delete_messages)
-        self.delete_invoking = config.getboolean('MusicBot', 'DeleteInvoking', fallback=ConfigDefaults.delete_invoking)
+        self.mal_enabled = config.get("MyAnimeList", "Enabled", fallback=ConfigDefaults.mal_enabled)
+        self.autojoin_channels = config.get("MyAnimeList", "Username", fallback=ConfigDefaults.mal_username)
+        self.autojoin_channels = config.get("MyAnimeList", "Password", fallback=ConfigDefaults.mal_password)
 
-        self.blacklist_file = config.get('Files', 'BlacklistFile', fallback=ConfigDefaults.blacklist_file)
-        self.whitelist_file = config.get('Files', 'WhitelistFile', fallback=ConfigDefaults.whitelist_file)
-        self.auto_playlist_file = config.get('Files', 'AutoPlaylistFile', fallback=ConfigDefaults.auto_playlist_file)
+        self.default_volume = config.getfloat("MusicBot", "DefaultVolume", fallback=ConfigDefaults.default_volume)
+        self.white_list_check = config.getboolean("MusicBot", "WhiteListCheck", fallback=ConfigDefaults.white_list_check)
+        self.skips_required = config.getint("MusicBot", "SkipsRequired", fallback=ConfigDefaults.skips_required)
+        self.skip_ratio_required = config.getfloat("MusicBot", "SkipRatio", fallback=ConfigDefaults.skip_ratio_required)
+        self.save_videos = config.getboolean("MusicBot", "SaveVideos", fallback=ConfigDefaults.save_videos)
+        self.now_playing_mentions = config.getboolean("MusicBot", "NowPlayingMentions", fallback=ConfigDefaults.now_playing_mentions)
+        self.auto_summon = config.getboolean("MusicBot", "AutoSummon", fallback=ConfigDefaults.auto_summon)
+        self.auto_playlist = config.getboolean("MusicBot", "UseAutoPlaylist", fallback=ConfigDefaults.auto_playlist)
+        self.auto_pause = config.getboolean("MusicBot", "AutoPause", fallback=ConfigDefaults.auto_pause)
+        self.delete_messages  = config.getboolean("MusicBot", "DeleteMessages", fallback=ConfigDefaults.delete_messages)
+        self.delete_invoking = config.getboolean("MusicBot", "DeleteInvoking", fallback=ConfigDefaults.delete_invoking)
 
-        self.log_masterchannel = config.get('Logging', 'MasterChannel', fallback=ConfigDefaults.log_masterchannel)
-        self.log_subchannels = config.get('Logging', 'SubChannels', fallback=ConfigDefaults.log_subchannels)
-        self.log_exceptions = config.getboolean('Logging', 'Exceptions', fallback=ConfigDefaults.log_exceptions)
-        self.log_interaction = config.getboolean('Logging', 'Interaction', fallback=ConfigDefaults.log_interaction)
-        self.log_downloads = config.getboolean('Logging', 'Downloads', fallback=ConfigDefaults.log_downloads)
-        self.log_timeformat = config.get('Logging', 'TimeFormat', fallback=ConfigDefaults.log_timeformat)
+        self.blacklist_file = config.get("Files", "BlacklistFile", fallback=ConfigDefaults.blacklist_file)
+        self.whitelist_file = config.get("Files", "WhitelistFile", fallback=ConfigDefaults.whitelist_file)
+        self.auto_playlist_file = config.get("Files", "AutoPlaylistFile", fallback=ConfigDefaults.auto_playlist_file)
+
+        self.log_masterchannel = config.get("Logging", "MasterChannel", fallback=ConfigDefaults.log_masterchannel)
+        self.log_subchannels = config.get("Logging", "SubChannels", fallback=ConfigDefaults.log_subchannels)
+        self.log_exceptions = config.getboolean("Logging", "Exceptions", fallback=ConfigDefaults.log_exceptions)
+        self.log_interaction = config.getboolean("Logging", "Interaction", fallback=ConfigDefaults.log_interaction)
+        self.log_downloads = config.getboolean("Logging", "Downloads", fallback=ConfigDefaults.log_downloads)
+        self.log_timeformat = config.get("Logging", "TimeFormat", fallback=ConfigDefaults.log_timeformat)
 
         self.run_checks()
 
@@ -171,7 +179,7 @@ class Config:
                 raise HelpfulError(
                     "OwnerID was not set.",
 
-                    "Please set the OwnerID in the config.  If you "
+                    "Please set the OwnerID in the config. If you "
                     "don't know what that is, use the %sid command" % self.command_prefix,
                     preface=confpreface)
 
@@ -215,7 +223,7 @@ class Config:
 
 
 # These two are going to be wrappers for the id lists, with add/remove/load/save functions
-# and id/object conversion so types aren't an issue
+# and id/object conversion so types aren"t an issue
 class Blacklist:
     pass
 

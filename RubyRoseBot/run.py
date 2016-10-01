@@ -12,7 +12,7 @@ class GIT(object):
     @classmethod
     def works(cls):
         try:
-            return bool(subprocess.check_output('git --version', shell=True))
+            return bool(subprocess.check_output("git --version", shell=True))
         except:
             return False
 
@@ -33,16 +33,16 @@ class PIP(object):
 
     @classmethod
     def run_python_m(cls, *args, **kwargs):
-        check_output = kwargs.pop('check_output', False)
+        check_output = kwargs.pop("check_output", False)
         check = subprocess.check_output if check_output else subprocess.check_call
-        return check([sys.executable, '-m', 'pip'] + list(args))
+        return check([sys.executable, "-m", "pip"] + list(args))
 
     @classmethod
     def run_pip_main(cls, *args, **kwargs):
         import pip
 
         args = list(args)
-        check_output = kwargs.pop('check_output', False)
+        check_output = kwargs.pop("check_output", False)
 
         if check_output:
             from io import StringIO
@@ -68,7 +68,7 @@ class PIP(object):
 
     @classmethod
     def run_install(cls, cmd, quiet=False, check_output=False):
-        return cls.run("install %s%s" % ('-q ' if quiet else '', cmd), check_output)
+        return cls.run("install %s%s" % ("-q " if quiet else "", cmd), check_output)
 
     @classmethod
     def run_show(cls, cmd, check_output=False):
@@ -91,10 +91,10 @@ class PIP(object):
             if isinstance(out, bytes):
                 out = out.decode()
 
-            datas = out.replace('\r\n', '\n').split('\n')
+            datas = out.replace("\r\n", "\n").split("\n")
             expectedversion = datas[3]
 
-            if expectedversion.startswith('Version: '):
+            if expectedversion.startswith("Version: "):
                 return expectedversion.split()[1]
             else:
                 return [x.split()[1] for x in datas if x.startswith("Version: ")][0]
@@ -111,26 +111,26 @@ def main():
 
         # Maybe I should check for if the current dir is the ruby folder, just in case
 
-        if sys.platform.startswith('win'):
+        if sys.platform.startswith("win"):
             try:
-                subprocess.check_output('py -3.5 -c "exit()"', shell=True)
-                pycom = 'py -3.5'
+                subprocess.check_output("py -3.5 -c \"exit()\"", shell=True)
+                pycom = "py -3.5"
             except:
 
                 try:
-                    subprocess.check_output('python3 -c "exit()"', shell=True)
-                    pycom = 'python3'
+                    subprocess.check_output("python3 -c \"exit()\"", shell=True)
+                    pycom = "python3"
                 except:
                     pass
 
             if pycom:
                 print("Python 3 found.  Launching bot...")
-                os.system('start cmd /k %s run.py' % pycom)
+                os.system("start cmd /k %s run.py" % pycom)
                 sys.exit(0)
 
         else:
             try:
-                pycom = subprocess.check_output(['which', 'python3.5']).strip().decode()
+                pycom = subprocess.check_output(["which", "python3.5"]).strip().decode()
             except:
                 pass
 
@@ -138,7 +138,7 @@ def main():
                 print("\nPython 3 found.  Re-launching bot using: ")
                 print("  %s run.py\n" % pycom)
 
-                os.execlp(pycom, pycom, 'run.py')
+                os.execlp(pycom, pycom, "run.py")
 
         print("Please run the bot using python 3.5")
         input("Press enter to continue . . .")
@@ -154,14 +154,12 @@ def main():
     max_wait_time = 60
 
     while tryagain:
-        # Maybe I need to try to import stuff first, then actually import stuff
-        # It'd save me a lot of pain with all that awful exception type checking
 
         try:
             from ruby import Ruby
 
             m = Ruby()
-            print("Connecting...", end='', flush=True)
+            print("Connecting...", end="", flush=True)
             m.run()
 
         except SyntaxError:
@@ -172,15 +170,14 @@ def main():
             if not tried_requirementstxt:
                 tried_requirementstxt = True
 
-                # TODO: Better output
                 print(e)
                 print("Attempting to install dependencies...")
 
-                err = PIP.run_install('--upgrade -r requirements.txt')
+                err = PIP.run_install("--upgrade -r requirements.txt")
 
                 if err:
                     print("\nYou may need to %s to install dependencies." %
-                          ['use sudo', 'run as admin'][sys.platform.startswith('win')])
+                          ["use sudo", "run as admin"][sys.platform.startswith("win")])
                     break
                 else:
                     print("\nOk lets hope it worked\n")
@@ -190,8 +187,8 @@ def main():
                 break
 
         except Exception as e:
-            if hasattr(e, '__module__') and e.__module__ == 'ruby.exceptions':
-                if e.__class__.__name__ == 'HelpfulError':
+            if hasattr(e, "__module__") and e.__module__ == "ruby.exceptions":
+                if e.__class__.__name__ == "HelpfulError":
                     print(e.message)
                     break
 
@@ -207,7 +204,7 @@ def main():
             asyncio.set_event_loop(asyncio.new_event_loop())
             loops += 1
 
-        print("Cleaning up... ", end='')
+        print("Cleaning up... ", end="")
         gc.collect()
         print("Done.")
 
@@ -217,5 +214,5 @@ def main():
             time.sleep(sleeptime)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

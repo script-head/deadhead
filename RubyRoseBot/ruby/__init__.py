@@ -1,3 +1,3 @@
 from .bot import Ruby
 
-__all__ = ['Ruby']
+__all__ = ["Ruby"]

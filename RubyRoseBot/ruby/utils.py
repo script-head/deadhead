@@ -5,12 +5,12 @@ import requests
 
 from .constants import DISCORD_MSG_CHAR_LIMIT
 
-_USER_ID_MATCH = re.compile(r'<@(\d+)>')
+_USER_ID_MATCH = re.compile(r"<@(\d+)>")
 
 
-def load_file(filename, skip_commented_lines=True, comment_char='#'):
+def load_file(filename, skip_commented_lines=True, comment_char="#"):
     try:
-        with open(filename, encoding='utf8') as f:
+        with open(filename, encoding="utf8") as f:
             results = []
             for line in f:
                 line = line.strip()
@@ -26,10 +26,10 @@ def load_file(filename, skip_commented_lines=True, comment_char='#'):
 
 
 def write_file(filename, contents):
-    with open(filename, 'w', encoding='utf8') as f:
+    with open(filename, "w", encoding="utf8") as f:
         for item in contents:
             f.write(str(item))
-            f.write('\n')
+            f.write("\n")
 
 def download_file(url, destination):
     req = requests.get(url)
@@ -40,16 +40,15 @@ def download_file(url, destination):
 
 
 def extract_user_id(argument):
-    arg = argument.replace("!", "")
-    match = _USER_ID_MATCH.match(arg)
+    match = _USER_ID_MATCH.match(argument.replace("!", ""))
     if match:
         return int(match.group(1))
 
 
 def slugify(value):
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub('[^\w\s-]', '', value).strip().lower()
-    return re.sub('[-\s]+', '-', value)
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    value = re.sub("[^\w\s-]", "", value).strip().lower()
+    return re.sub("[-\s]+", "-", value)
 
 
 def sane_round_int(x):
@@ -57,25 +56,22 @@ def sane_round_int(x):
 
 
 def paginate(content, *, length=DISCORD_MSG_CHAR_LIMIT, reserve=0):
-    """
-    Split up a large string or list of strings into chunks for sending to discord.
-    """
     if type(content) == str:
-        contentlist = content.split('\n')
+        contentlist = content.split("\n")
     elif type(content) == list:
         contentlist = content
     else:
         raise ValueError("Content must be str or list, not %s" % type(content))
 
     chunks = []
-    currentchunk = ''
+    currentchunk = ""
 
     for line in contentlist:
         if len(currentchunk) + len(line) < length - reserve:
-            currentchunk += line + '\n'
+            currentchunk += line + "\n"
         else:
             chunks.append(currentchunk)
-            currentchunk = ''
+            currentchunk = ""
 
     if currentchunk:
         chunks.append(currentchunk)

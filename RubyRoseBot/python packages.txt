@@ -1,0 +1,10 @@
+Use "pip install <package name>" to install the following packages:
+
+discord.py
+youtube-dl
+wolframalpha
+random-cat
+cleverbot
+wikipedia
+cffi
+PyNaCl

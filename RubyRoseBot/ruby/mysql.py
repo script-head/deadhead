@@ -25,6 +25,7 @@ def read_data_entry(id, type):
     return val
 
 def update_data_entry(id, type, value):
+    exists = read_data_entry(id, type)
     cur.execute("""UPDATE servers SET value='""" + value + """' WHERE id=""" + id + """ AND type='""" + type + """'""")
     conn.commit()
 
