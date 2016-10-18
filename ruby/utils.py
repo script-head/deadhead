@@ -77,3 +77,6 @@ def paginate(content, *, length=DISCORD_MSG_CHAR_LIMIT, reserve=0):
         chunks.append(currentchunk)
 
     return chunks
+
+def format_user(insertnerovar):
+        return insertnerovar.name + "#" + insertnerovar.discriminator

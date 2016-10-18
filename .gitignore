@@ -2,12 +2,10 @@
 *.pyc
 ~*/
 
-audio_cache/
-dectalk/
+# Ignore these bot files
 
-discord.log
+audio_cache/
 config/options.ini
 config/permissions.ini
-
-LICENSE.md
-README.md
+data/rule34.xml
+data/e621.xml

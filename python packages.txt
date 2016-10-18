@@ -1,10 +1,11 @@
 Use "pip install <package name>" to install the following packages:
 
 discord.py
+aiohttp
+asyncio
 youtube-dl
-wolframalpha
 random-cat
 cleverbot
 wikipedia
-cffi
 PyNaCl
+ffmpy

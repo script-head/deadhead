@@ -1,12 +1,12 @@
 import os.path
 
-VERSION = "6.0"
-MAIN_VERSION = "6"
-SUB_VERSION = " -rev 0 "
-CODENAME = "\"This is Halloween, this is Halloween! Halloween! Halloween! Halloween! Halloween!\""
+VERSION = "\"This is a beta version of Ruby Rose, I will not update the version information because I update the beta bot a lot and it will decrease my sanity if I update it everytime I modify a script on the beta bot.\""
+MAIN_VERSION = ""
+SUB_VERSION = ""
+CODENAME = ""
 VER = VERSION + SUB_VERSION
-BDATE = "October 1st, 2016 @ 12:00 AM  GMT -7.00"
+BDATE = ""
 MAINVER = VERSION + SUB_VERSION + CODENAME
-BUILD_USERNAME = "CreeperSeth"
+BUILD_USERNAME = "CreeperSeth and Robin"
 AUDIO_CACHE_PATH = os.path.join(os.getcwd(), "audio_cache")
 DISCORD_MSG_CHAR_LIMIT = 2000
