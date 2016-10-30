@@ -12,6 +12,7 @@ from collections import deque
 
 from .exceptions import ExtractionError, WrongEntryTypeError
 from .lib.event_emitter import EventEmitter
+from ruby.logger import log
 
 
 class Playlist(EventEmitter):
@@ -33,6 +34,9 @@ class Playlist(EventEmitter):
     def clear(self):
         self.entries.clear()
 
+    def remove_entry(self, index):
+        del self.entries[index]
+
     async def add_entry(self, song_url, **meta):
 
         try:
@@ -49,10 +53,10 @@ class Playlist(EventEmitter):
         if info["extractor"] in ["generic", "Dropbox"]:
             try:
                 content_type = await get_header(self.bot.aiosession, info["url"], "CONTENT-TYPE")
-                print("Got content type", content_type)
+                log.debug("Got content type {}".format(content_type))
 
             except Exception as e:
-                print("[Warning] Failed to get content type for url %s (%s)" % (song_url, e))
+                log.warning("Failed to get content type for url %s (%s)" % (song_url, e))
                 content_type = None
 
             if content_type:
@@ -61,7 +65,7 @@ class Playlist(EventEmitter):
                         raise ExtractionError("Invalid content type \"%s\" for url %s" % (content_type, song_url))
 
                 elif not content_type.startswith(("audio/", "video/")):
-                    print("[Warning] Questionable content type \"%s\" for url %s" % (content_type, song_url))
+                    log.warning("[Questionable content type \"%s\" for url %s" % (content_type, song_url))
 
         entry = PlaylistEntry(
             self,
@@ -106,16 +110,14 @@ class Playlist(EventEmitter):
 
                     self._add_entry(entry)
                     entry_list.append(entry)
-                except:
+                except Exception as e:
                     baditems += 1
-                    traceback.print_exc()
-                    print(items)
-                    print("Could not add item")
+                    log.debug("{}\nCould not add item {}".format(items, e))
             else:
                 baditems += 1
 
         if baditems:
-            print("Skipped %s bad entries" % baditems)
+            log.debug("Skipped %s bad entries" % baditems)
 
         return entry_list, position
 
@@ -143,13 +145,12 @@ class Playlist(EventEmitter):
                     baditems += 1
                 except Exception as e:
                     baditems += 1
-                    print("There was an error adding the song {}: {}: {}\n".format(
-                        entry_data["id"], e.__class__.__name__, e))
+                    log.error("There was an error adding the song {}: {}: {}\n".format(entry_data["id"], e.__class__.__name__, e))
             else:
                 baditems += 1
 
         if baditems:
-            print("Skipped %s bad entries" % baditems)
+            log.debug("Skipped %s bad entries" % baditems)
 
         return gooditems
 
@@ -176,13 +177,12 @@ class Playlist(EventEmitter):
                     baditems += 1
                 except Exception as e:
                     baditems += 1
-                    print("There was an error adding the song {}: {}: {}\n".format(
-                        entry_data["id"], e.__class__.__name__, e))
+                    log.error("There was an error adding the song {}: {}: {}\n".format(entry_data["id"], e.__class__.__name__, e))
             else:
                 baditems += 1
 
         if baditems:
-            print("Skipped %s bad entries" % baditems)
+            log.debug("Skipped %s bad entries" % baditems)
 
         return gooditems
 
@@ -326,15 +326,12 @@ class PlaylistEntry:
 
                 if expected_fname_base in ldir:
                     self.filename = os.path.join(self.download_folder, expected_fname_base)
-                    print("[Download] Cached:", self.url)
+                    log.debug("[Download] Cached: {}".format(self.url))
 
                 elif expected_fname_noex in flistdir:
-                    print("[Download] Cached (different extension):", self.url)
+                    log.debug("[Download] Cached (different extension) {}:".format(self.url))
                     self.filename = os.path.join(self.download_folder, ldir[flistdir.index(expected_fname_noex)])
-                    print("Expected %s, got %s" % (
-                        self.expected_filename.rsplit(".", 1)[-1],
-                        self.filename.rsplit(".", 1)[-1]
-                    ))
+                    log.debug("Expected %s, got %s" % (self.expected_filename.rsplit(".", 1)[-1],self.filename.rsplit(".", 1)[-1]))
 
                 else:
                     await self._really_download()
@@ -342,14 +339,14 @@ class PlaylistEntry:
             self._for_each_future(lambda future: future.set_result(self))
 
         except Exception as e:
-            traceback.print_exc()
+            log.error(traceback.format_exception)
             self._for_each_future(lambda future: future.set_exception(e))
 
         finally:
             self._is_downloading = False
 
     async def _really_download(self, *, hash=False):
-        print("[Download] Started:", self.url)
+        log.debug("[Download] Started: {}".format(self.url))
         if self.playlist.config.log_downloads:
             await self.playlist.bot.log(":inbox_tray: Downloading: <{}>".format(self.url))
 
@@ -358,7 +355,7 @@ class PlaylistEntry:
         except Exception as e:
             raise ExtractionError(e)
 
-        print("[Download] Complete:", self.url)
+        log.debug("[Download] Complete: {}".format(self.url))
         if self.playlist.config.log_downloads:
             await self.playlist.bot.log(":inbox_tray: Complete: <{}>".format(self.url))
 
@@ -398,7 +395,7 @@ class PlaylistEntry:
                 cb(future)
 
             except:
-                traceback.print_exc()
+                log.error(traceback.format_exc())
 
     def __eq__(self, other):
         return self is other

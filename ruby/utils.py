@@ -4,6 +4,7 @@ import unicodedata
 import requests
 
 from .constants import DISCORD_MSG_CHAR_LIMIT
+from ruby.logger import log
 
 _USER_ID_MATCH = re.compile(r"<@(\d+)>")
 
@@ -21,7 +22,7 @@ def load_file(filename, skip_commented_lines=True, comment_char="#"):
             return results
 
     except IOError as e:
-        print("Error loading", filename, e)
+        log.debug("Error loading {} {}".format(file_name, e))
         return []
 
 

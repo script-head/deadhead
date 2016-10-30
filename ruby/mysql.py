@@ -4,7 +4,8 @@ conn = sqlite3.connect("data/Ruby.db")
 conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 
-def create_table():
+def create_tables():
+    cur.execute("CREATE TABLE IF NOT EXISTS servers(id TEXT, type TEXT, value TEXT)")
     cur.execute("CREATE TABLE IF NOT EXISTS blacklist(id TEXT, name TEXT, discrim TEXT, reason TEXT)")
 
 def insert_data_entry(id, type, value):
@@ -69,3 +70,5 @@ def getblacklist():
         entry = "ID: \"" + row["id"] + "\" Name: \"" + row["name"]  + "\" Discrim: " + row["discrim"] + " Reason: \"" + row["reason"] + "\""
         entries.append(entry)
     return entries
+
+create_tables()

@@ -6,6 +6,7 @@ import sys
 import time
 import traceback
 import subprocess
+import asyncio
 
 
 class GIT(object):
@@ -145,9 +146,6 @@ def main():
 
         return
 
-    import asyncio
-
-    tried_requirementstxt = False
     tryagain = True
 
     loops = 0
@@ -165,26 +163,6 @@ def main():
         except SyntaxError:
             traceback.print_exc()
             break
-
-        except ImportError as e:
-            if not tried_requirementstxt:
-                tried_requirementstxt = True
-
-                print(e)
-                print("Attempting to install dependencies...")
-
-                err = PIP.run_install("--upgrade -r requirements.txt")
-
-                if err:
-                    print("\nYou may need to %s to install dependencies." %
-                          ["use sudo", "run as admin"][sys.platform.startswith("win")])
-                    break
-                else:
-                    print("\nOk lets hope it worked\n")
-            else:
-                traceback.print_exc()
-                print("Unknown ImportError, exiting.")
-                break
 
         except Exception as e:
             if hasattr(e, "__module__") and e.__module__ == "ruby.exceptions":

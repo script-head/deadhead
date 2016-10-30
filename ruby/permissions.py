@@ -3,6 +3,7 @@ import traceback
 import configparser
 
 from discord import User as discord_User
+from ruby.logger import log
 
 
 class PermissionsDefaults:
@@ -28,14 +29,13 @@ class Permissions:
         self.config = configparser.ConfigParser(interpolation=None)
 
         if not self.config.read(config_file, encoding="utf-8"):
-            print("[permissions] Permissions file not found, copying example_permissions.ini")
+            log.warning("Permissions file not found, copying example_permissions.ini")
 
             try:
                 shutil.copy("config/example_permissions.ini", config_file)
                 self.config.read(config_file, encoding="utf-8")
 
             except Exception as e:
-                traceback.print_exc()
                 raise RuntimeError("Unable to copy config/example_permissions.ini to %s: %s" % (config_file, e))
 
         self.default_group = PermissionGroup("Default", self.config["Default"])

@@ -3,7 +3,7 @@ import shutil
 import traceback
 import configparser
 
-from .exceptions import HelpfulError
+from ruby.logger import log
 
 
 class ConfigDefaults:
@@ -14,12 +14,13 @@ class ConfigDefaults:
     an_webhook_url = None
 
     owner_id = None
-    command_prefix = "!"
+    dev_ids = []
+
+    command_prefix = "*"
     bound_channels = set()
     autojoin_channels = set()
 
     default_volume = 0.15
-    white_list_check = False
     skips_required = 4
     skip_ratio_required = 0.5
     save_videos = True
@@ -35,9 +36,17 @@ class ConfigDefaults:
     log_interaction = False
     log_downloads = False
     log_timeformat = "%H:%M:%S"
+    debug = False
+
+    enableOsu = False
+    osuKey = None
+
+    enableMal = False
+    malUsername = None
+    malPassword = None
 
     options_file = "config/options.ini"
-    auto_playlist_file = "config/autoplaylist.txt" # this will change when I add playlists
+    auto_playlist_file = "config/autoplaylist.txt"
 
 
 class Config:
@@ -46,50 +55,35 @@ class Config:
         config = configparser.ConfigParser()
 
         if not config.read(config_file, encoding="utf-8"):
-            print("[config] Config file not found, copying example_options.ini")
+            log.warning("Config file not found, copying example_options.ini")
 
             try:
                 shutil.copy("config/example_options.ini", config_file)
 
-                # load the config again and check to see if the user edited that one
                 c = configparser.ConfigParser()
                 c.read(config_file, encoding="utf-8")
 
                 if not int(c.get("Permissions", "OwnerID", fallback=0)): # jake pls no flame
-                    print("\nPlease configure config/options.ini and restart the bot.", flush=True)
+                    log.critical("Please configure config/options.ini and restart the bot.", flush=True)
                     os._exit(1)
 
             except FileNotFoundError as e:
-                raise HelpfulError(
-                    "Your config files are missing.  Neither options.ini nor example_options.ini were found.",
-                    "Grab the files back from the archive or remake them yourself and copy paste the content "
-                    "from the repo.  Stop removing important files!"
-                )
+                log.critical("No options.ini or example_options.ini could be found!\nGo back to the archive or github repo and get them!")
 
-            except ValueError: # Config id value was changed but its not valid
-                print("\nInvalid value for OwnerID, config cannot be loaded.")
-                # TODO: HelpfulError
+            except ValueError:
+                log.critical("\nInvalid value in config! The config could not be loaded!")
                 os._exit(4)
 
             except Exception as e:
-                print(e)
-                print("\nUnable to copy config/example_options.ini to %s" % config_file, flush=True)
+                log.critical("Unable to copy config/example_options.ini to {}\n{}".format(config_file, e))
                 os._exit(2)
 
         config = configparser.ConfigParser(interpolation=None)
         config.read(config_file, encoding="utf-8")
 
-        confsections = {"Credentials", "Permissions", "Chat", "MusicBot", "Logging"}.difference(config.sections())
+        confsections = {"Credentials", "Permissions", "Chat", "Bot", "Logging", "Osu", "MyAnimeList"}.difference(config.sections())
         if confsections:
-            raise HelpfulError(
-                "One or more required config sections are missing.",
-                "Fix your config.  Each [Section] should be on its own line with "
-                "nothing else on it.  The following sections are missing: {}".format(
-                    ", ".join(["[%s]" % s for s in confsections])
-                ),
-                preface="An error has occured parsing the config:\n"
-            )
-
+            log.critical("One or more required config sections are missing.\nFix your config, Each [Section] should be on its own line")
         self._email = config.get("Credentials", "Email", fallback=ConfigDefaults.email)
         self._password = config.get("Credentials", "Password", fallback=ConfigDefaults.password)
         self._login_token = config.get("Credentials", "Token", fallback=ConfigDefaults.token)
@@ -99,21 +93,23 @@ class Config:
         self.auth = None
 
         self.owner_id = config.get("Permissions", "OwnerID", fallback=ConfigDefaults.owner_id)
+        self.dev_ids = config.get("Permissions", "DeveloperIDs", fallback=ConfigDefaults.dev_ids)
+
         self.command_prefix = config.get("Chat", "CommandPrefix", fallback=ConfigDefaults.command_prefix)
         self.bound_channels = config.get("Chat", "BindToChannels", fallback=ConfigDefaults.bound_channels)
         self.autojoin_channels = config.get("Chat", "AutojoinChannels", fallback=ConfigDefaults.autojoin_channels)
 
-        self.default_volume = config.getfloat("MusicBot", "DefaultVolume", fallback=ConfigDefaults.default_volume)
-        self.white_list_check = config.getboolean("MusicBot", "WhiteListCheck", fallback=ConfigDefaults.white_list_check)
-        self.skips_required = config.getint("MusicBot", "SkipsRequired", fallback=ConfigDefaults.skips_required)
-        self.skip_ratio_required = config.getfloat("MusicBot", "SkipRatio", fallback=ConfigDefaults.skip_ratio_required)
-        self.save_videos = config.getboolean("MusicBot", "SaveVideos", fallback=ConfigDefaults.save_videos)
-        self.now_playing_mentions = config.getboolean("MusicBot", "NowPlayingMentions", fallback=ConfigDefaults.now_playing_mentions)
-        self.auto_summon = config.getboolean("MusicBot", "AutoSummon", fallback=ConfigDefaults.auto_summon)
-        self.auto_playlist = config.getboolean("MusicBot", "UseAutoPlaylist", fallback=ConfigDefaults.auto_playlist)
-        self.auto_pause = config.getboolean("MusicBot", "AutoPause", fallback=ConfigDefaults.auto_pause)
-        self.delete_messages  = config.getboolean("MusicBot", "DeleteMessages", fallback=ConfigDefaults.delete_messages)
-        self.delete_invoking = config.getboolean("MusicBot", "DeleteInvoking", fallback=ConfigDefaults.delete_invoking)
+        self.default_volume = config.getfloat("Bot", "DefaultVolume", fallback=ConfigDefaults.default_volume)
+        self.skips_required = config.getint("Bot", "SkipsRequired", fallback=ConfigDefaults.skips_required)
+        self.skip_ratio_required = config.getfloat("Bot", "SkipRatio", fallback=ConfigDefaults.skip_ratio_required)
+        self.save_videos = config.getboolean("Bot", "SaveVideos", fallback=ConfigDefaults.save_videos)
+        self.now_playing_mentions = config.getboolean("Bot", "NowPlayingMentions", fallback=ConfigDefaults.now_playing_mentions)
+        self.auto_summon = config.getboolean("Bot", "AutoSummon", fallback=ConfigDefaults.auto_summon)
+        self.auto_playlist = config.getboolean("Bot", "UseAutoPlaylist", fallback=ConfigDefaults.auto_playlist)
+        self.auto_pause = config.getboolean("Bot", "AutoPause", fallback=ConfigDefaults.auto_pause)
+        self.delete_messages  = config.getboolean("Bot", "DeleteMessages", fallback=ConfigDefaults.delete_messages)
+        self.delete_invoking = config.getboolean("Bot", "DeleteInvoking", fallback=ConfigDefaults.delete_invoking)
+        self.debug = config.getboolean("Bot", "Debug", fallback=ConfigDefaults.debug)
 
         self.auto_playlist_file = config.get("Files", "AutoPlaylistFile", fallback=ConfigDefaults.auto_playlist_file)
 
@@ -123,6 +119,13 @@ class Config:
         self.log_interaction = config.getboolean("Logging", "Interaction", fallback=ConfigDefaults.log_interaction)
         self.log_downloads = config.getboolean("Logging", "Downloads", fallback=ConfigDefaults.log_downloads)
         self.log_timeformat = config.get("Logging", "TimeFormat", fallback=ConfigDefaults.log_timeformat)
+
+        self.enableOsu = config.getboolean("Osu", "enable", fallback=ConfigDefaults.enableOsu)
+        self._osuKey = config.get("Osu", "key", fallback=ConfigDefaults.osuKey)
+
+        self.enableMal = config.getboolean("MyAnimeList", "enable", fallback=ConfigDefaults.enableMal)
+        self._malUsername = config.get("MyAnimeList", "username", fallback=ConfigDefaults.malUsername)
+        self._malPassword = config.get("MyAnimeList", "password", fallback=ConfigDefaults.malPassword)
 
         self.run_checks()
 
@@ -135,87 +138,61 @@ class Config:
 
         if self._email or self._password:
             if not self._email:
-                raise HelpfulError(
-                    "The login email was not specified in the config.",
-
-                    "Please put your bot account credentials in the config.  "
-                    "Remember that the Email is the email address used to register the bot account.",
-                    preface=confpreface)
+                log.critical("The login email was not specified in the config.\nPut your credinals in the config!")
 
             if not self._password:
-                raise HelpfulError(
-                    "The password was not specified in the config.",
-
-                    "Please put your bot account credentials in the config.",
-                    preface=confpreface)
+                log.critical("The login password was not specified in the config.\nPut your credinals in the config!")
 
             self.auth = (self._email, self._password)
 
         elif not self._login_token:
-            raise HelpfulError(
-                "No login credentials were specified in the config.",
-
-                "Please fill in either the Email and Password fields, or "
-                "the Token field.  The Token field is for Bot accounts only.",
-                preface=confpreface
-            )
+            log.critical("No login credinals were specified in the config\nPlease put in a token or an email and password in the config!")
 
         else:
             self.auth = (self._login_token,)
 
-
         if self.owner_id and self.owner_id.isdigit():
             if int(self.owner_id) < 10000:
-                raise HelpfulError(
-                    "OwnerID was not set.",
-
-                    "Please set the OwnerID in the config. If you "
-                    "don't know what that is, use the %sid command" % self.command_prefix,
-                    preface=confpreface)
-
+                log.critical("The owner id was not specified!\nPlease put the owner id in the config!")
         else:
-            raise HelpfulError(
-                "An invalid OwnerID was set.",
+            log.critical("An invalid owner id was specified in the config, please put a valid owner id in. If you don't know what your id is, than type {}id @yourname. The current invalid owner id specified is {}".format(self.command_prefix, self.owner_id))
 
-                "Correct your OwnerID.  The ID should be just a number, approximately "
-                "18 characters long.  If you don't know what your ID is, "
-                "use the %sid command.  Current invalid OwnerID: %s" % (self.command_prefix, self.owner_id),
-                preface=confpreface)
+        if len(self.dev_ids) is not 0:
+            try:
+                self.dev_ids = list(self.dev_ids.split())
+            except:
+                log.warning("Developer IDs are invalid, all developer IDs have been ignored!")
+                self.dev_ids = ConfigDefaults.dev_ids
 
         if self.bound_channels:
             try:
                 self.bound_channels = set(x for x in self.bound_channels.split() if x)
             except:
-                print("[Warning] BindToChannels data invalid, will not bind to any channels")
+                log.warning("BindToChannels data invalid, will not bind to any channels")
                 self.bound_channels = set()
 
         if self.autojoin_channels:
             try:
                 self.autojoin_channels = set(x for x in self.autojoin_channels.split() if x)
             except:
-                print("[Warning] AutojoinChannels data invalid, will not autojoin any channels")
+                log.warning("AutojoinChannels data invalid, will not autojoin any channels")
                 self.autojoin_channels = set()
 
         if self.log_subchannels:
             try:
                 self.log_subchannels = set(x for x in self.log_subchannels.split() if x)
             except:
-                print("[Warning] LogSubChannels data invalid, will not log to any subchannels")
+                log.warning("LogSubChannels data invalid, will not log to any subchannels")
                 self.log_subchannels = set()
 
+        if self.enableOsu:
+            if not self._osuKey:
+                log.critical("The osu! module was enabled but no osu! api key was specified!")
+
+        if self.enableMal:
+            if not self._malUsername:
+                log.critical("The MyAnimeList module was enabled, but no MAL username was specified!")
+            if not self._malPassword:
+                log.critical("The MyAnimeList module was enabled, but no MAL password was specified!")
+
         self.delete_invoking = self.delete_invoking and self.delete_messages
-
-    # TODO: Add save function for future editing of options with commands
-    #       Maybe add warnings about fields missing from the config file
-
-    def write_default_config(self, location):
-        pass
-
-
-# These two are going to be wrappers for the id lists, with add/remove/load/save functions
-# and id/object conversion so types aren"t an issue
-class Blacklist:
-    pass
-
-class Whitelist:
-    pass
