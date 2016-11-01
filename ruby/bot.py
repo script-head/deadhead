@@ -86,36 +86,14 @@ default_game = discord.Game(name="with team RWBY")
 default_status = discord.Status.dnd
 
 # Date vars
-halloween = date(2016, 10, 31)
+halloween = date(2017, 10, 31)
 
 # The fucking changelog var
 change_log = [
     "Commands:",
-    "+ roleinfo",
-    "+ showblacklist",
-    "+ convertfile",
-    "+ pin",
-    "+ unpin",
-    "+ rekt",
-    "+ psat",
-    "+ internetrules",
-    "+ osu",
-    "+ anime",
-    "+ manga",
-    "+ remove",
-    "+ createrole",
-    "+ deleterole",
-    "+ editrole",
-    "+ renamerole",
-    "- fursecute",
-    "+ roasted",
+    "None!",
     "Other stuff:",
-    "- The whitelist system",
-    "Completely recoded the blacklist system",
-    "Renamed the help2 command to commandlist",
-    "Revamped the logging system",
-    "+ Dev IDs and dev only commands",
-    "Hopefully fixed the bug that causes the e621 and rule34 command to raise an IndexError"
+    "Fixed the prune command from counting the command"
 ]
 # String vars
 no_perm = "You do not have permission to use that command."
@@ -1847,6 +1825,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         try:
             await self.ban(member, delete_message_days=7)
             neroishot = format_user(message.author)
@@ -2169,6 +2148,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         try:
             await self.add_roles(user, role)
             await self.mod_log(server, "`" + format_user(author) + "` added the `" + role.name + "` role to `" + format_user(user) + "`")
@@ -2199,6 +2179,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         try:
             await self.remove_roles(user, role)
             await self.mod_log(server, "`" + format_user(author) + "` removed the `" + role.name + "` role from `" + format_user(user) + "`")
@@ -2311,6 +2292,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         try:
             await self.kick(member)
             neroishot = format_user(message.author)
@@ -2333,6 +2315,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name="Bot Commander")
         if not botcommander:
             await self.send_message(message.channel, "You must have the `Bot Commander` role in order to use that command.")
+            return
         try:
             furryrole = discord.utils.find(lambda role: role.name == "Furry", server.roles)
             if furryrole == None:
@@ -2398,6 +2381,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(author.roles, name="Bot Commander")
         if not botcommander:
             await self.send_message(message.channel, "You must have the `Bot Commander` role in order to use that command.")
+            return
         tehname = message.content[len(self.command_prefix + "createchannel "):].strip().lower().replace(" ", "")
         try:
             noticemenero = await self.create_channel(server, tehname, type="text")
@@ -2413,6 +2397,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(author.roles, name="Bot Commander")
         if not botcommander:
             await self.send_message(message.channel, "You must have the `Bot Commander` role in order to use that command.")
+            return
         tehname = message.content[len(self.command_prefix + "createvoicechannel "):].strip()
         try:
             noticemenero = await self.create_channel(server, tehname, type="voice")
@@ -2433,6 +2418,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         user_id = extract_user_id(user)
         member = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
         if not member:
@@ -2458,6 +2444,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         user_id = extract_user_id(user)
         member = discord.utils.find(lambda mem: mem.id == str(user_id), message.channel.server.members)
         if not member:
@@ -2545,15 +2532,21 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         try:
             harambe = int(amount)
         except:
             await self.send_message(channel, "Error: " + amount + " is not a valid number!")
+            return
+
         try:
-            deleted = await self.purge_from(channel, limit = harambe)
-            return Response("Deleted {} messages".format(len(deleted)), delete_after=10, reply=True)
+            await self.delete_message(message)
+            deleted = await self.purge_from(channel, limit=harambe)
         except discord.Forbidden: 
             await self.send_message(channel, "I need the \"Manage Messages\" permission in order to prune messages.")
+            return
+        try:
+            return Response("Deleted {} messages".format(len(deleted)), delete_after=10, reply=True)
         except discord.HTTPException:
             await self.send_message(channel, "Unexpected error while attempting to prune messages.")
 
@@ -2562,6 +2555,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         bans = await self.get_bans(message.server)
         usr = message.content[len(self.command_prefix + "unban "):].strip()
         try:
@@ -2579,6 +2573,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         bans = await self.get_bans(message.server)
         banlist = ", ".join(map(str, bans))
         if banlist == "":
@@ -2593,7 +2588,7 @@ class Ruby(discord.Client):
         serv = discord.utils.get(self.servers, name=sn)
         if serv is None:
             return Response("Couldn't find server named " + sn)
-        return Response("```Name: {}\nID: {}\nOwner: {}\nMember count: {}```".format(serv.name, serv.id, format_user(serv.owner), len(serv.members)))
+        return Response("```Name: {}\nID: {}\nOwner: {}\nMember count: {}\nDate created: {}```".format(serv.name, serv.id, format_user(serv.owner), len(serv.members), serv.created_at))
 
     async def cmd_setnick(self, message, nickname):
         nick = message.content[len(self.command_prefix + "setnick "):].strip()
@@ -2651,6 +2646,7 @@ class Ruby(discord.Client):
         """
         if lock_status is True:
             await self.send_message(message.channel, "The status is currently locked")
+            return
         statustype = None
         game = None
         if status == "invisible" or status == "offline":
@@ -2674,7 +2670,8 @@ class Ruby(discord.Client):
 
     async def cmd_stream(self, message, name):
         if lock_status is True:
-            await self.send_message("The status is currently locked")
+            await self.send_message(message.channel, "The status is currently locked")
+            return
         name = message.content[len(self.command_prefix + "stream "):].strip()
         await self.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
         await self.send_message(message.channel, "Now streaming `" + name + "`")
@@ -2897,6 +2894,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         try:
             msg = await self.get_message(message.channel, id)
         except discord.NotFound:
@@ -2912,6 +2910,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         pinned_messages = await self.pins_from(message.channel)
         msg = discord.utils.get(pinned_messages, id=id)
         if msg is None:
@@ -3070,6 +3069,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         name = message.content[len(self.command_prefix + "createrole "):].strip()
         try:
             await self.create_role(message.server, name=name)
@@ -3082,6 +3082,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         name = message.content[len(self.command_prefix + "deleterole "):].strip()
         role = discord.utils.get(message.server.roles, name=name)
         if role is None:
@@ -3098,6 +3099,7 @@ class Ruby(discord.Client):
         botcommander = discord.utils.get(message.author.roles, name=mod_role_name)
         if not botcommander:
             await self.send_message(message.channel, "You must have the `" + mod_role_name + "` role in order to use that command.")
+            return
         role_name = message.content[len(self.command_prefix + "editrole " + type + " " + value + " "):].strip()
         orig_role = discord.utils.get(message.server.roles, name=role_name)
         if orig_role is None:
