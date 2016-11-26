@@ -8,6 +8,8 @@ from ruby.logger import log
 
 _USER_ID_MATCH = re.compile(r"<@(\d+)>")
 
+_EMOTE_ID_MATCH = re.compile(r"<:(.+?):(\d+)>")
+
 
 def load_file(filename, skip_commented_lines=True, comment_char="#"):
     try:
@@ -43,7 +45,7 @@ def download_file(url, destination):
 def extract_user_id(argument):
     match = _USER_ID_MATCH.match(argument.replace("!", ""))
     if match:
-        return int(match.group(1))
+        return str(match.group(1))
 
 
 def slugify(value):
@@ -81,3 +83,8 @@ def paginate(content, *, length=DISCORD_MSG_CHAR_LIMIT, reserve=0):
 
 def format_user(insertnerovar):
         return insertnerovar.name + "#" + insertnerovar.discriminator
+
+def extract_emote_id(argument):
+    match = _EMOTE_ID_MATCH.match(argument)
+    if match:
+        return str(match.group(2))

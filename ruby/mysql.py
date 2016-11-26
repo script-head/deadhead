@@ -24,6 +24,9 @@ def read_data_entry(id, type):
         elif type == "nsfw-channel":
             insert_data_entry(id, type, "nsfw")
             val = "nsfw"
+        elif type == "mute-role":
+            insert_data_entry(id, type, "Muted")
+            val = "Muted"
     return val
 
 def update_data_entry(id, type, value):

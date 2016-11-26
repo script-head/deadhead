@@ -7,10 +7,7 @@
 audio_cache/
 dectalk/
 
-#Bot logs and configs
-rtb.log
-discord.log
-logs/
+#Bot configs
 config/options.ini
 config/permissions.ini
 config/autoplaylist.txt
