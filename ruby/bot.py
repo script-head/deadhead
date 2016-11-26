@@ -2652,7 +2652,7 @@ class Ruby(discord.Client):
             await self.send_message(message.channel, "The status is currently locked")
             return
         name = message.content[len(self.command_prefix + "stream "):].strip()
-        await self.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/Seth"))
+        await self.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
         await self.send_message(message.channel, "Now streaming `" + name + "`")
         await self.log(":information_source: `" + message.author.id + "`/`" + format_user(message.author) + "` changed the streaming status to `" + name + "`")
 
