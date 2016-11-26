@@ -111,7 +111,7 @@ dis_games = [
     discord.Game(name="on Windows XP"),
     discord.Game(name="with Robin"),
     discord.Game(name="Super Smash Bros. Melee"),
-    discord.Game(name="/help for help!"),
+    discord.Game(name="r!help for help!"),
     discord.Game(name="with memes"),
     discord.Game(name="with some floof"),
     discord.Game(name="Doom (1993)"),
@@ -379,7 +379,6 @@ class Response:
         self.reply = reply
         self.delete_after = delete_after
 
-
 class Ruby(discord.Client):
     # TODO: Some how figure out how to set the discord.Client.shard_id and discord.Client.total_shards variables to get the bot to shard correctly
     def __init__(self, config_file=ConfigDefaults.options_file, perms_file=PermissionsDefaults.perms_file):
@@ -404,9 +403,7 @@ class Ruby(discord.Client):
         if not self.autoplaylist:
             log.warning("Autoplaylist is empty, disabling.")
             self.config.auto_playlist = False
-
         self.http.user_agent += " Ruby/%s" % BOTVERSION
-
         ssd_defaults = {"last_np_msg": None, "auto_paused": False}
         self.server_specific_data = defaultdict(lambda: dict(ssd_defaults))
 
@@ -940,7 +937,6 @@ class Ruby(discord.Client):
                 log.info("Discord Bots Server count updated.")
             elif r.status_code == "401":
                 log.error("An error occurred while trying to update the server count!")
-
 
         if self.config.owner_id == self.user.id:
             log.critical("Your owner ID is incorrect or you've used the wrong credentials.\nThe owner ID is your ID not the bot's ID.")
@@ -1773,7 +1769,7 @@ class Ruby(discord.Client):
         helpmsg += "\nTotal commands: " + str(len(commands)) + "\n"
         helpmsg += "\n".join(commands)
         helpmsg += "```"
-        helpmsg += "http://ruby.Seth.com"
+        helpmsg += "http://ruby.creeperseth.com"
 
         await self.send_message(author, helpmsg)
 
@@ -2004,7 +2000,7 @@ class Ruby(discord.Client):
         await self.log(":information_source: " + message.author.name + "sent a warning to ID #: `" + id + "`")
 
     async def cmd_help(self):
-        return Response("Help List: http://ruby.Seth.com Any other help? DM @Seth#9790 for more help, or do `" + self.command_prefix + "serverinv` to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
+        return Response("Help List: http://ruby.creeperseth.com Any other help? DM @Seth#9790 for more help, or do `" + self.command_prefix + "serverinv` to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
 
     async def cmd_serverinv(self, author):
         await self.safe_send_message(author, "https://discord.gg/enDDbMC - If you came for help, ask for Seth. If the link is expired do `" + self.command_prefix + "notifydev` and report it")
