@@ -2047,7 +2047,7 @@ class Ruby(discord.Client):
             return Response("I hereby ship " + message.content[len(self.command_prefix + "ship"):].strip() + "!", delete_after=0)
 
     async def cmd_info(self):
-        return Response(xl.format("~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the \"{}help\" command or message Seth from the Discord server Rubys Fallout Shelter\n\n Do not have that? Then do \"{}serverinv\" to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff, thank Robin for some of the features in the bot!\n\nWant to find even more information? Then vist \"http://ruby.Seth.com\"\n").format(BUNAME, MVER, BUILD, len(set(self.get_all_members())), len(set(self.messages)), len(self.servers), len(set(self.get_all_channels())), len(set(self.private_channels)), discord.__version__, self.command_prefix, self.command_prefix), delete_after=0)
+        return Response(xl.format("~~~~~~~~~Ruby~~~~~~~~\n Built by {}\n Bot Version: {}\n Build Date: {}\n Users: {}\n User Message Count: {}\n Servers: {}\n Channels: {}\n Private Channels: {}\n Discord Python Version: {}\n ~~~~~~~~~~~~~~~~~~~~~\n\n Need help? Use the \"{}help\" command or message Seth from the Discord server Rubys Fallout Shelter\n\n Do not have that? Then do \"{}serverinv\" to grab the invite.\n\nThis bot was originally RobTheBoat but forked and renamed to Ruby Rose with more commands and other stuff, thank Robin for some of the features in the bot!\n\nWant to find even more information? Then visit \"http://ruby.creeperseth.com\"\n").format(BUNAME, MVER, BUILD, len(set(self.get_all_members())), len(set(self.messages)), len(self.servers), len(set(self.get_all_channels())), len(set(self.private_channels)), discord.__version__, self.command_prefix, self.command_prefix), delete_after=0)
 
     @dev_only
     async def cmd_debug(self, message, stuff):
@@ -2317,7 +2317,7 @@ class Ruby(discord.Client):
         return Response("http://niceme.me", delete_after=0)
 
     async def cmd_github(self):
-        return Response("https://github.com/Seth/RubyRoseBot", delete_after=0)
+        return Response("https://github.com/CreeperSeth/RubyRoseBot", delete_after=0)
 
     async def cmd_kys(self, message, name):
         WorthlessPieceOfShit = message.content[len(self.command_prefix + "kys "):].strip()
@@ -2446,7 +2446,7 @@ class Ruby(discord.Client):
 
     async def cmd_changelog(self):
         changes = "\n".join(map(str, change_log))
-        return Response("Latest update changelog:\nCommand syntaxes can be found at http://ruby.Seth.com!\n```diff\n" + changes + "```")
+        return Response("Latest update changelog:\nCommand syntaxes can be found at http://ruby.creeperseth.com!\n```diff\n" + changes + "```")
 
     async def cmd_suggest(self, message, suggestion):
         await self.send_typing(message.channel)
@@ -2479,7 +2479,7 @@ class Ruby(discord.Client):
         """
         Usage: {command_prefix}config type value
         Configure the bot config for this server
-        If you need help with this, visit the docs at ruby.Seth.com
+        If you need help with this, visit the docs at ruby.creeperseth.com
         """
         if message.author is not message.server.owner:
             return Response("Only the server owner can use this command")
@@ -2491,7 +2491,7 @@ class Ruby(discord.Client):
             update_data_entry(message.server.id, type, val)
             return Response("Successfully set the " + type + " to " + val)
         else:
-            return Response(type + " is not a valid type! If you need help go to ruby.Seth.com")
+            return Response(type + " is not a valid type! If you need help go to ruby.creeperseth.com")
 
     async def cmd_avatar(self, channel, user):
         user_id = extract_user_id(user)
@@ -3107,7 +3107,7 @@ class Ruby(discord.Client):
             try:
                 perms = discord.Permissions(permissions=int(value))
             except:
-                await self.send_message(message.channel, "`" + value + "` is not a valid permission number! If you need help finding the permission number, then go to <http://Seth.com/discordpermcalc> for a permission calculator!")
+                await self.send_message(message.channel, "`" + value + "` is not a valid permission number! If you need help finding the permission number, then go to <http://creeperseth.com/discordpermcalc> for a permission calculator!")
                 return
             try:
                 await self.edit_role(message.server, orig_role, permissions=perms)
