@@ -2000,9 +2000,10 @@ class Ruby(discord.Client):
         await self.log(":information_source: " + message.author.name + "sent a warning to ID #: `" + id + "`")
 
     async def cmd_help(self):
-        return Response("Help List: http://ruby.creeperseth.com Any other help? DM @Seth#9790 for more help, or do `" + self.command_prefix + "serverinv` to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
+        return Response("Help List: http://ruby.creeperseth.com Any other help? DM @Seth#9790 for more help, or do `" + self.command_prefix + "
+			` to join Ruby's Fallout Shelter for some Ruby help somewhere.", delete_after=0)
 
-    async def cmd_serverinv(self, author):
+    async def cmd_serverinv(self, author):#uh this broke somehow?
         await self.safe_send_message(author, "https://discord.gg/enDDbMC - If you came for help, ask for Seth. If the link is expired do `" + self.command_prefix + "notifydev` and report it")
         return Response(author.name + " I sent the link to my server in a DM")
 
