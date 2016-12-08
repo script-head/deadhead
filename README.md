@@ -1,7 +1,5 @@
-#Ruby
+#Ruby Rose - The Discord bot
+If you are looking for a command list, run the command ``r!help`` if you want a command syntax do ``r!help <command>``
 
-Original bot: [https://github.com/RobinGall2910/RobTheBoat](https://github.com/RobinGall2910/RobTheBoat)
-
-For help: tbh idek do /help or look at the docs on [http://ruby.creeperseth.com](http://ruby.creeperseth.com)
-
-This discord bot named Ruby Rose is designed to make your expierence on discord a whole log better by bringing you music, moderation, fun, memes, porn, and a lot of other shit (i dun kn0w the other shet plz no flame i have crippling depression :( plz no kthx)
+#Website
+The official documentation for the bot can be found at [http://ruby.creeperseth.com](http://ruby.creeperseth.com) 

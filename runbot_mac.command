@@ -5,4 +5,4 @@ cd "$(dirname "$BASH_SOURCE")" || {
 exit 1
 }
 
-python3.5 run.py
+python3.5 bot.py

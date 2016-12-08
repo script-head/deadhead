@@ -3,16 +3,9 @@
 *.pyc
 ~*/
 
-#Why do you even need these on Github?
-audio_cache/
-dectalk/
-
-#Bot configs
-config/options.ini
-config/permissions.ini
-config/autoplaylist.txt
-config/autoplaylist_removed.txt
+# Bot files
 data/
+config/config.ini
 
 # Windows nonsense
 ## Windows image file caches
@@ -22,7 +15,7 @@ ehthumbs.db
 ## Folder config file
 Desktop.ini
 
-## Recycle Bin used on file shares
+## Recycle Bin
 $RECYCLE.BIN/
 
 ## Windows Installer files
