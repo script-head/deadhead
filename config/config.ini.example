@@ -13,6 +13,9 @@
 ; If you do not know what your token is, you can get it on your bot's control panel page on https://discordapp.com/developers/applications/me
 Token =
 
+; If you have a token for bots.discord.pw then put it here
+;Dbots_Token =
+
 [Bot]
 ; Put your user ID here
 Owner_ID =

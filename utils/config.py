@@ -6,6 +6,7 @@ from utils.logger import log
 
 class Defaults:
     token = None
+    dbots_token = None
     owner_id = None
     command_prefix = "*"
     dev_ids = []
@@ -44,6 +45,7 @@ class Config:
             log.critical("Could not load a section in the config file, please obtain a new config file from the github repo if regenerating the config doesn't work!")
             os._exit(1)
         self._token = config.get("Credentials", "Token", fallback=Defaults.token)
+        self._dbots_token = config.get("Credentials", "Dbots_Token", fallback=Defaults.dbots_token)
         self.owner_id = config.get("Bot", "Owner_ID", fallback=Defaults.owner_id)
         self.command_prefix = config.get("Bot", "Command_Prefix", fallback=Defaults.command_prefix)
         self.dev_ids = config.get("Bot", "Developer_IDs", fallback=Defaults.dev_ids)

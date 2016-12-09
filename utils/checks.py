@@ -7,20 +7,20 @@ from utils.config import Config
 config = Config()
 
 
-def is_owner_check(message):
-    return message.author.id == config.owner_id
+def is_owner_check(user):
+    return user.id == config.owner_id
 
 
-def is_dev_check(message):
-    return message.author.id in config.dev_ids or is_owner_check(message)
+def is_dev_check(user):
+    return user.id in config.dev_ids or is_owner_check(user)
 
 
 def is_owner():
-    return commands.check(lambda ctx: is_owner_check(ctx.message))
+    return commands.check(lambda ctx: is_owner_check(ctx.message.author))
 
 
 def is_dev():
-    return commands.check(lambda ctx: is_dev_check(ctx.message))
+    return commands.check(lambda ctx: is_dev_check(ctx.message.author))
 
 
 def check_perm(ctx, perms):

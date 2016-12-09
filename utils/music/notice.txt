@@ -1,0 +1,6 @@
+Just note that this music bot may not be as stable as it looks. If you find any bugs or if it crashes __***PLEASE***__ let me know by using `r!notifydev`!
+
+I wasn't even planning on readding the music bot because it was so buggy, but too many people were bummed out. Thank you for taking time out of your day for reading this mesage
+and using my bot.
+
+*- Seth#9790*

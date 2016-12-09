@@ -20,24 +20,25 @@ from utils.tools import *
 from utils.channel_logger import Channel_Logger
 from utils.mysql import *
 from utils.buildinfo import *
+from utils.opus_loader import load_opus_lib
 
 config = Config()
 if config.debug:
     log.enableDebugging() # pls no flame
-bot = commands.Bot(command_prefix=config.command_prefix, description="idk what to put here... yet", pm_help=True)
+bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=True)
 channel_logger = Channel_Logger(bot)
 loop = asyncio.get_event_loop()
 aiosession = aiohttp.ClientSession(loop=loop)
-lock_status = False
+lock_status = config.lock_status
 
-extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw"]
+extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music"]
 
 # Thy changelog
 change_log = [
     "Commands:",
-    "Erm, I don't know, but what I do know is some of them are gone and some have been renamed and some new ones were added",
+    "None!",
     "Other things:",
-    "Completely rewrote the bot"
+    "None!"
 ]
 
 async def set_default_status():
@@ -84,6 +85,14 @@ async def on_ready():
             log.error("Failed to load the MyAnimeList module\n{}: {}".format(type(e).__name__, e))
     if config.enableOsu:
         log.info("The osu! module has been enabled in the config!")
+    if config._dbots_token:
+        log.info("Updating DBots Statistics...")
+        r = requests.post("https://bots.discord.pw/api/bots/{}/stats".format(bot.user.id), json={"server_count":len(bot.servers)}, headers={"Authorization":config._dbots_token})
+        if r.status_code == "200":
+            log.info("Discord Bots Server count updated.")
+        elif r.status_code == "401":
+            log.error("An error occurred while trying to update the server count!")
+    load_opus_lib()
 
 @bot.event
 async def on_command_error(error, ctx):
@@ -462,4 +471,6 @@ except:
     loop.run_until_complete(os.system("bot.py"))
 finally:
     aiosession.close()
+    for task in asyncio.Task.all_tasks():
+        task.cancel()
     loop.close()
