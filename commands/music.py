@@ -34,6 +34,8 @@ class VoiceState:
         self.play_next_song = asyncio.Event()
         self.songs = asyncio.Queue()
         self.queue = []
+        # Set to 0.3 by default to make audio distortion minimal
+        self.volume = 0.3
         self.skip_votes = set()  # a set of user_ids that voted
         self.audio_player = self.bot.loop.create_task(self.audio_change_task())
 
@@ -60,7 +62,9 @@ class VoiceState:
             self.current = await self.songs.get()
             self.queue.remove(self.current)
             await self.bot.send_message(self.current.channel, "Now playing {}".format(self.current))
+            self.current.player.volume = self.volume
             self.current.player.start()
+            log.debug("\"{}\" is now playing in \"{}\" on \"{}\"".format(self.current.player.title, self.voice.channel.name, self.current.channel.server.name))
             await self.play_next_song.wait()
 
 
@@ -81,14 +85,13 @@ class Music:
         state = self.get_voice_state(channel.server)
         state.voice = voice
 
-    def kill(self):
-        for state in self.voice_states.values():
-            try:
-                state.audio_player.cancel()
-                if state.voice:
-                    self.bot.loop.create_task(state.voice.disconnect())
-            except:
-                pass # Try and except pass statement is to ignore other errors that may occur
+    async def disconnect_all_voice_clients(self):
+        for id in self.voice_states:
+            state = self.voice_states[id]
+            state.audio_player.cancel()
+            await state.voice.disconnect()
+        log.debug("All voice clients were disconnected!")
+
 
     @commands.command(pass_context=True)
     async def summon(self, ctx):
@@ -103,6 +106,7 @@ class Music:
             except:
                 await ctx.invoke(self.disconnect)
                 await self.bot.say("An error occured and the voice client had to disconnect, please run {}summon again".format(self.bot.command_prefix))
+                log.debug("Bot failed to connect to voice channel")
                 return False
         else:
             await state.voice.move_to(ctx.message.author.voice_channel)
@@ -117,15 +121,13 @@ class Music:
             if state.voice is None:
                 success = await ctx.invoke(self.summon)
                 if not success:
-                    await self.bot.say("An error occured and the voice client had to disconnect, please run {}summon again".format(self.bot.command_prefix))
                     return
             try:
                 player = await state.voice.create_ytdl_player(song, ytdl_options=ytdl_format_options, after=state.toggle_next)
             except Exception as e:
                 await self.bot.say("An error occurred while processing this request: {}".format(py.format("{}: {}".format(type(e).__name__, e))))
                 return
-            # This is to prevent audio distortion
-            player.volume = 0.3
+            player.volume = state.volume
             entry = VoiceEntry(ctx.message, player)
             await self.bot.say("Enqueued {}".format(entry))
             await state.songs.put(entry)
@@ -141,6 +143,7 @@ class Music:
         if state.is_playing():
             player = state.player
             player.volume = amount / 100
+            state.volume = amount / 100
             await self.bot.say("Set the volume to `{:.0%}`".format(player.volume))
         else:
             await self.bot.say("Nothing is playing!")
@@ -157,12 +160,13 @@ class Music:
             del self.voice_states[ctx.message.server.id]
             await state.voice.disconnect()
         except:
-            pass
-        if ctx.message.server.me.voice_channel:
-            try:
-                await ctx.message.server.voice_client.disconnect()
-            except:
-                pass
+            log.debug("Bot failed to disconnect from voice channel, forcing disconnection...")
+            if ctx.message.server.me.voice_channel:
+                try:
+                    await ctx.message.server.voice_client.disconnect()
+                except:
+                    log.error("Bot failed to force the disconnection from a voice channel!\n{}".format(traceback.format_exc()))
+                    pass
         await self.bot.say("Disconnected from the voice channel")
 
     @commands.command(pass_context=True)
@@ -189,8 +193,8 @@ class Music:
             state.skip()
         elif voter.id not in state.skip_votes:
             votes_needed = 3
-            if len(state.voice.voice_members) < 3:
-                votes_needed = len(state.voice.voice_members)
+            if len(state.voice_channel.voice_members) < 3:
+                votes_needed = len(state.voice_channel.voice_members)
             state.skip_votes.add(voter.id)
             total_votes = len(state.skip_votes)
             if total_votes >= 3:
@@ -243,6 +247,19 @@ class Music:
         """PLEASE READ!!!"""
         with open("utils/music/notice.txt") as notice:
             await self.bot.say(notice.read())
+
+    @commands.command(hidden=True, pass_context=True)
+    @checks.is_dev()
+    async def musicdebug(self, ctx, *, shit:str):
+        """This is the part where I make 20,000 typos before I get it right"""
+        # "what the fuck is with your variable naming" - EJH2
+        try:
+            rebug = eval(shit)
+            if asyncio.iscoroutine(rebug):
+                rebug = await rebug
+            await self.bot.say(py.format(rebug))
+        except Exception as damnit:
+            await self.bot.say(py.format("{}: {}".format(type(damnit).__name__, damnit)))
 
 def setup(bot):
     bot.add_cog(Music(bot))

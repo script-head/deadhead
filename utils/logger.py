@@ -37,7 +37,7 @@ class log:
         debugging = True
 
     def debug(msg):
-        if debugging is True:
+        if debugging:
             logging.getLogger(__package__).debug(msg)
 
     def info(msg):

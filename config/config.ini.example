@@ -28,6 +28,9 @@ Command_Prefix = *
 ; Do NOT put the owner ID here!
 ;Developer_IDs =
 
+; How many results should the NSFW commands get?
+Max_NSFW_Count = 500
+
 [Status]
 ; Should users be able to edit the bot's status with the stream and changestatus command?
 ; (The bot owner and the bot developers can always change it regardless of this setting)

@@ -25,9 +25,9 @@ from utils.opus_loader import load_opus_lib
 config = Config()
 if config.debug:
     log.enableDebugging() # pls no flame
-bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=True)
-channel_logger = Channel_Logger(bot)
 loop = asyncio.get_event_loop()
+bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=True, loop=loop)
+channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=loop)
 lock_status = config.lock_status
 
@@ -38,7 +38,10 @@ change_log = [
     "Commands:",
     "None!",
     "Other things:",
-    "None!"
+    "Fixed the skip command",
+    "Fixed the invite command",
+    "Fixed the bug where the volume resets when the song changes",
+    "Fixed the NSFW commands returning a \"JSONDecodeError\""
 ]
 
 async def set_default_status():
@@ -203,14 +206,14 @@ async def on_member_remove(member:discord.Member):
 @checks.is_dev()
 async def debug(ctx, *, shit:str):
     """This is the part where I make 20,000 typos before I get it right"""
+    # "what the fuck is with your variable naming" - EJH2
     try:
         rebug = eval(shit)
         if asyncio.iscoroutine(rebug):
-            await rebug
-        else:
-            await bot.say(py.format(rebug))
+            rebug = await rebug
+        await bot.say(py.format(rebug))
     except Exception as damnit:
-        await bot.say(py.format(type(damnit).__name__ + ": " + str(damnit)))
+        await bot.say(py.format("{}: {}".format(type(damnit).__name__, damnit)))
 
 @bot.command(hidden=True)
 @checks.is_owner()
@@ -224,23 +227,21 @@ async def shutdown(ctx):
     """Logs out and shuts down the bot"""
     await bot.say("Shutting down...")
     log.warning("{} has shut down the bot!".format(format_user(ctx.message.author)))
+    await bot.cogs["Music"].disconnect_all_voice_clients()
     await bot.logout()
 
 @bot.command(hidden=True, pass_context=True)
 @checks.is_owner()
 async def setavatar(ctx, *, url:str=None):
     """Changes the bot's avatar"""
-    image_url = None
     if ctx.message.attachments:
-        image_url = ctx.message.attachments[0]["url"]
-    elif image_url is None:
+        url = ctx.message.attachments[0]["url"]
+    elif url is None:
         await bot.say("Please specify an avatar url if you did not attach a file")
         return
-    else:
-        image_url = url.strip("<>")
     try:
         with aiohttp.Timeout(10):
-            async with aiosession.get(image_url) as image:
+            async with aiosession.get(url) as image:
                 await bot.edit_profile(avatar=await image.read())
     except Exception as e:
         await bot.say("Unable to change avatar: {}".format(e))
@@ -318,7 +319,7 @@ async def unblacklist(ctx, id:str):
 async def showblacklist():
     """Shows the list of users that are blacklisted from the bot"""
     blacklist = getblacklist()
-    count = str(len(blacklist))
+    count = len(blacklist)
     if blacklist == []:
         blacklist = "There are no blacklisted users"
     else:
@@ -350,7 +351,7 @@ async def stream(ctx, *, name:str):
 @bot.command(pass_context=True)
 async def changestatus(ctx, status:str, *, name:str=None):
     """Changes the bot's status with the specified status type and name"""
-    if lock_status is True:
+    if lock_status:
         await bot.say("The status is currently locked")
         return
     game = None
@@ -437,12 +438,12 @@ async def reload(*, extension:str):
         await bot.say("Extension doesn't exist")
 
 @bot.command(pass_context=True)
-async def joinserver(self, ctx):
+async def joinserver(ctx):
     """Sends the bot's OAuth2 link"""
     await bot.send_message(ctx.message.author, "Here is the link to add me to your server: http://invite.ruby.creeperseth.com")
 
 @bot.command(pass_context=True)
-async def invite(self, ctx):
+async def invite(ctx):
     """Sends an invite link to the bot's server"""
     await bot.send_message(ctx.message.author, "Here is the link to my server: https://discord.gg/enDDbMC (if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
 
@@ -464,6 +465,15 @@ async def github():
     """Gives the link to the github repo"""
     await bot.say("My official github repo can be found here: https://github.com/CreeperSeth/RubyRoseBot")
 
+@bot.command()
+async def stats():
+    """Gets the bot's stats"""
+    voice_clients = []
+    for server in list(bot.get_all_servers):
+        if server.me.voice_channel:
+            voice_clients.append(server.me.voice_channel)
+    await bot.say("```xl\n ~~~~~~Ruby Stats~~~~~\nUsers: {}\nServers: {}\nChannels: {}\nActive Voice Clients: {}\nPrivate Channels: {}\ndiscord.py Version: {}\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n```".format(len(list(bot.get_all_members())), len(bot.servers), len(list(bot.get_all_channels())), len(voice_clients), len(list(bot.private_channels)), discord.__version__))
+
 try:
     loop.run_until_complete(bot.login(config._token))
     loop.run_until_complete(bot.connect())
@@ -471,6 +481,4 @@ except:
     loop.run_until_complete(os.system("bot.py"))
 finally:
     aiosession.close()
-    for task in asyncio.Task.all_tasks():
-        task.cancel()
     loop.close()

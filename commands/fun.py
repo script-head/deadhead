@@ -183,10 +183,5 @@ class Fun():
         """FUCK HER RIGHT IN THE PUSSY! #FHRITP"""
         await self.bot.say("https://www.youtube.com/watch?v=x7-nzLx4Oa0")
 
-    @commands.command()
-    async def stats(self):
-        """Gets the bot's stats"""
-        await self.bot.say("```xl\n ~~~~~~Ruby Stats~~~~~\nUsers: {}\nServers: {}\nChannels: {}\nPrivate Channels: {}\ndiscord.py Version: {}\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n```".format(len(list(self.bot.get_all_members())), len(self.bot.servers),len(list(self.bot.get_all_channels())), len(list(self.bot.private_channels)), discord.__version__))
-
 def setup(bot):
     bot.add_cog(Fun(bot))

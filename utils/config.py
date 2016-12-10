@@ -22,6 +22,7 @@ class Defaults:
     malPassword = None
     enableOsu = False
     osuKey = None
+    max_nsfw_count = 500
 
 class Config:
     def __init__(self):
@@ -48,6 +49,7 @@ class Config:
         self._dbots_token = config.get("Credentials", "Dbots_Token", fallback=Defaults.dbots_token)
         self.owner_id = config.get("Bot", "Owner_ID", fallback=Defaults.owner_id)
         self.command_prefix = config.get("Bot", "Command_Prefix", fallback=Defaults.command_prefix)
+        self.max_nsfw_count = config.getint("Bot", "Max_NSFW_Count", fallback=Defaults.max_nsfw_count)
         self.dev_ids = config.get("Bot", "Developer_IDs", fallback=Defaults.dev_ids)
         self.lock_status = config.getboolean("Status", "Lock_Status", fallback=Defaults.lock_status)
         self.enable_default_status = config.getboolean("Status", "Enable_Default_Status", fallback=Defaults.enable_default_status)

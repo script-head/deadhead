@@ -152,7 +152,7 @@ class Information():
     @commands.command(pass_context=True)
     async def osu(self, ctx, *, username:str):
         """Gets an osu! profile stats with the specified name"""
-        if config.enableOsu is False:
+        if not config.enableOsu:
             await self.bot.say("The osu! command has been disabled.")
             return
         try:
