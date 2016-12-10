@@ -469,7 +469,7 @@ async def github():
 async def stats():
     """Gets the bot's stats"""
     voice_clients = []
-    for server in list(bot.get_all_servers):
+    for server in bot.servers:
         if server.me.voice_channel:
             voice_clients.append(server.me.voice_channel)
     await bot.say("```xl\n ~~~~~~Ruby Stats~~~~~\nUsers: {}\nServers: {}\nChannels: {}\nActive Voice Clients: {}\nPrivate Channels: {}\ndiscord.py Version: {}\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n```".format(len(list(bot.get_all_members())), len(bot.servers), len(list(bot.get_all_channels())), len(voice_clients), len(list(bot.private_channels)), discord.__version__))
