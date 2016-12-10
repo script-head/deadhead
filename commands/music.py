@@ -194,7 +194,7 @@ class Music:
         elif voter.id not in state.skip_votes:
             votes_needed = 3
             if len(state.channel.voice_members) < 3:
-                votes_needed = len(state.voice_channel.voice_members)
+                votes_needed = len(state.channel.voice_members)
             state.skip_votes.add(voter.id)
             total_votes = len(state.skip_votes)
             if total_votes >= 3:
