@@ -201,7 +201,7 @@ class Music:
                 votes_needed = len(members)
             state.skip_votes.add(voter.id)
             total_votes = len(state.skip_votes)
-            if total_votes >= 3:
+            if total_votes >= votes_needed:
                 await self.bot.say("Skip vote passed, skipping song...")
                 state.skip()
             else:
