@@ -36,7 +36,7 @@ class VoiceState:
         self.queue = []
         # Set to 0.3 by default to make audio distortion minimal
         self.volume = 0.3
-        self.skip_votes = set()  # a set of user_ids that voted
+        self.skip_votes = set()
         self.audio_player = self.bot.loop.create_task(self.audio_change_task())
 
     def is_playing(self):
@@ -193,8 +193,12 @@ class Music:
             state.skip()
         elif voter.id not in state.skip_votes:
             votes_needed = 3
-            if len(state.channel.voice_members) < 3:
-                votes_needed = len(state.channel.voice_members)
+            members = []
+            for member in state.voice.channel.voice_members:
+                if not member.bot:
+                    members.append(member)
+            if len(members) < 3:
+                votes_needed = len(members)
             state.skip_votes.add(voter.id)
             total_votes = len(state.skip_votes)
             if total_votes >= 3:
