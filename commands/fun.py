@@ -34,7 +34,7 @@ class Fun():
     @commands.command(pass_context=True)
     async def f(self, ctx):
         """Press F to pay your respects"""
-        await self.bot.say("{} has paid their respects! Respects paid: {}".format(format_user(ctx.message.author), random.randint(1, 10000)))
+        await self.bot.say("`{}` has paid their respects! Respects paid: {}".format(ctx.message.author, random.randint(1, 10000)))
 
     @commands.command()
     async def nicememe(self):
@@ -182,6 +182,16 @@ class Fun():
     async def fuckherrightinthepussy(self):
         """FUCK HER RIGHT IN THE PUSSY! #FHRITP"""
         await self.bot.say("https://www.youtube.com/watch?v=x7-nzLx4Oa0")
+
+    @commands.command(pass_context=True)
+    async def quote(self, ctx, id:str):
+        """Quotes a message with the specified message ID"""
+        message = await self.bot.get_message(ctx.message.channel, id)
+        if message is None:
+            await self.bot.say("I could not find a message with an ID of `{}` in this channel".format(id))
+            return
+        embed = make_message_embed(message.author, message.author.color, message.content, formatUser=True)
+        await self.bot.say(None, embed=embed)
 
 def setup(bot):
     bot.add_cog(Fun(bot))

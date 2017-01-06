@@ -26,12 +26,11 @@ class Information():
     async def serverinfo(self, ctx):
         """Gets information on the current server"""
         server = ctx.message.server
-        owner = format_user(server.owner)
         if not server.afk_channel:
             afk_channel = "None"
         else:
             afk_channel = server.afk_channel.name
-        await self.bot.say(xl.format("~~~~~~~~~Server Info~~~~~~~~\nName: {}\nID: {}\nIcon URL: {}\nTotal Members: {}\nCreated: {}\nRegion: {}\nOwner: {}\nOwner ID: {}\nAFK Channel: {}\nAFK timeout: {}\nRoles: {}\nChannels: {}").format(server.name, server.id, server.icon_url, server.member_count, server.created_at, server.region, owner, server.owner_id, afk_channel, server.afk_timeout, len(server.roles), len(server.channels)))
+        await self.bot.say(xl.format("~~~~~~~~~Server Info~~~~~~~~\nName: {}\nID: {}\nIcon URL: {}\nTotal Members: {}\nCreated: {}\nRegion: {}\nOwner: {}\nOwner ID: {}\nAFK Channel: {}\nAFK timeout: {}\nRoles: {}\nChannels: {}").format(server.name, server.id, server.icon_url, server.member_count, server.created_at, server.region, server.owner, server.owner_id, afk_channel, server.afk_timeout, len(server.roles), len(server.channels)))
 
     @commands.command(pass_context=True)
     async def userinfo(self, ctx, *, user:discord.Member=None):
@@ -42,12 +41,12 @@ class Information():
         if roles == "@everyone":
             roles = None
         else:
-            roles = roles[len("@everyone, "):].strip()
+            roles = roles.strip("@everyone, ")
         if not user.avatar_url:
             avatar_url = user.default_avatar_url
         else:
             avatar_url = user.avatar_url
-        await self.bot.say(xl.format("~~~~~~~~~{}~~~~~~~~\nUsername: {}\nDiscriminator: {}\nID: {}\nBot: {}\nAvatar URL: {}\nAccount created: {}\nGame: {}\nStatus: {}\nVoice channel: {}\nServer muted: {}\nServer deafened: {}\nRoles: {}").format(format_user(user), user.name, user.discriminator, user.id, user.bot, avatar_url, user.created_at, str(user.game), str(user.status), str(user.voice_channel), user.mute, user.deaf, roles))
+        await self.bot.say(xl.format("~~~~~~~~~{}~~~~~~~~\nUsername: {}\nDiscriminator: {}\nID: {}\nBot: {}\nAvatar URL: {}\nAccount created: {}\nGame: {}\nStatus: {}\nVoice channel: {}\nServer muted: {}\nServer deafened: {}\nRoles: {}").format(user, user.name, user.discriminator, user.id, user.bot, avatar_url, user.created_at, str(user.game), str(user.status), str(user.voice_channel), user.mute, user.deaf, roles))
 
     @commands.command(pass_context=True)
     async def avatar(self, ctx, *, user:discord.User=None):
@@ -92,8 +91,8 @@ class Information():
         """Gets a username#discriminator list of all users that the bot can see with the specified discriminator"""
         members = []
         for member in list(self.bot.get_all_members()):
-            if member.discriminator == discriminator and format_user(member) not in members:
-                members.append(format_user(member))
+            if member.discriminator == discriminator and str(member) not in members:
+                members.append(str(member))
         if len(members) == 0:
             members = "I could not find any users in any of the servers I'm in with a discriminator of `{}`".format(discriminator)
         else:
@@ -122,7 +121,7 @@ class Information():
         if server is None:
             await self.bot.say("I could not find a server by the name of `{}`".format(name))
         else:
-            await self.bot.say("```Name: {}\nID: {}\nOwner: {}\nOwner ID: {}\nMember count: {}\nDate created: {}```".format(server.name, server.id, format_user(server.owner), server.owner.id, len(server.members), server.created_at))
+            await self.bot.say("```Name: {}\nID: {}\nOwner: {}\nOwner ID: {}\nMember count: {}\nDate created: {}```".format(server.name, server.id, server.owner, server.owner.id, len(server.members), server.created_at))
 
     @commands.command(pass_context=True)
     async def isitdown(self, ctx, *, url:str):

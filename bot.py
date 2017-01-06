@@ -2,6 +2,8 @@ import asyncio
 import os
 import aiohttp
 import time
+import sys
+import subprocess
 
 start_time = time.time()
 
@@ -25,10 +27,9 @@ from utils.opus_loader import load_opus_lib
 config = Config()
 if config.debug:
     log.enableDebugging() # pls no flame
-loop = asyncio.get_event_loop()
-bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=True, loop=loop)
+bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=True)
 channel_logger = Channel_Logger(bot)
-aiosession = aiohttp.ClientSession(loop=loop)
+aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
 
 extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music"]
@@ -36,13 +37,25 @@ extensions = ["commands.fun", "commands.information", "commands.moderation", "co
 # Thy changelog
 change_log = [
     "Commands:",
-    "None!",
+    "+ quote",
     "Other things:",
     "Fixed the skip command",
     "Fixed the invite command",
     "Fixed the bug where the volume resets when the song changes",
     "Fixed the NSFW commands returning a \"JSONDecodeError\""
 ]
+
+async def _restart_bot():
+    await bot.logout()
+    subprocess.call([sys.executable, "bot.py"])
+
+async def _shutdown_bot():
+    try:
+      aiosession.close()
+      await bot.cogs["Music"].disconnect_all_voice_clients()
+    except:
+       pass
+    await bot.logout()
 
 async def set_default_status():
     if not config.enable_default_status:
@@ -118,7 +131,7 @@ async def on_command(command, ctx):
         server = "Private Message"
     else:
         server = "{}/{}".format(ctx.message.server.id, ctx.message.server.name)
-    print("[Command] [{}] [{}/{}]: {}".format(server, ctx.message.author.id, format_user(ctx.message.author), ctx.message.content))
+    print("[Command] [{}] [{}/{}]: {}".format(server, ctx.message.author.id, ctx.message.author, ctx.message.content))
 
 @bot.event
 async def on_message(message):
@@ -152,7 +165,7 @@ async def on_server_update(before:discord.Server, after:discord.Server):
     if before.verification_level != after.verification_level:
         await channel_logger.mod_log(after, "Server verification level was changed from `{}` to `{}`".format(before.verification_level, after.verification_level))
     if before.owner != after.owner:
-        await channel_logger.mod_log(after, "Server ownership was transferred from `{}` to `{}`".format(format_user(before.owner), format_user(after.owner)))
+        await channel_logger.mod_log(after, "Server ownership was transferred from `{}` to `{}`".format(before.owner, after.owner))
 
 @bot.event
 async def on_member_join(member:discord.Member):
@@ -224,11 +237,18 @@ async def rename(*, name:str):
 @bot.command(hidden=True, pass_context=True)
 @checks.is_dev()
 async def shutdown(ctx):
-    """Logs out and shuts down the bot"""
+    """Shuts down the bot"""
     await bot.say("Shutting down...")
-    log.warning("{} has shut down the bot!".format(format_user(ctx.message.author)))
-    await bot.cogs["Music"].disconnect_all_voice_clients()
-    await bot.logout()
+    log.warning("{} has shut down the bot!".format(ctx.message.author))
+    await _shutdown_bot()
+
+@bot.command(hidden=True, pass_context=True)
+@checks.is_dev()
+async def restart(ctx):
+    """Restarts the bot"""
+    await bot.say("Restarting...")
+    log.warning("{} has restarted the bot!".format(ctx.message.author))
+    await _restart_bot()
 
 @bot.command(hidden=True, pass_context=True)
 @checks.is_owner()
@@ -241,7 +261,7 @@ async def setavatar(ctx, *, url:str=None):
         return
     try:
         with aiohttp.Timeout(10):
-            async with aiosession.get(url) as image:
+            async with aiosession.get(url.strip("<>")) as image:
                 await bot.edit_profile(avatar=await image.read())
     except Exception as e:
         await bot.say("Unable to change avatar: {}".format(e))
@@ -285,15 +305,15 @@ async def blacklist(ctx, id:str, *, reason:str):
         await bot.say("Could not find a user with an id of `{}`".format(id))
         return
     if getblacklistentry(id) != None:
-        await bot.say("`{}` is already blacklisted".format(format_user(user)))
+        await bot.say("`{}` is already blacklisted".format(user))
         return
     blacklistuser(id, user.name, user.discriminator, reason)
-    await bot.say("Blacklisted `{}` Reason: `{}`".format(format_user(user), reason))
+    await bot.say("Blacklisted `{}` Reason: `{}`".format(user, reason))
     try:
-        await bot.send_message(user, "You have been blacklisted from the bot by `{}` Reason: `{}`".format(format_user(ctx.message.author), reason))
+        await bot.send_message(user, "You have been blacklisted from the bot by `{}` Reason: `{}`".format(ctx.message.author, reason))
     except:
         log.debug("Couldn't send a message to a user with an ID of \"{}\"".format(id))
-    await channel_logger.log_to_channel(":warning: `{}` blacklisted `{}`/`{}` Reason: `{}`".format(format_user(ctx.message.author), id, format_user(user), reason))
+    await channel_logger.log_to_channel(":warning: `{}` blacklisted `{}`/`{}` Reason: `{}`".format(ctx.message.author, id, user, reason))
 
 @bot.command(hidden=True, pass_context=True)
 @checks.is_dev()
@@ -310,10 +330,10 @@ async def unblacklist(ctx, id:str):
         return
     await bot.say("Successfully unblacklisted `{}#{}`".format(entry.get("name"), entry.get("discrim")))
     try:
-        await bot.send_message(discord.User(id=id), "You have been unblacklisted from the bot by `{}`".format(format_user(ctx.message.author)))
+        await bot.send_message(discord.User(id=id), "You have been unblacklisted from the bot by `{}`".format(ctx.message.author))
     except:
         log.debug("Couldn't send a message to a user with an ID of \"{}\"".format(id))
-    await channel_logger.log_to_channel(":warning: `{}` unblacklisted `{}`/`{}#{}`".format(format_user(ctx.message.author), id, entry.get("name"), entry.get("discrim")))
+    await channel_logger.log_to_channel(":warning: `{}` unblacklisted `{}`/`{}#{}`".format(ctx.message.author, id, entry.get("name"), entry.get("discrim")))
 
 @bot.command()
 async def showblacklist():
@@ -346,7 +366,7 @@ async def stream(ctx, *, name:str):
         return
     await bot.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
     await bot.say("Now streaming `{}`".format(name))
-    await channel_logger.log_to_channel(":information_source: `{}`/`{}` changed the streaming status to `{}`".format(ctx.message.author.id, format_user(ctx.message.author), name))
+    await channel_logger.log_to_channel(":information_source: `{}`/`{}` changed the streaming status to `{}`".format(ctx.message.author.id, ctx.message.author, name))
 
 @bot.command(pass_context=True)
 async def changestatus(ctx, status:str, *, name:str=None):
@@ -368,10 +388,10 @@ async def changestatus(ctx, status:str, *, name:str=None):
     await bot.change_presence(game=game, status=statustype)
     if name is not None:
         await bot.say("Changed game name to `{}` with a(n) `{}` status type".format(name, status))
-        await channel_logger.log_to_channel(":information_source: `{}`/`{}` Changed game name to `{}` with a(n) `{}` status type".format(ctx.message.author.id, format_user(ctx.message.author), name, status))
+        await channel_logger.log_to_channel(":information_source: `{}`/`{}` Changed game name to `{}` with a(n) `{}` status type".format(ctx.message.author.id, ctx.message.author, name, status))
     else:
         await bot.say("Changed status type to `{}`".format(status))
-        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(ctx.message.author.id, format_user(ctx.message.author), status))
+        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(ctx.message.author.id, ctx.message.author, status))
 
 @bot.command(hidden=True, pass_context=True)
 @checks.is_dev()
@@ -445,7 +465,7 @@ async def joinserver(ctx):
 @bot.command(pass_context=True)
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
-    await bot.send_message(ctx.message.author, "Here is the link to my server: https://discord.gg/enDDbMC (if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
+    await bot.send_message(ctx.message.author, "Here is the link to my server: discord.gg/YD4ZQHD\n\nAlso join this server! (I'm more active on it than my own server) discord.gg/t3kCHB7 (if any of the invite links are expired, report it using {}notifydev)".format(bot.command_prefix))
 
 @bot.command()
 async def ping():
@@ -474,11 +494,4 @@ async def stats():
             voice_clients.append(server.me.voice_channel)
     await bot.say("```xl\n ~~~~~~Ruby Stats~~~~~\nUsers: {}\nServers: {}\nChannels: {}\nActive Voice Clients: {}\nPrivate Channels: {}\ndiscord.py Version: {}\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n```".format(len(list(bot.get_all_members())), len(bot.servers), len(list(bot.get_all_channels())), len(voice_clients), len(list(bot.private_channels)), discord.__version__))
 
-try:
-    loop.run_until_complete(bot.login(config._token))
-    loop.run_until_complete(bot.connect())
-except:
-    loop.run_until_complete(os.system("bot.py"))
-finally:
-    aiosession.close()
-    loop.close()
+bot.run(config._token)

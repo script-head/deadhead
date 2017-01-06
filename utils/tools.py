@@ -25,9 +25,6 @@ def download_file(url, destination):
         file.write(chunk)
     file.close()
 
-def format_user(insertnerovar):
-    return insertnerovar.name + "#" + insertnerovar.discriminator
-
 def extract_emote_id(arg):
     match = _EMOTE_ID_MATCH.match(arg)
     if match:
@@ -35,7 +32,7 @@ def extract_emote_id(arg):
 
 def make_message_embed(author, color, message, *, formatUser=False, useNick=False):
     if formatUser:
-        name = format_user(author)
+        name = str(author)
     else:
         if useNick and author.nick:
             name = author.nick
