@@ -135,7 +135,7 @@ async def on_command(command, ctx):
 
 @bot.event
 async def on_message(message):
-    if discord.Member is type(message.author):
+    if isinstance(message.author, discord.Member):
         if discord.utils.get(message.author.roles, name="Grimm"):
             return
 
