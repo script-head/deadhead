@@ -7,12 +7,12 @@ from discord.ext import commands
 from utils.tools import *
 from utils.unicode import *
 from utils.fun.lists import *
-#from cleverbot import Cleverbot
+from cleverbot import Cleverbot
 
 class Fun():
     def __init__(self, bot):
         self.bot = bot
-        #self.cb = Cleverbot("{} Discord Bot".format(bot.user.name))
+        self.cb = Cleverbot()
 
     @commands.command(pass_context=True)
     async def say(self, ctx, *, message:str):
@@ -122,10 +122,9 @@ class Fun():
         await self.bot.say(random.choice(drunkaf))
 
     @commands.command()
-    async def talk(self, *, message:str=None):
+    async def talk(self, *, message):
         """Talk to the bot"""
-        #await self.bot.say(self.cb.ask(message))
-        await self.bot.say("I'm extreamly sorry, but I had to disable this because now it costs money to use the cleverbot api, see <https://www.cleverbot.com/api>")
+        await self.bot.say(self.cb.ask(message))
 
     @commands.command(pass_context=True)
     async def rate(self, ctx, user:discord.User=None):
