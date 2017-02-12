@@ -16,7 +16,7 @@ class Channel_Logger():
                 log.warning("Can't find logging master channel: {}".format(id))
             else:
                 try:
-                    await self.bot.send_message(channel, ":stopwatch: `{}` :mouse_three_button: `{}` {}".format(time.strftime(config.log_timeformat), channel.server.name, msg))
+                    await self.bot.send_message(channel, ":stopwatch: `{}` {}".format(time.strftime(config.log_timeformat), msg))
                 except discord.errors.Forbidden:
                     log.warning("Could not log to the channel log channel because I do not have permission to send messages in it!")
 

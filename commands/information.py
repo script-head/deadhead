@@ -8,7 +8,7 @@ from utils.config import Config
 config = Config()
 
 halloween = date(2017, 10, 31)
-christmas = date(2016, 12, 25)
+christmas = date(2017, 12, 25)
 
 class Information():
     def __init__(self, bot):
@@ -27,26 +27,32 @@ class Information():
         """Gets information on the current server"""
         server = ctx.message.server
         if not server.afk_channel:
-            afk_channel = "None"
+            afk_channel = None
         else:
             afk_channel = server.afk_channel.name
-        await self.bot.say(xl.format("~~~~~~~~~Server Info~~~~~~~~\nName: {}\nID: {}\nIcon URL: {}\nTotal Members: {}\nCreated: {}\nRegion: {}\nOwner: {}\nOwner ID: {}\nAFK Channel: {}\nAFK timeout: {}\nRoles: {}\nChannels: {}").format(server.name, server.id, server.icon_url, server.member_count, server.created_at, server.region, server.owner, server.owner_id, afk_channel, server.afk_timeout, len(server.roles), len(server.channels)))
+        fields = {"ID":server.id, "Created on":format_time(server.created_at), "Region":server.region, "Member Count":len(server.members), "Channel Count":len(server.channels), "Role Count":len(server.roles), "Owner":server.owner, "Owner ID":server.owner_id, "AFK Channel":afk_channel, "AFK Timeout":"{} seconds".format(server.afk_timeout)}
+        embed = make_list_embed(fields)
+        embed.title = server.name
+        embed.color = 0xFF0000
+        if server.icon_url is not None:
+            embed.set_thumbnail(url=server.icon_url)
+        await self.bot.say(embed=embed)
 
     @commands.command(pass_context=True)
     async def userinfo(self, ctx, *, user:discord.Member=None):
         """Gets your information or the information of the specified user"""
         if user is None:
             user = ctx.message.author
-        roles = ", ".join(map(str, user.roles))
-        if roles == "@everyone":
-            roles = None
-        else:
-            roles = roles.strip("@everyone, ")
         if not user.avatar_url:
             avatar_url = user.default_avatar_url
         else:
             avatar_url = user.avatar_url
-        await self.bot.say(xl.format("~~~~~~~~~{}~~~~~~~~\nUsername: {}\nDiscriminator: {}\nID: {}\nBot: {}\nAvatar URL: {}\nAccount created: {}\nGame: {}\nStatus: {}\nVoice channel: {}\nServer muted: {}\nServer deafened: {}\nRoles: {}").format(user, user.name, user.discriminator, user.id, user.bot, avatar_url, user.created_at, str(user.game), str(user.status), str(user.voice_channel), user.mute, user.deaf, roles))
+        fields = {"ID":user.id, "Bot Account":user.bot, "Created on":format_time(user.created_at), "Game":user.game.name, "Status":user.status, "Role Count":len(user.roles), "Joined on":format_time(user.joined_at), "Nickname":user.nick, "Voice Channel":user.voice.voice_channel, "Self Muted":user.voice.self_mute, "Self Deafened":user.voice.self_deaf, "Server Muted":user.voice.mute, "Server Deafened":user.voice.deaf}
+        embed = make_list_embed(fields)
+        embed.title = str(user)
+        embed.color = user.color
+        embed.set_thumbnail(url=avatar_url)
+        await self.bot.say(embed=embed)
 
     @commands.command(pass_context=True)
     async def avatar(self, ctx, *, user:discord.User=None):
@@ -75,16 +81,25 @@ class Information():
             return
         color = role.color
         if color == discord.Color(value=0x000000):
-            color = "None"
+            color = None
         count = len([member for member in ctx.message.server.members if discord.utils.get(member.roles, name=role.name)])
         perms = role.permissions
         permlist = "Can ban members: {}\nCan change nickname: {}\nCan connect to voice channels: {}\nCan create instant invites: {}\nCan deafen members: {}\nCan embed links: {}\nCan use external emojis: {}\nCan manage channel: {}\nCan manage emojis: {}\nCan manage messages: {}\nCan manage nicknames: {}\nCan manage roles: {}\nCan manage server: {}\nCan mention everyone: {}\nCan move members: {}\nCan mute members: {}\nCan read message history: {}\nCan send messages: {}\nCan speak: {}\nCan use voice activity: {}\nCan manage webbooks: {}\nCan add reactions: {}".format(perms.ban_members, perms.change_nickname, perms.connect, perms.create_instant_invite, perms.deafen_members, perms.embed_links, perms.external_emojis, perms.manage_channels, perms.manage_emojis, perms.manage_messages, perms.manage_nicknames, perms.manage_roles, perms.manage_server, perms.mention_everyone, perms.move_members, perms.mute_members, perms.read_message_history, perms.send_messages, perms.speak,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               perms.use_voice_activation, perms.manage_webhooks, perms.add_reactions)
         await self.bot.say(py.format("Name: \"{}\"\nID: {}\nColor: {}\nPosition: {}\nUser count: {}\nMentionable: {}\nDisplay separately: {}".format(role.name, role.id, color, role.position, count, role.mentionable, role.hoist) + permlist))
 
     @commands.command()
-    async def emoteurl(self, *, emote:discord.Emoji):
-        """Gets the url for a CUSTOM emote (meaning no emotes like :eyes: and :ok_hand: sorry)"""
-        await self.bot.say(emote.url)
+    async def emoteurl(self, *, emote:str):
+        """Gets the url for a CUSTOM emote (meaning no unicode emotes)"""
+        emote_id = None
+        try:
+            if extract_emote_id(emote) is not None:
+                emote_id = extract_emote_id(emote)
+        except:
+            pass
+        if emote_id is None:
+            await self.bot.say("That is not a custom emote")
+            return
+        await self.bot.say("https://discordapp.com/api/emojis/{}.png".format(emote_id))
 
     @commands.command()
     async def discrim(self, *, discriminator:str):
@@ -108,11 +123,6 @@ class Information():
     async def daystillchristmas(self):
         """Displays how many days until it's christmas"""
         await self.bot.say("Days until christmas: `{} days`".format((christmas - date.today()).days))
-
-    @commands.command()
-    async def characterinfo(self):
-        """Gives you character information about Ruby Rose"""
-        await self.bot.say("Here is some character information about me!\n```Name: Ruby Rose\nAge: 15\nRace: Human\nWeapon: Crescent Rose\nOutfit Colors: Red, Black\nAccessories: Rose Symbol, Ammunition Clips, Pouch, Cloak, Hood\nHandedness: Left\nComplexion: Pale White\nHeight: 5'2\" (1.57 meters)\nHair Color: Black and Red\nEye Color: Silver\nAura Color: Red\nSemblance: Speed\nOccupation: Student```")
 
     @commands.command()
     async def getserverinfo(self, *, name:str):
@@ -178,8 +188,12 @@ class Information():
         except IndexError:
             await self.bot.say("Could find any osu! profile named `{}`".format(username))
             return
-        results = xl.format("~~~~~~~~~~Osu! Stats~~~~~~~~~~\nUsername: {}\nID: {}\nCountry: {}\nLevel: {}\nTotal hits: {}\nTotal score: {}\nAccuracy: {}\nPlay count: {}\nRanked score: {}\nA rank: {}\nS rank: {}\nSS rank: {}\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~".format("\"" + user.username + "\"", user.user_id, "\"" + user.country + "\"", int(user.level), user.total_hits, user.total_score, "{0:.2f}%".format(user.accuracy), user.playcount, user.ranked_score,user.count_rank_a, user.count_rank_s, user.count_rank_ss))
-        await self.bot.say(results)
+        fields = {"ID":user.user_id, "Country":user.country, "Level":int(user.level), "Hits":user.total_hits, "Score":user.total_score, "Accuracy":"{0:.2f}%".format(user.accuracy), "Play Count":user.playcount, "Ranked Score":user.ranked_score, "A rank":user.count_rank_a, "S rank":user.count_rank_s, "SS rank":user.count_rank_ss}
+        embed = make_list_embed(fields)
+        embed.title = "{}'s Osu! Stats".format(user.username)
+        embed.color = 0xFF00FF
+        embed.set_thumbnail(url="http://s.ppy.sh/a/{}".format(user.user_id))
+        await self.bot.say(embed=embed)
 
 def setup(bot):
     bot.add_cog(Information(bot))

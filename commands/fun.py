@@ -7,11 +7,12 @@ from discord.ext import commands
 from utils.tools import *
 from utils.unicode import *
 from utils.fun.lists import *
-from cleverbot import Cleverbot as cb
+#from cleverbot import Cleverbot
 
 class Fun():
     def __init__(self, bot):
         self.bot = bot
+        #self.cb = Cleverbot("{} Discord Bot".format(bot.user.name))
 
     @commands.command(pass_context=True)
     async def say(self, ctx, *, message:str):
@@ -24,7 +25,7 @@ class Fun():
 
     @commands.command(pass_context=True)
     async def cat(self, ctx):
-        """Sends a random cute cat gifs because cats are soooo cuteeee <3 >.<"""
+        """Sends a random cute cat gif because cats are soooo cuteeee <3 >.<"""
         await self.bot.send_typing(ctx.message.channel)
         cat.getCat(directory="data", filename="cat", format="gif")
         await asyncio.sleep(1) # This is so the bot has enough time to download the file
@@ -41,28 +42,11 @@ class Fun():
         """Nice Meme!"""
         await self.bot.say("http://niceme.me")
 
-    @commands.command()
-    async def tfw(self, *, tfw:str):
-        """tfw this pointless command exists"""
-        await self.bot.say("tfw {}: <https://www.youtube.com/watch?v=7wfYIMyS_dI>".format(tfw))
-
     @commands.command(pass_context=True)
     async def allahuakbar(self, ctx):
         """ALLAHU AKBAR!"""
         await self.bot.send_typing(ctx.message.channel)
         await self.bot.send_file(ctx.message.channel, "assets/imgs/allahuakbar.gif")
-
-    @commands.command(pass_context=True)
-    async def rekt(self, ctx):
-        """#REKT"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/rekt.gif")
-
-    @commands.command(pass_context=True)
-    async def roasted(self, ctx):
-        """MY NIGGA YOU JUST GOT ROASTED!"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/roasted.gif")
 
     @commands.command(pass_context=True)
     async def yiffinhell(self, ctx):
@@ -83,7 +67,7 @@ class Fun():
         await self.bot.send_file(ctx.message.channel, "assets/InternetRules.txt")
 
     @commands.command(pass_context=True)
-    async def quote(self, ctx):
+    async def quoteaf(self, ctx):
         """Don't quote me on that"""
         await self.bot.send_typing(ctx.message.channel)
         await self.bot.send_file(ctx.message.channel, "assets/imgs/quotes/{}.png".format(random.randint(1, len([file for file in os.listdir("assets/imgs/quotes")]))))
@@ -100,12 +84,6 @@ class Fun():
         await self.bot.send_typing(ctx.message.channel)
         await self.bot.send_file(ctx.message.channel, "assets/imgs/cykablyat.jpg")
 
-    @commands.command(pass_context=True)
-    async def delet(self, ctx):
-        """Delet this"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/delet_this.jpg")
-
     @commands.command()
     async def sombra(self):
         """Boop me Sombra <3"""
@@ -120,11 +98,6 @@ class Fun():
     async def psat(self):
         """Please."""
         await self.bot.say(random.choice(psat_memes))
-
-    @commands.command()
-    async def alex(self):
-        """ALEX IS A STUPID NIGERIAN!"""
-        await self.bot.say("https://www.youtube.com/watch?v=GX5xQPhC6UY")
 
     @commands.command(pass_context=True)
     async def hoodaf(self, ctx):
@@ -149,28 +122,25 @@ class Fun():
         await self.bot.say(random.choice(drunkaf))
 
     @commands.command()
-    async def talk(self, *, message:str):
+    async def talk(self, *, message:str=None):
         """Talk to the bot"""
-        await self.bot.say(cb().ask(message))
+        #await self.bot.say(self.cb.ask(message))
+        await self.bot.say("I'm extreamly sorry, but I had to disable this because now it costs money to use the cleverbot api, see <https://www.cleverbot.com/api>")
 
-    @commands.command()
-    async def rate(self, user:discord.User=None):
-        """Have the bot rate yourself or another user"""
-        if user is None:
-            await self.bot.say("I rate you a {}/10".format(random.randint(0, 10)))
+    @commands.command(pass_context=True)
+    async def rate(self, ctx, user:discord.User=None):
+        """Have the bot rate yourself or another user (rigged af)"""
+        if user is None or user.id == ctx.message.author.id:
+            await self.bot.say("I rate you a 10/10")
+        elif user == self.bot.user:
+            await self.bot.say("I rate myself a -1/10")
         else:
-            await self.bot.say("I rate {} a {}/10".format(user.mention, random.randint(0, 10)))
+            await self.bot.say("I rate {} a {}/10".format(user.name, random.randint(0, 10)))
 
     @commands.command()
     async def honk(self):
-        """Honk honk mother fucker"""
+        """Honk honk mother fucka"""
         await self.bot.say(random.choice(honkhonkfgt))
-
-    @commands.command(pass_context=True)
-    async def triggered(self, ctx):
-        """DID YOU JUST ASSUME MY GENDER? *TRIGGERED*"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/triggered.gif")
 
     @commands.command(pass_context=True)
     async def plzmsgme(self, ctx, *, message:str):
@@ -191,7 +161,13 @@ class Fun():
             await self.bot.say("I could not find a message with an ID of `{}` in this channel".format(id))
             return
         embed = make_message_embed(message.author, message.author.color, message.content, formatUser=True)
-        await self.bot.say(None, embed=embed)
+        embed.timestamp = message.timestamp
+        await self.bot.say(embed=embed)
+
+    @commands.command()
+    async def twentyoneify(self, *, input:str):
+        """EVERYTHING NEEDS TWENTY ØNE PILØTS!"""
+        await self.bot.say(input.upper().replace("O", "Ø"))
 
 def setup(bot):
     bot.add_cog(Fun(bot))

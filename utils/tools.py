@@ -50,3 +50,12 @@ def remove_html(arg):
     arg = arg.replace("&quot;", "\"").replace("<br />", "").replace("[i]", "*").replace("[/i]", "*")
     arg = arg.replace("&ldquo;", "\"").replace("&rdquo;", "\"").replace("&#039;", "'")
     return arg
+
+def make_list_embed(fields):
+    embed = discord.Embed(description="\u200b")
+    for key, value in fields.items():
+        embed.add_field(name=key, value=value)
+    return embed
+
+def format_time(time):
+    return time.strftime("%B %d, %Y %I:%M %p UTC")

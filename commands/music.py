@@ -1,5 +1,9 @@
 import asyncio
 import traceback
+import youtube_dl
+import os
+import subprocess
+import shutil
 
 from discord.ext import commands
 from utils.tools import *
@@ -7,24 +11,36 @@ from utils.mysql import *
 from utils.logger import log
 from utils import checks
 
-ytdl_format_options = {"outtmpl": "data/music/%(extractor)s-%(id)s-%(title)s.%(ext)s", "format": "bestaudio/best", "noplaylist": True, "nocheckcertificate": True, "ignoreerrors": False, "logtostderr": False, "quiet": True, "no_warnings": True, "default_search": "auto", "source_address": "0.0.0.0"}
+ytdl_format_options = {"format": "bestaudio/best", "extractaudio": True, "audioformat": "mp3", "noplaylist": True, "nocheckcertificate": True, "ignoreerrors": False, "logtostderr": False, "quiet": True, "no_warnings": True, "default_search": "auto", "source_address": "0.0.0.0", "preferredcodec": "libmp3lame"}
+
+def get_ytdl(id):
+    format = ytdl_format_options
+    format["outtmpl"] = "data/music/{}/%(id)s-%(title)s.mp3".format(id)
+    return youtube_dl.YoutubeDL(format)
+
+def clear_data(id=None):
+    if id is None:
+        shutil.rmtree("data/music")
+    else:
+        shutil.rmtree("data/music/{}".format(id))
 
 class VoiceEntry:
-    def __init__(self, message, player):
+    def __init__(self, message, player, data, file_url):
         self.requester = message.author
         self.channel = message.channel
         self.player = player
+        self.data = data
+        self.file_url = file_url
 
     def __str__(self):
-        string = "**{}** requested by `{}`".format(self.player.title, self.requester.display_name)
-        duration = self.player.duration
+        string = "**{}** requested by `{}`".format(self.data["title"], self.requester.display_name)
+        duration = self.data["duration"]
         if duration:
             m, s = divmod(duration, 60)
             h, m = divmod(m, 60)
             length = "%02d:%02d:%02d" % (h, m, s)
             string = "{} [`{}`]".format(string, length)
         return string
-
 
 class VoiceState:
     def __init__(self, bot):
@@ -58,13 +74,19 @@ class VoiceState:
 
     async def audio_change_task(self):
         while True:
-            self.play_next_song.clear()
+            log.debug("Change task ran")
+            if self.current is not None:
+                try:
+                    os.remove(self.current.file_url)
+                except:
+                    log.warn("Failed to remove {}".format(self.current.file_url))
+            self.play_next_song.clear() # This has something to do with the bot crashing maybe awaiting it will help
             self.current = await self.songs.get()
             self.queue.remove(self.current)
             await self.bot.send_message(self.current.channel, "Now playing {}".format(self.current))
             self.current.player.volume = self.volume
             self.current.player.start()
-            log.debug("\"{}\" is now playing in \"{}\" on \"{}\"".format(self.current.player.title, self.voice.channel.name, self.current.channel.server.name))
+            log.debug("\"{}\" is now playing in \"{}\" on \"{}\"".format(self.current.data["title"], self.voice.channel.name, self.current.channel.server.name))
             await self.play_next_song.wait()
 
 
@@ -80,11 +102,6 @@ class Music:
             self.voice_states[server.id] = voice_state
         return voice_state
 
-    async def create_voice_client(self, channel:discord.Channel):
-        voice = await self.bot.join_voice_channel(channel)
-        state = self.get_voice_state(channel.server)
-        state.voice = voice
-
     async def disconnect_all_voice_clients(self):
         for id in self.voice_states:
             state = self.voice_states[id]
@@ -92,6 +109,9 @@ class Music:
             await state.voice.disconnect()
         log.debug("All voice clients were disconnected!")
 
+    def clear_cache(self):
+        # This is here because I can't call clear_data() from the main class for obvious reasons
+        clear_data()
 
     @commands.command(pass_context=True)
     async def summon(self, ctx):
@@ -116,25 +136,44 @@ class Music:
     async def play(self, ctx, *, song:str):
         """Plays a song, searches youtube or gets video from youtube url"""
         await self.bot.send_typing(ctx.message.channel)
+        song = song.strip("<>")
         try:
             state = self.get_voice_state(ctx.message.server)
             if state.voice is None:
                 success = await ctx.invoke(self.summon)
                 if not success:
                     return
+            ytdl = get_ytdl(ctx.message.server.id)
             try:
-                player = await state.voice.create_ytdl_player(song, ytdl_options=ytdl_format_options, after=state.toggle_next)
+                song_info = ytdl.extract_info(song, download=False, process=False)
+                if "url" in song_info:
+                    if song_info["url"].startswith("ytsearch"):
+                        song_info = ytdl.extract_info(song_info["url"], download=False, process=False)
+                        log.debug(song_info)
+                    if "entries" in song_info:
+                        url = song_info["entries"][0]["url"]
+                    else:
+                        url = song_info["url"]
+                    url = "https://youtube.com/watch?v={}".format(url)
+                else:
+                    url = song
+                log.debug(url)
+                song_info = ytdl.extract_info(url, download=True)
+                id = song_info["id"]
+                title = song_info["title"]
+                file_url = "data/music/{}/{}-{}.mp3".format(ctx.message.server.id, id, title)
+                player = state.voice.create_ffmpeg_player(file_url, stderr=subprocess.PIPE, after=state.toggle_next)
             except Exception as e:
-                await self.bot.say("An error occurred while processing this request: {}".format(py.format("{}: {}".format(type(e).__name__, e))))
+                await self.bot.say("An error occurred while processing this request: {}".format(py.format("{}: {}\n{}".format(type(e).__name__, e, traceback.format_exc()))))
                 return
             player.volume = state.volume
-            entry = VoiceEntry(ctx.message, player)
+            entry = VoiceEntry(ctx.message, player, song_info, file_url)
             await self.bot.say("Enqueued {}".format(entry))
             await state.songs.put(entry)
             state.queue.append(entry)
         except Exception as e:
             await self.bot.say(traceback.format_exc())
-            log.debug("{}: {}\n{}".format(type(e).__name__, e, traceback.format_exc()))
+            log.debug("{}: {}\n\n{}".format(type(e).__name__, e, traceback.format_exc()))
 
     @commands.command(pass_context=True, no_pm=True)
     async def volume(self, ctx, amount:int):
@@ -245,12 +284,6 @@ class Music:
             else:
                 songs = "{}".format(current_song)
             await self.bot.say(songs)
-
-    @commands.command()
-    async def musicnotice(self):
-        """PLEASE READ!!!"""
-        with open("utils/music/notice.txt") as notice:
-            await self.bot.say(notice.read())
 
     @commands.command(hidden=True, pass_context=True)
     @checks.is_dev()

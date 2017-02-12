@@ -181,7 +181,7 @@ class Moderation():
         if announcement_channel is None:
             await self.bot.say("I could not find a channel named `announcements`")
             return
-        msg = make_message_embed(ctx.message.author, 0xCC0000, announcement, useNick=True)
+        msg = make_message_embed(ctx.message.author, ctx.message.author.color, announcement, useNick=True)
         try:
             await self.bot.send_message(announcement_channel, "@everyone Announcement!", embed=msg)
         except discord.errors.Forbidden:

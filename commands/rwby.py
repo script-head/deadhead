@@ -16,10 +16,15 @@ class RWBY():
         await self.bot.send_file(ctx.message.channel, "assets/imgs/scream.jpg")
 
     @commands.command(pass_context=True)
-    async def what(self, ctx):
-        """What?"""
+    async def heil(self, ctx):
+        """sieg heil"""
         await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/what.gif")
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/blake_heil.png")
+
+    @commands.command()
+    async def characterinfo(self):
+        """Gives you character information on Ruby Rose"""
+        await self.bot.say("Here is some character information about me!\n```Name: Ruby Rose\nAge: 16\nRace: Human\nWeapon: Crescent Rose\nOutfit Colors: Red, Black\nAccessories: Rose Symbol, Ammunition Clips, Pouch, Cloak, Hood\nHandedness: Left\nComplexion: Pale White\nHeight: 5'2\" (1.57 meters)\nHair Color: Black and Red\nEye Color: Silver\nAura Color: Red\nSemblance: Speed\nPrevious Occupation: Student```")
 
 
 def setup(bot):

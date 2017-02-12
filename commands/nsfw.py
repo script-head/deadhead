@@ -136,35 +136,5 @@ class NSFW():
                 return
         await self.bot.say("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
 
-    @commands.command(pass_context=True)
-    async def loli(self, ctx, *, tags:str):
-        """Searches lolibooru.moe for the specified tagged images"""
-        nsfw = discord.utils.get(ctx.message.server.me.roles, name="NSFW")
-        nsfw_channel_name = read_data_entry(ctx.message.server.id, "nsfw-channel")
-        if not ctx.message.channel.name == nsfw_channel_name:
-            if not nsfw:
-                await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
-                return
-        await self.bot.send_typing(ctx.message.channel)
-        download_file("https://lolibooru.moe/post/index.json?limit={}&tags={}".format(limit, tags), "data/lolibooru.json")
-        with open("data/lolibooru.json", encoding="utf8") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                await self.bot.say("No results found for `{}`".format(tags))
-                return
-        count = len(data)
-        if count == 0:
-            await self.bot.say("No results found for `{}`".format(tags))
-            return
-        image_count = 4
-        if count < 4:
-            image_count = count
-        images = []
-        for i in range(image_count):
-            images.append(data[random.randint(0, count)]["file_url"].replace(" ", "%20"))
-        await self.bot.say("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
-
-
 def setup(bot):
     bot.add_cog(NSFW(bot))

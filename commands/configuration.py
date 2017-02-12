@@ -10,7 +10,7 @@ class Configuration():
     async def config(self, ctx, type:str, *, value:str):
         """Modifies the server's local config"""
         if ctx.message.author is not ctx.message.server.owner:
-            await self.bot.say("Only the server owner (`{}`) can use this command.".format(format_user(ctx.message.server.owner)))
+            await self.bot.say("Only the server owner (`{}`) can use this command.".format(ctx.message.server.owner))
             return
         await self.bot.send_typing(ctx.message.channel)
         if type == "mod-role" or type == "nsfw-channel" or type == "mute-role":
@@ -28,13 +28,17 @@ class Configuration():
         mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
         nsfw_channel_name = read_data_entry(ctx.message.server.id, "nsfw-channel")
         mute_role_name = read_data_entry(ctx.message.server.id, "mute-role")
-        await self.bot.say(xl.format("~~~~~~~~~~Server Config~~~~~~~~~~\nMod role name: {}\nNSFW channel name: {}\nMute role: {}").format(mod_role_name, nsfw_channel_name, mute_role_name))
+        fields = {"Mod Role":mod_role_name, "NSFW Channel":nsfw_channel_name, "Mute Role":mute_role_name}
+        embed = make_list_embed(fields)
+        embed.title = "Server Configuration"
+        embed.color = 0xFF0000
+        await self.bot.say(embed=embed)
 
     @commands.command(pass_context=True)
     async def joinleave(self, ctx, type:str, *, value:str):
         """Configures on user join and leave settings"""
         if ctx.message.author is not ctx.message.server.owner:
-            await self.bot.say("Only the server owner (`{}`) can use this command.".format(format_user(ctx.message.server.owner)))
+            await self.bot.say("Only the server owner (`{}`) can use this command.".format(ctx.message.server.owner))
             return
         await self.bot.send_typing(ctx.message.channel)
         if type == "join-message":
@@ -43,7 +47,7 @@ class Configuration():
         elif type == "leave-message":
             update_data_entry(ctx.message.server.id, type, value)
             await self.bot.say("Successfully set the leave message to: {}".format(value.replace("!USER!", "@{}".format(ctx.message.author.name)).replace("!SERVER!", ctx.message.server.name)))
-        elif type == "join-leave-channel":
+        elif type == "channel":
             if value == "remove":
                 update_data_entry(ctx.message.server.id, type, None)
                 await self.bot.say("Successfully disabled join-leave messages")
@@ -77,7 +81,7 @@ class Configuration():
             leave_message = leave_message.replace("!USER!", "@{}".format(ctx.message.author.name)).replace("!SERVER!", ctx.message.server.name)
         join_leave_channel_id = read_data_entry(ctx.message.server.id, "join-leave-channel")
         if join_leave_channel_id is not None:
-            join_leave_channel = discord.utils.get(ctx.message.server.channels, id=join_leave_channel_id).name
+            join_leave_channel = discord.utils.get(ctx.message.server.channels, id=join_leave_channel_id).mention
             if join_leave_channel is None:
                 update_data_entry(ctx.message.server.id, "join-leave-channel", None)
         else:
@@ -89,8 +93,11 @@ class Configuration():
                 update_data_entry(ctx.message.server.id, "join-role", None)
         else:
             join_role = None
-        msg = "```Join message: {}\nLeave message: {}\nJoin leave channel: {}\nJoin role: {}```".format(join_message, leave_message, join_leave_channel, join_role)
-        await self.bot.say(msg)
+        fields = {"Join Message":join_message, "Leave Message":leave_message, "Channel":join_leave_channel, "Join Role":join_role}
+        embed = make_list_embed(fields)
+        embed.title = "Configuration for join and leave events"
+        embed.color = 0xFF0000
+        await self.bot.say(embed=embed)
 
 
 def setup(bot):

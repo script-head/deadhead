@@ -4,6 +4,7 @@ import aiohttp
 import time
 import sys
 import subprocess
+import traceback
 
 start_time = time.time()
 
@@ -32,20 +33,36 @@ channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
 
-extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music"]
+extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music", "commands.reactions"]
+
+# Unless you want the bot to copy a user keep this false kthx
+clone = False
 
 # Thy changelog
 change_log = [
     "Commands:",
-    "+ quote",
+    "+ ropestore",
+    "+ tableflip",
+    "+ unflip",
+    "+ heil",
+    "- loli",
+    "+ weirdshit",
+    "+ filth",
+    "+ twentyoneify",
     "Other things:",
-    "Fixed the skip command",
-    "Fixed the invite command",
-    "Fixed the bug where the volume resets when the song changes",
-    "Fixed the NSFW commands returning a \"JSONDecodeError\""
+    "Some information related commands now use embeds",
+    "Fixed the emoteurl command not finding emotes from other servers",
+    "The music bot now downloads songs instead of streaming it so hopefully this fixes the skipping issue",
+    "Fixed the configuration command returning an error that format_user wasn't found",
+    "Updated the characterinfo command to match Ruby's current stats"
 ]
 
 async def _restart_bot():
+    try:
+      aiosession.close()
+      await bot.cogs["Music"].disconnect_all_voice_clients()
+    except:
+       pass
     await bot.logout()
     subprocess.call([sys.executable, "bot.py"])
 
@@ -84,6 +101,7 @@ async def on_resumed():
 
 @bot.event
 async def on_ready():
+    print("Connected!\n")
     print("Logged in as:\n{}/{}#{}\n----------".format(bot.user.id, bot.user.name, bot.user.discriminator))
     print("Bot version: {}\nAuthor(s): {}\nCode name: {}\nBuild date: {}".format(BUILD_VERSION, BUILD_AUTHORS, BUILD_CODENAME, BUILD_DATE))
     log.debug("Debugging enabled!")
@@ -93,6 +111,12 @@ async def on_ready():
             bot.load_extension(extension)
         except Exception as e:
             log.error("Failed to load extension {}\n{}: {}".format(extension, type(e).__name__, e))
+    if os.path.isdir("data/music"):
+        try:
+            bot.cogs["Music"].clear_cache()
+            log.info("The music cache has been cleared!")
+        except:
+            log.warning("Failed to clear the music cache!")
     if config.enableMal:
         try:
             bot.load_extension("commands.myanimelist")
@@ -143,6 +167,28 @@ async def on_message(message):
         return
 
     await bot.process_commands(message)
+
+@bot.event
+async def on_member_update(before:discord.Member, after:discord.Member):
+    if clone:
+        if after.id == "117678528220233731":
+            if before.avatar_url != after.avatar_url:
+                log.debug("yes babe")
+                download_file(after.avatar_url, "robintar.webp")
+                asyncio.sleep(2)
+                os.popen("dwebp robintar.webp -o robintar.png").read()
+                asyncio.sleep(2)
+                fp = open("robintar.png", "rb")
+                await bot.edit_profile(avatar=fp.read())
+                asyncio.sleep(2)
+                os.remove("robintar.png")
+                os.remove("robintar.webp")
+            if after.status != after.server.me.status or after.game != after.server.me.game:
+                await bot.change_presence(status=after.status, game=after.game)
+            if after.name != bot.user.name:
+                await bot.edit_profile(username=after.name)
+            if after.nick != after.server.me.nick:
+                await bot.change_nickname(after.server.me, after.nick)
 
 @bot.event
 async def on_server_update(before:discord.Server, after:discord.Server):
@@ -220,6 +266,7 @@ async def on_member_remove(member:discord.Member):
 async def debug(ctx, *, shit:str):
     """This is the part where I make 20,000 typos before I get it right"""
     # "what the fuck is with your variable naming" - EJH2
+    # seth seriously what the fuck - Robin
     try:
         rebug = eval(shit)
         if asyncio.iscoroutine(rebug):
@@ -233,6 +280,7 @@ async def debug(ctx, *, shit:str):
 async def rename(*, name:str):
     """Renames the bot"""
     await bot.edit_profile(username=name)
+    await bot.say("si")
 
 @bot.command(hidden=True, pass_context=True)
 @checks.is_dev()
@@ -366,7 +414,7 @@ async def stream(ctx, *, name:str):
         return
     await bot.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
     await bot.say("Now streaming `{}`".format(name))
-    await channel_logger.log_to_channel(":information_source: `{}`/`{}` changed the streaming status to `{}`".format(ctx.message.author.id, ctx.message.author, name))
+    await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.message.author.id, ctx.message.author, name))
 
 @bot.command(pass_context=True)
 async def changestatus(ctx, status:str, *, name:str=None):
@@ -388,10 +436,10 @@ async def changestatus(ctx, status:str, *, name:str=None):
     await bot.change_presence(game=game, status=statustype)
     if name is not None:
         await bot.say("Changed game name to `{}` with a(n) `{}` status type".format(name, status))
-        await channel_logger.log_to_channel(":information_source: `{}`/`{}` Changed game name to `{}` with a(n) `{}` status type".format(ctx.message.author.id, ctx.message.author, name, status))
+        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the game name to `{}` with a(n) `{}` status type".format(ctx.message.author.id, ctx.message.author, name, status))
     else:
         await bot.say("Changed status type to `{}`".format(status))
-        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(ctx.message.author.id, ctx.message.author, status))
+        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(ctx.message.author.id, ctx.message.author, name))
 
 @bot.command(hidden=True, pass_context=True)
 @checks.is_dev()
@@ -492,6 +540,15 @@ async def stats():
     for server in bot.servers:
         if server.me.voice_channel:
             voice_clients.append(server.me.voice_channel)
-    await bot.say("```xl\n ~~~~~~Ruby Stats~~~~~\nUsers: {}\nServers: {}\nChannels: {}\nActive Voice Clients: {}\nPrivate Channels: {}\ndiscord.py Version: {}\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n```".format(len(list(bot.get_all_members())), len(bot.servers), len(list(bot.get_all_channels())), len(voice_clients), len(list(bot.private_channels)), discord.__version__))
+    fields = {"Users":len(list(bot.get_all_members())), "Servers":len(bot.servers), "Channels":len(list(bot.get_all_channels())), "Private Channels":len((bot.private_channels)), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":BUILD_VERSION, "Built by":BUILD_AUTHORS}
+    embed = make_list_embed(fields)
+    embed.title = str(bot.user)
+    embed.color = 0xFF0000
+    embed.set_thumbnail(url=bot.user.avatar_url)
+    bot_owner = discord.utils.get(list(bot.get_all_members()), id=config.owner_id)
+    if bot_owner is not None:
+        embed.set_footer(text=bot_owner, icon_url=bot_owner.avatar_url)
+    await bot.say(embed=embed)
 
+print("Connecting...")
 bot.run(config._token)
