@@ -15,7 +15,7 @@ ytdl_format_options = {"format": "bestaudio/best", "extractaudio": True, "audiof
 
 def get_ytdl(id):
     format = ytdl_format_options
-    format["outtmpl"] = "data/music/{}/%(id)s-%(title)s.mp3".format(id)
+    format["outtmpl"] = "data/music/{}/%(id)s.mp3".format(id)
     return youtube_dl.YoutubeDL(format)
 
 def clear_data(id=None):
@@ -50,8 +50,8 @@ class VoiceState:
         self.play_next_song = asyncio.Event()
         self.songs = asyncio.Queue()
         self.queue = []
-        # Set to 0.3 by default to make audio distortion minimal
-        self.volume = 0.3
+        # Set to 0.5 by default to prevent jumpscares
+        self.volume = 0.5
         self.skip_votes = set()
         self.audio_player = self.bot.loop.create_task(self.audio_change_task())
 
@@ -80,7 +80,7 @@ class VoiceState:
                     os.remove(self.current.file_url)
                 except:
                     log.warn("Failed to remove {}".format(self.current.file_url))
-            self.play_next_song.clear() # This has something to do with the bot crashing maybe awaiting it will help
+            self.play_next_song.clear()
             self.current = await self.songs.get()
             self.queue.remove(self.current)
             await self.bot.send_message(self.current.channel, "Now playing {}".format(self.current))
@@ -161,7 +161,8 @@ class Music:
                 song_info = ytdl.extract_info(url, download=True)
                 id = song_info["id"]
                 title = song_info["title"]
-                file_url = "data/music/{}/{}-{}.mp3".format(ctx.message.server.id, id, title)
+                file_url = "data/music/{}/{}.mp3".format(ctx.message.server.id, id)
+                await asyncio.sleep(2)
                 player = state.voice.create_ffmpeg_player(file_url, stderr=subprocess.PIPE, after=state.toggle_next)
             except Exception as e:
                 await self.bot.say("An error occurred while processing this request: {}".format(py.format("{}: {}\n{}".format(type(e).__name__, e, traceback.format_exc()))))

@@ -7,12 +7,12 @@ from discord.ext import commands
 from utils.tools import *
 from utils.unicode import *
 from utils.fun.lists import *
-from cleverbot import Cleverbot
+#from cleverbot import Cleverbot
 
 class Fun():
     def __init__(self, bot):
         self.bot = bot
-        self.cb = Cleverbot()
+        #self.cb = Cleverbot()
 
     @commands.command(pass_context=True)
     async def say(self, ctx, *, message:str):
@@ -122,9 +122,10 @@ class Fun():
         await self.bot.say(random.choice(drunkaf))
 
     @commands.command()
-    async def talk(self, *, message):
+    async def talk(self, *, message=None):
         """Talk to the bot"""
-        await self.bot.say(self.cb.ask(message))
+        #await self.bot.say(self.cb.ask(message))
+        await self.bot.say("Disabled because 5,000 calls won't cut it and I'm not paying money to get more. See https://cleverbot.com/api")
 
     @commands.command(pass_context=True)
     async def rate(self, ctx, user:discord.User=None):
@@ -166,7 +167,7 @@ class Fun():
     @commands.command()
     async def twentyoneify(self, *, input:str):
         """EVERYTHING NEEDS TWENTY ØNE PILØTS!"""
-        await self.bot.say(input.upper().replace("O", "Ø"))
+        await self.bot.say(input.replace("O", "Ø").replace("o", "ø"))
 
 def setup(bot):
     bot.add_cog(Fun(bot))

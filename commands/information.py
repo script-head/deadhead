@@ -47,7 +47,10 @@ class Information():
             avatar_url = user.default_avatar_url
         else:
             avatar_url = user.avatar_url
-        fields = {"ID":user.id, "Bot Account":user.bot, "Created on":format_time(user.created_at), "Game":user.game.name, "Status":user.status, "Role Count":len(user.roles), "Joined on":format_time(user.joined_at), "Nickname":user.nick, "Voice Channel":user.voice.voice_channel, "Self Muted":user.voice.self_mute, "Self Deafened":user.voice.self_deaf, "Server Muted":user.voice.mute, "Server Deafened":user.voice.deaf}
+        game = None
+        if user.game:
+            game = user.game.name
+        fields = {"ID":user.id, "Bot Account":user.bot, "Created on":format_time(user.created_at), "Game":game, "Status":user.status, "Role Count":len(user.roles), "Joined on":format_time(user.joined_at), "Nickname":user.nick, "Voice Channel":user.voice.voice_channel, "Self Muted":user.voice.self_mute, "Self Deafened":user.voice.self_deaf, "Server Muted":user.voice.mute, "Server Deafened":user.voice.deaf}
         embed = make_list_embed(fields)
         embed.title = str(user)
         embed.color = user.color

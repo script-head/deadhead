@@ -49,12 +49,20 @@ change_log = [
     "+ weirdshit",
     "+ filth",
     "+ twentyoneify",
+    "+ heckoff",
     "Other things:",
     "Some information related commands now use embeds",
     "Fixed the emoteurl command not finding emotes from other servers",
     "The music bot now downloads songs instead of streaming it so hopefully this fixes the skipping issue",
     "Fixed the configuration command returning an error that format_user wasn't found",
-    "Updated the characterinfo command to match Ruby's current stats"
+    "Updated the characterinfo command to match Ruby's current stats",
+    "BUG FIXING UPDATE CHANGES:",
+    "Change some of the behavior of the twentyoneify command",
+    "Fixed the typo that broke the mod-log message for changing the afk channel",
+    "Enabled the talk command again but it's just not gonna work",
+    "Fixed the bug that would cause the userinfo command to break if the user didn't have a status",
+    "BUG FIX UPDATE #2",
+    "Fixed the music bot AGAIN"
 ]
 
 async def _restart_bot():
@@ -197,7 +205,7 @@ async def on_server_update(before:discord.Server, after:discord.Server):
     if before.region != after.region:
         await channel_logger.mod_log(after, "Server region was changed from `{}` to `{}`".format(before.region, after.region))
     if before.afk_channel != after.afk_channel:
-        await channel_logger.Channel_logg.mod_log(after, "Server afk channel was changed from `{}` to `{}`".format(before.afk_channel.name, after.afk_channel.name))
+        await channel_logger.mod_log(after, "Server afk channel was changed from `{}` to `{}`".format(before.afk_channel.name, after.afk_channel.name))
     if before.afk_timeout != after.afk_timeout:
         await channel_logger.mod_log(after, "Server afk timeout was changed from `{}` seconds to `{}` seconds".format(before.afk_timeout, after.afk_timeout))
     if before.icon != after.icon:
@@ -550,5 +558,5 @@ async def stats():
         embed.set_footer(text=bot_owner, icon_url=bot_owner.avatar_url)
     await bot.say(embed=embed)
 
-print("Connecting...")
+print("\nConnecting...")
 bot.run(config._token)
