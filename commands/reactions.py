@@ -66,8 +66,8 @@ class Reactions():
         await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/filth.gif")
 
     @commands.command(pass_context=True)
-    async def filth(self, ctx):
-        """THIS IS ABSOLUTELY FILTHY!"""
+    async def heckoff(self, ctx):
+        """heck off fools"""
         await self.bot.send_typing(ctx.message.channel)
         await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/heckoff.png")
 
