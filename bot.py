@@ -23,7 +23,6 @@ from utils.tools import *
 from utils.channel_logger import Channel_Logger
 from utils.mysql import *
 from utils.buildinfo import *
-from utils.opus_loader import load_opus_lib
 
 config = Config()
 if config.debug:
@@ -41,28 +40,8 @@ clone = False
 # Thy changelog
 change_log = [
     "Commands:",
-    "+ ropestore",
-    "+ tableflip",
-    "+ unflip",
-    "+ heil",
-    "- loli",
-    "+ weirdshit",
-    "+ filth",
-    "+ twentyoneify",
-    "+ heckoff",
     "Other things:",
-    "Some information related commands now use embeds",
-    "Fixed the emoteurl command not finding emotes from other servers",
-    "The music bot now downloads songs instead of streaming it so hopefully this fixes the skipping issue",
-    "Fixed the configuration command returning an error that format_user wasn't found",
-    "Updated the characterinfo command to match Ruby's current stats",
-    "BUG FIXING UPDATE CHANGES:",
-    "Change some of the behavior of the twentyoneify command",
-    "Fixed the typo that broke the mod-log message for changing the afk channel",
-    "Enabled the talk command again but it's just not gonna work",
-    "Fixed the bug that would cause the userinfo command to break if the user didn't have a status",
-    "BUG FIX UPDATE #2",
-    "Fixed the music bot AGAIN"
+    "Changed the home base server to Gears of Bots"
 ]
 
 async def _restart_bot():
@@ -140,7 +119,6 @@ async def on_ready():
             log.info("Discord Bots Server count updated.")
         elif r.status_code == "401":
             log.error("An error occurred while trying to update the server count!")
-    load_opus_lib()
 
 @bot.event
 async def on_command_error(error, ctx):
@@ -521,7 +499,7 @@ async def joinserver(ctx):
 @bot.command(pass_context=True)
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
-    await bot.send_message(ctx.message.author, "Here is the link to my server: discord.gg/YD4ZQHD\n\nAlso join this server! (I'm more active on it than my own server) discord.gg/t3kCHB7 (if any of the invite links are expired, report it using {}notifydev)".format(bot.command_prefix))
+    await bot.send_message(ctx.message.author, "Here is the link to my server: discord.gg/t3kCHB7\n\n(if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
 
 @bot.command()
 async def ping():

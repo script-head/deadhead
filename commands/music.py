@@ -9,7 +9,10 @@ from discord.ext import commands
 from utils.tools import *
 from utils.mysql import *
 from utils.logger import log
+from utils.opus_loader import load_opus_lib
 from utils import checks
+
+load_opus_lib()
 
 ytdl_format_options = {"format": "bestaudio/best", "extractaudio": True, "audioformat": "mp3", "noplaylist": True, "nocheckcertificate": True, "ignoreerrors": False, "logtostderr": False, "quiet": True, "no_warnings": True, "default_search": "auto", "source_address": "0.0.0.0", "preferredcodec": "libmp3lame"}
 
@@ -79,7 +82,7 @@ class VoiceState:
                 try:
                     os.remove(self.current.file_url)
                 except:
-                    log.warn("Failed to remove {}".format(self.current.file_url))
+                    log.warning("Failed to remove {}".format(self.current.file_url))
             self.play_next_song.clear()
             self.current = await self.songs.get()
             self.queue.remove(self.current)
