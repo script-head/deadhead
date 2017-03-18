@@ -7,6 +7,7 @@ from utils.logger import log
 class Defaults:
     token = None
     dbots_token = None
+    carbonitex_key = None
     owner_id = None
     command_prefix = "*"
     dev_ids = []
@@ -47,6 +48,7 @@ class Config:
             os._exit(1)
         self._token = config.get("Credentials", "Token", fallback=Defaults.token)
         self._dbots_token = config.get("Credentials", "Dbots_Token", fallback=Defaults.dbots_token)
+        self._carbonitex_key = config.get("Credentials", "Carbonitex_Key", fallback=Defaults.carbonitex_key)
         self.owner_id = config.get("Bot", "Owner_ID", fallback=Defaults.owner_id)
         self.command_prefix = config.get("Bot", "Command_Prefix", fallback=Defaults.command_prefix)
         self.max_nsfw_count = config.getint("Bot", "Max_NSFW_Count", fallback=Defaults.max_nsfw_count)

@@ -49,14 +49,14 @@ class Configuration():
             await self.bot.say("Successfully set the leave message to: {}".format(value.replace("!USER!", "@{}".format(ctx.message.author.name)).replace("!SERVER!", ctx.message.server.name)))
         elif type == "channel":
             if value == "remove":
-                update_data_entry(ctx.message.server.id, type, None)
+                update_data_entry(ctx.message.server.id, "join-leave-channel", None)
                 await self.bot.say("Successfully disabled join-leave messages")
                 return
             channel = discord.utils.get(ctx.message.server.channels, name=value)
             if channel is None:
                 await self.bot.say("There is no channel on this server named `{}`".format(value))
                 return
-            update_data_entry(ctx.message.server.id, type, channel.id)
+            update_data_entry(ctx.message.server.id, "join-leave-channel", channel.id)
             await self.bot.say("Successfully set the join-leave-channel to: {}".format(channel.mention))
         elif type == "join-role":
             if value == "remove":

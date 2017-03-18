@@ -71,5 +71,11 @@ class Reactions():
         await self.bot.send_typing(ctx.message.channel)
         await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/heckoff.png")
 
+    @commands.command(pass_context=True)
+    async def lewd(self, ctx):
+        """WOAH THERE THAT'S LEWD!"""
+        await self.bot.send_typing(ctx.message.channel)
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/lewd.gif")
+
 def setup(bot):
     bot.add_cog(Reactions(bot))

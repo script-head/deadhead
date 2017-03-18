@@ -5,6 +5,7 @@ from datetime import date
 from utils.tools import *
 from utils.logger import log
 from utils.config import Config
+from utils.unicode import *
 config = Config()
 
 halloween = date(2017, 10, 31)
@@ -30,7 +31,7 @@ class Information():
             afk_channel = None
         else:
             afk_channel = server.afk_channel.name
-        fields = {"ID":server.id, "Created on":format_time(server.created_at), "Region":server.region, "Member Count":len(server.members), "Channel Count":len(server.channels), "Role Count":len(server.roles), "Owner":server.owner, "Owner ID":server.owner_id, "AFK Channel":afk_channel, "AFK Timeout":"{} seconds".format(server.afk_timeout)}
+        fields = {"ID":server.id, "Created on":format_time(server.created_at), "Region":server.region, "Member Count":len(server.members), "Channel Count":len(server.channels), "Role Count":len(server.roles), "Owner":server.owner, "Owner ID":server.owner_id, "AFK Channel":afk_channel, "AFK Timeout":"{} seconds".format(server.afk_timeout), "Verification Level":str(ctx.message.server.verification_level).capitalize().replace("High", tableflip), "2FA Enabled":convert_to_bool(server.mfa_level)}
         embed = make_list_embed(fields)
         embed.title = server.name
         embed.color = 0xFF0000
@@ -196,6 +197,16 @@ class Information():
         embed.title = "{}'s Osu! Stats".format(user.username)
         embed.color = 0xFF00FF
         embed.set_thumbnail(url="http://s.ppy.sh/a/{}".format(user.user_id))
+        await self.bot.say(embed=embed)
+
+    @commands.command()
+    async def emoteinfo(self, *, emote:discord.Emoji):
+        """Gets information on a custom emote (Only works for servers the bot is on)"""
+        fields = {"Name":emote.name, "ID":emote.id, "Server Origin":emote.server.name, "Created On":format_time(emote.created_at), "Colons Required":emote.require_colons, "Managed by Twitch":emote.managed}
+        embed = make_list_embed(fields)
+        embed.title = ":{}:".format(emote.name)
+        embed.color = 0xFF0000
+        embed.set_thumbnail(url=emote.url)
         await self.bot.say(embed=embed)
 
 def setup(bot):

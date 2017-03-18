@@ -54,8 +54,15 @@ def remove_html(arg):
 def make_list_embed(fields):
     embed = discord.Embed(description="\u200b")
     for key, value in fields.items():
-        embed.add_field(name=key, value=value)
+        embed.add_field(name=key, value=value, inline=True)
     return embed
 
 def format_time(time):
     return time.strftime("%B %d, %Y %I:%M %p UTC")
+
+def convert_to_bool(arg):
+    arg = str(arg).lower()
+    if arg in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
+        return True
+    elif arg in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
+        return False

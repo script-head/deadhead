@@ -53,7 +53,7 @@ class VoiceState:
         self.play_next_song = asyncio.Event()
         self.songs = asyncio.Queue()
         self.queue = []
-        # Set to 0.5 by default to prevent jumpscares
+        # Set to 0.5 by default to prevent jump scares
         self.volume = 0.5
         self.skip_votes = set()
         self.audio_player = self.bot.loop.create_task(self.audio_change_task())
@@ -288,6 +288,15 @@ class Music:
             else:
                 songs = "{}".format(current_song)
             await self.bot.say(songs)
+
+    @commands.command(pass_context=True)
+    async def np(self, ctx):
+        """Shows the title of the song that is currently playing"""
+        state = self.get_voice_state(ctx.message.server)
+        if state.current and state.is_playing():
+            await self.bot.say("Now playing {}".format(state.current))
+        else:
+            await self.bot.say("Nothing is playing!")
 
     @commands.command(hidden=True, pass_context=True)
     @checks.is_dev()

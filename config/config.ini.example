@@ -16,6 +16,9 @@ Token =
 ; If you have a token for bots.discord.pw then put it here
 ;Dbots_Token =
 
+; If you have a key for carbonitex.net then put it here
+;Carbonitex_Key =
+
 [Bot]
 ; Put your user ID here
 Owner_ID =

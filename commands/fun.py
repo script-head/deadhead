@@ -169,5 +169,13 @@ class Fun():
         """EVERYTHING NEEDS TWENTY ØNE PILØTS!"""
         await self.bot.say(input.replace("O", "Ø").replace("o", "ø"))
 
+    @commands.command()
+    async def spellout(self, *, msg:str):
+        """S P E L L O U T"""
+        if msg.replace(" ", "") is None:
+            await self.bot.say("You must specifiy a message!")
+            return
+        await self.bot.say(" ".join(list(msg.upper())))
+
 def setup(bot):
     bot.add_cog(Fun(bot))

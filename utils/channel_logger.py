@@ -13,7 +13,7 @@ class Channel_Logger():
         if config.channel_logger_id:
             channel = self.bot.get_channel(config.channel_logger_id)
             if not channel:
-                log.warning("Can't find logging master channel: {}".format(id))
+                log.warning("Can't find logging channel")
             else:
                 try:
                     await self.bot.send_message(channel, ":stopwatch: `{}` {}".format(time.strftime(config.log_timeformat), msg))

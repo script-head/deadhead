@@ -34,14 +34,19 @@ lock_status = config.lock_status
 
 extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music", "commands.reactions"]
 
-# Unless you want the bot to copy a user keep this false kthx
-clone = False
-
 # Thy changelog
 change_log = [
     "Commands:",
+    "+ lewd",
+    "+ emoteinfo",
+    "+ spellout",
+    "+ np",
+    "+ massban",
     "Other things:",
-    "Changed the home base server to Gears of Bots"
+    "Updated invite link",
+    "Fixed the channel not updating in the join-leave event config",
+    "Added carbon stats",
+    "Added verification level and 2fa information to the serverinfo command"
 ]
 
 async def _restart_bot():
@@ -119,6 +124,17 @@ async def on_ready():
             log.info("Discord Bots Server count updated.")
         elif r.status_code == "401":
             log.error("An error occurred while trying to update the server count!")
+    if config._carbonitex_key:
+        log.info("Updating Carbonitex Statistics...")
+        payload = {"key":config._carbonitex_key, "servercount":len(bot.servers), "botname":bot.user.name, "logoid":bot.user.avatar_url}
+        owner = discord.utils.get(list(bot.get_all_members()), id=config.owner_id)
+        if owner is not None:
+            payload["ownername"] = owner.name
+        r = requests.post("https://www.carbonitex.net/discord/data/botdata.php", json=payload)
+        if r.text == "1 - Success":
+            log.info("Carbonitex stats updated")
+        else:
+            log.error("Failed to update the carbonitex stats, double check the key in the config!")
 
 @bot.event
 async def on_command_error(error, ctx):
@@ -153,28 +169,6 @@ async def on_message(message):
         return
 
     await bot.process_commands(message)
-
-@bot.event
-async def on_member_update(before:discord.Member, after:discord.Member):
-    if clone:
-        if after.id == "117678528220233731":
-            if before.avatar_url != after.avatar_url:
-                log.debug("yes babe")
-                download_file(after.avatar_url, "robintar.webp")
-                asyncio.sleep(2)
-                os.popen("dwebp robintar.webp -o robintar.png").read()
-                asyncio.sleep(2)
-                fp = open("robintar.png", "rb")
-                await bot.edit_profile(avatar=fp.read())
-                asyncio.sleep(2)
-                os.remove("robintar.png")
-                os.remove("robintar.webp")
-            if after.status != after.server.me.status or after.game != after.server.me.game:
-                await bot.change_presence(status=after.status, game=after.game)
-            if after.name != bot.user.name:
-                await bot.edit_profile(username=after.name)
-            if after.nick != after.server.me.nick:
-                await bot.change_nickname(after.server.me, after.nick)
 
 @bot.event
 async def on_server_update(before:discord.Server, after:discord.Server):
@@ -308,7 +302,7 @@ async def notifydev(ctx, *, message:str):
         server = "`No server! Sent via Private Message!`"
     else:
         server = "`{}` / `{}`".format(ctx.message.server.id, ctx.message.server.name)
-    msg = make_message_embed(ctx.message.author, 0xCC0000, message, formatUser=True)
+    msg = make_message_embed(ctx.message.author, 0xFF0000, message, formatUser=True)
     await bot.send_message(discord.User(id=config.owner_id), "You have received a new message! The user's ID is `{}` Server: {}".format(ctx.message.author.id, server), embed=msg)
     for id in config.dev_ids:
         await bot.send_message(discord.User(id=id), "You have received a new message! The user's ID is `{}` Server: {}".format(ctx.message.author.id, server), embed=msg)
@@ -322,7 +316,7 @@ async def suggest(ctx, *, suggestion:str):
         server = "`No server! Sent via Private Message!`"
     else:
         server = "`{}` / `{}`".format(ctx.message.server.id, ctx.message.server.name)
-    msg = make_message_embed(ctx.message.author, 0xCC0000, suggestion, formatUser=True)
+    msg = make_message_embed(ctx.message.author, 0xFF0000, suggestion, formatUser=True)
     await bot.send_message(discord.User(id=config.owner_id), "You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.message.author.id, server), embed=msg)
     for id in config.dev_ids:
         await bot.send_message(discord.User(id=id), "You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.message.author.id, server), embed=msg)
@@ -396,8 +390,9 @@ async def lockstatus():
 async def stream(ctx, *, name:str):
     """Sets the streaming status with the specified name"""
     if lock_status:
-        await bot.say("The status is currently locked.")
-        return
+        if not ctx.message.author.id == config.owner_id and not ctx.message.author.id in config.dev_ids:
+            await bot.say("The status is currently locked")
+            return
     await bot.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
     await bot.say("Now streaming `{}`".format(name))
     await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.message.author.id, ctx.message.author, name))
@@ -406,8 +401,9 @@ async def stream(ctx, *, name:str):
 async def changestatus(ctx, status:str, *, name:str=None):
     """Changes the bot's status with the specified status type and name"""
     if lock_status:
-        await bot.say("The status is currently locked")
-        return
+        if not ctx.message.author.id == config.owner_id and not ctx.message.author.id in config.dev_ids:
+            await bot.say("The status is currently locked")
+            return
     game = None
     if status == "invisible" or status == "offline":
         await bot.say("You can not use the status type `{}`".format(status))
@@ -461,12 +457,16 @@ async def version():
 @checks.is_dev()
 async def dm(ctx, id:str, *, message:str):
     """DMs a user"""
-    msg = make_message_embed(ctx.message.author, 0xCC0000, message, formatUser=True)
+    msg = make_message_embed(ctx.message.author, 0xFF0000, message, formatUser=True)
     try:
-        await bot.send_message(discord.User(id=id), "You have received a message from one of the bot developers!", embed=msg)
-        await bot.say("Message sent!")
+        sent_message = await bot.send_message(discord.User(id=id), "You have received a message from one of the bot developers!", embed=msg)
+        user = sent_message.channel.user
     except:
         await bot.say("Could not send a message to the user.")
+        return
+    await bot.send_message(discord.User(id=config.owner_id), "`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.message.author, user, id), embed=make_message_embed(ctx.message.author, 0xFF0000, message))
+    for dev_id in config.dev_ids:
+        await bot.send_message(discord.User(id=dev_id), "`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.message.author, user, id), embed=make_message_embed(ctx.message.author, 0xFF0000, message))
 
 @bot.command()
 async def uptime():
@@ -499,7 +499,7 @@ async def joinserver(ctx):
 @bot.command(pass_context=True)
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
-    await bot.send_message(ctx.message.author, "Here is the link to my server: discord.gg/t3kCHB7\n\n(if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
+    await bot.send_message(ctx.message.author, "Here is the link to my server: discord.gg/m5BEde5\n\n(if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
 
 @bot.command()
 async def ping():
@@ -536,5 +536,5 @@ async def stats():
         embed.set_footer(text=bot_owner, icon_url=bot_owner.avatar_url)
     await bot.say(embed=embed)
 
-print("\nConnecting...")
+print("Connecting...")
 bot.run(config._token)

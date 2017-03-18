@@ -399,6 +399,24 @@ class Moderation():
         except discord.errors.NotFound:
             await self.bot.say("That role is higher than my highest role")
 
+    @commands.command(pass_context=True)
+    async def massban(self, ctx, *, ids:str):
+        """Mass bans users by ids (separate ids by spaces)"""
+        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
+        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
+        if not mod:
+            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
+            return
+        ids = ids.split(" ")
+        success = 0
+        for id in ids:
+            try:
+                await self.bot.http.ban(id, ctx.message.server.id)
+                success += 1
+            except:
+                pass
+        await self.bot.say("Successfully banned {}/{} users".format(success, len(ids)))
+
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

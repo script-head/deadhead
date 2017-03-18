@@ -3,6 +3,9 @@
 *.pyc
 ~*/
 
+#Py
+__pycache__/
+
 # Bot files
 data/
 config/config.ini
