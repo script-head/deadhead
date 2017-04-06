@@ -1,4 +1,7 @@
 import time
+import nmap
+import socket
+import pythonwhois
 
 from discord.ext import commands
 from datetime import date
@@ -6,6 +9,7 @@ from utils.tools import *
 from utils.logger import log
 from utils.config import Config
 from utils.unicode import *
+from PIL import Image
 config = Config()
 
 halloween = date(2017, 10, 31)
@@ -44,10 +48,6 @@ class Information():
         """Gets your information or the information of the specified user"""
         if user is None:
             user = ctx.message.author
-        if not user.avatar_url:
-            avatar_url = user.default_avatar_url
-        else:
-            avatar_url = user.avatar_url
         game = None
         if user.game:
             game = user.game.name
@@ -55,7 +55,7 @@ class Information():
         embed = make_list_embed(fields)
         embed.title = str(user)
         embed.color = user.color
-        embed.set_thumbnail(url=avatar_url)
+        embed.set_thumbnail(url=get_avatar(user))
         await self.bot.say(embed=embed)
 
     @commands.command(pass_context=True)
@@ -63,11 +63,7 @@ class Information():
         """Gets your avatar url or the avatar url of the specified user"""
         if user is None:
             user = ctx.message.author
-        if not user.avatar_url:
-            avatar_url = user.default_avatar_url
-        else:
-            avatar_url = user.avatar_url
-        await self.bot.say("{}'s avatar url is: {}".format(user.mention, avatar_url))
+        await self.bot.say("{}'s avatar url is: {}".format(user.mention, get_avatar(user)))
 
     @commands.command(pass_context=True)
     async def defaultavatar(self, ctx, *, user:discord.User=None):
@@ -146,7 +142,7 @@ class Information():
             url = "http://{}".format(url)
         try:
             starttime = time.time()
-            r = requests.get(url, timeout=3)
+            requests.get(url, timeout=3)
             ping = "%.01f seconds" % (time.time() - starttime)
             await self.bot.say("`{}` is online. Ping time is `{}`".format(url, ping))
         except:
@@ -157,7 +153,7 @@ class Information():
         """Gets a list of the server's emotes"""
         emotes = ctx.message.server.emojis
         if len(emotes) == 0:
-            await self.bot.say("This server does not have any emotes!")
+            await self.bot.say("This server doesn't have any emotes!")
             return
         emotes = ["`:{}:` = {}".format(emote.name, emote) for emote in emotes]
         await self.bot.say("\n".join(emotes))
@@ -207,6 +203,81 @@ class Information():
         embed.title = ":{}:".format(emote.name)
         embed.color = 0xFF0000
         embed.set_thumbnail(url=emote.url)
+        await self.bot.say(embed=embed)
+
+    @commands.command()
+    async def portscan(self, host:str, ports:str):
+        """Uses nmap to scan the specified ports from the specified host"""
+        scanner = nmap.PortScanner()
+        try:
+            host = socket.gethostbyname(host)
+        except socket.gaierror:
+            await self.bot.say("`{}` is not a valid address".format(host))
+            return
+        ports = scanner.scan(host, ports)["scan"][host]["tcp"]
+        results = []
+        for port, data in ports.items():
+            service = data["name"]
+            if service == "":
+                service = "unknown"
+            results.append("Port {}({}): {}".format(port, service, data["state"]))
+        await self.bot.say(xl.format("\n".join(results)))
+
+    @commands.command()
+    async def getnumericip(self, address:str):
+        """Resolves the numeric ip of a domain"""
+        try:
+            await self.bot.say(socket.gethostbyname(address))
+        except socket.gaierror:
+            await self.bot.say("`{}` is not a valid address".format(address))
+
+    @commands.command()
+    async def whois(self, domain:str):
+        """Gets whois information on a domain"""
+        try:
+            info = pythonwhois.get_whois(domain)
+        except pythonwhois.shared.WhoisException:
+            await self.bot.say("Could not find the root server for that TLD")
+            return
+        except KeyError:
+            await self.bot.say("Failed to lookup domain")
+            return
+        if info["contacts"]["registrant"] is None:
+            await self.bot.say(embed=discord.Embed(title="Domain Available", description="`{}` is available for registration".format(domain), color=0x00FF00))
+            return
+        fields = {"Registrar":info["registrar"][0], "Registered on":format_time(info["creation_date"][0]), "Expires on":format_time(info["expiration_date"][0]), "Last updated":format_time(info["updated_date"][0]), "Name Servers":", ".join(info["nameservers"])}
+        embed = make_list_embed(fields)
+        embed.title = "Domain Unavailable"
+        embed.color = 0xFF0000
+        await self.bot.say(embed=embed)
+
+    @commands.command(pass_context=True)
+    async def color(self, ctx, *, hex:str):
+        """Displays the given hex color"""
+        await self.bot.send_typing(ctx.message.channel)
+        if not hex.startswith("#"):
+            hex = "#{}".format(hex)
+        try:
+            Image.new("RGBA", (50, 50), hex).save("data/color.png")
+        except ValueError:
+            await self.bot.say("`{}` is not a valid hex color".format(hex))
+            return
+        await self.bot.send_file(ctx.message.channel, "data/color.png")
+
+    @commands.command()
+    async def getuserbyid(self, id:str):
+        """Gets a user by id"""
+        user = discord.utils.get(list(self.bot.get_all_members()), id=id)
+        if not user:
+            await self.bot.say("Could not find any user in my mutual servers with an ID of `{}`".format(id))
+            return
+        if user.game:
+            game = user.game.name
+        fields = {"Name":user.name, "Discriminator":user.discriminator, "ID":user.id, "Status":str(user.status).replace("_", " ").replace("dnd", "do not disturb"), "Game":game, "Bot":user.bot}
+        embed = make_list_embed(fields)
+        embed.title = str(user)
+        embed.color = 0xFF0000
+        embed.set_thumbnail(url=get_avatar(user))
         await self.bot.say(embed=embed)
 
 def setup(bot):

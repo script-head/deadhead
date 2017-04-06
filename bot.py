@@ -4,13 +4,12 @@ import aiohttp
 import time
 import sys
 import subprocess
-import traceback
 
 start_time = time.time()
 
 # Initialize the logger first so the colors and shit are setup
 from utils.logger import log
-log.init() # Yes I could just use __init__ but I'm dumb
+log.init()
 
 from utils.bootstrap import Bootstrap
 Bootstrap.run_checks()
@@ -37,16 +36,25 @@ extensions = ["commands.fun", "commands.information", "commands.moderation", "co
 # Thy changelog
 change_log = [
     "Commands:",
-    "+ lewd",
-    "+ emoteinfo",
-    "+ spellout",
-    "+ np",
-    "+ massban",
+    "+ portscan",
+    "+ getnumericip",
+    "+ whois",
+    "+ color",
+    "+ nolewding",
+    "+ trigger",
+    "+ repost",
+    "+ boi",
+    "- allahuakbar",
+    "- fuckherrightinthepussy",
+    "+ getuserbyid",
+    "+ gelbooru",
+    "+ xbooru",
     "Other things:",
-    "Updated invite link",
-    "Fixed the channel not updating in the join-leave event config",
-    "Added carbon stats",
-    "Added verification level and 2fa information to the serverinfo command"
+    "The bot no longer responds to other bots",
+    "Unless the user has the \"Mention Everyone\" permission the bot will filter out @everyone and @here from commands like r!say",
+    "Changed the delet command reaction image",
+    "The anime and manga commands now use embeds",
+    "You can now specify a user and only delete that user's messages (you might have to specify a large amount to delete as it will only check the amount you specify including messages not sent by the uspeicifed user, this is out of my control)"
 ]
 
 async def _restart_bot():
@@ -89,7 +97,7 @@ async def set_default_status():
 
 @bot.event
 async def on_resumed():
-    log.info("\nReconnected to discord!")
+    log.info("Reconnected to discord!")
 
 @bot.event
 async def on_ready():
@@ -140,6 +148,10 @@ async def on_ready():
 async def on_command_error(error, ctx):
     if isinstance(error, commands.CommandNotFound):
         return
+    if isinstance(error, commands.DisabledCommand):
+        await bot.send_message(ctx.message.channel, "This command has been disabled")
+        return
+
     if ctx.message.channel.is_private:
         await bot.send_message(ctx.message.channel, "An error occured while trying to run this command, this is most likely because it was ran in this private message channel. Please try running this command on a server.")
         return
@@ -149,7 +161,7 @@ async def on_command_error(error, ctx):
         await bot.send_message(ctx.message.channel, error)
     except:
         pass
-    log.error("An error occured while executing the command named {}: {}".format(ctx.command.qualified_name, error))
+    log.error("An error occured while executing the {} command: {}".format(ctx.command.qualified_name, error))
 
 @bot.event
 async def on_command(command, ctx):
@@ -161,13 +173,13 @@ async def on_command(command, ctx):
 
 @bot.event
 async def on_message(message):
+    if message.author.bot:
+        return
     if isinstance(message.author, discord.Member):
         if discord.utils.get(message.author.roles, name="Grimm"):
             return
-
     if getblacklistentry(message.author.id) is not None:
         return
-
     await bot.process_commands(message)
 
 @bot.event
@@ -446,7 +458,7 @@ async def uploadfile(ctx, *, path:str):
 @bot.command()
 async def changelog():
     """The latest changelog"""
-    await bot.say("For command usages and a list of commands go to http://ruby.creeperseth.com or do `{0}help` (`{0}help command` for a command usage)\n{1}".format(bot.command_prefix, diff.format("\n".join(map(str, change_log)))))
+    await bot.say("For command usages and a list of commands go to https://ruby.creeperseth.com or do `{0}help` (`{0}help command` for a command usage)\n{1}".format(bot.command_prefix, diff.format("\n".join(map(str, change_log)))))
 
 @bot.command()
 async def version():
@@ -512,7 +524,7 @@ async def ping():
 @bot.command()
 async def website():
     """Gives the link to the bot docs"""
-    await bot.say("My official website can be found here: http://ruby.creeperseth.com")
+    await bot.say("My official website can be found here: https://ruby.creeperseth.com")
 
 @bot.command()
 async def github():
@@ -533,8 +545,24 @@ async def stats():
     embed.set_thumbnail(url=bot.user.avatar_url)
     bot_owner = discord.utils.get(list(bot.get_all_members()), id=config.owner_id)
     if bot_owner is not None:
-        embed.set_footer(text=bot_owner, icon_url=bot_owner.avatar_url)
+        embed.set_footer(text=bot_owner, icon_url=get_avatar(bot_owner))
     await bot.say(embed=embed)
+
+@bot.command()
+async def top10servers():
+    """Gets the top 10 most populated servers the bot is on"""
+    servers = []
+    for server in sorted(bot.servers, key=lambda e: e.member_count, reverse=True)[:10]:
+        members = 0
+        bots = 0
+        total = len(server.members)
+        for member in server.members:
+            if member.bot:
+                bots += 1
+            else:
+                members += 1
+        servers.append("{}: {} members, {} bots ({} total)".format(server.name, members, bots, total))
+    await bot.say("```{}```".format("\n\n".join(servers)))
 
 print("Connecting...")
 bot.run(config._token)

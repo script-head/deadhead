@@ -147,8 +147,8 @@ class Moderation():
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role is not higher than the `{}` role".format(mute_role_name))
 
     @commands.command(pass_context=True)
-    async def prune(self, ctx, amount:int):
-        """Prunes the specified amount of messages"""
+    async def prune(self, ctx, amount:int, *, user:discord.Member=None):
+        """Prunes the specified amount of messages (you can also prune messages from a specific user too)"""
         mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
         mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
         if not mod:
@@ -159,11 +159,15 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I do not have the `Manage Messages` permission")
             return
-        deleted = await self.bot.purge_from(ctx.message.channel, limit=amount)
+        if user:
+            def is_user(message):
+                return message.author == user
+            deleted = await self.bot.purge_from(ctx.message.channel, limit=amount, check=is_user)
+        else:
+            deleted = await self.bot.purge_from(ctx.message.channel, limit=amount)
         deleted_message = await self.bot.say("{} Deleted {} messages".format(ctx.message.author.mention, len(deleted)))
         await asyncio.sleep(10)
-        # The try and except pass is so in the event a user prunes again or deletes the
-        # prune notification before the bot automatically does it, it will not raise an error
+        # The try and except pass is so in the event a user prunes again or deletes the prune notification before the bot automatically does it, it will not raise an error
         try:
             await self.bot.delete_message(deleted_message)
         except:
@@ -355,20 +359,22 @@ class Moderation():
             except discord.errors.NotFound:
                 await self.bot.say("That role is higher than my highest role")
         elif type == "separate":
-            if value.lower() != "true" and value.lower() != "false":
-                await self.bot.say("The value must be either `true` or `false`")
+            try:
+                bool = convert_to_bool(value)
+            except ValueError:
+                await self.bot.say("`{}` is not a valid boolean".format(value))
                 return
-            bool = value.lower() == "true"
             try:
                 await self.bot.edit_role(ctx.message.server, role, hoist=bool)
                 await self.bot.say("Successfully edited the role named `{}`".format(name))
             except discord.errors.Forbidden:
                 await self.bot.say("I do not have the `Manage Roles` permission or that role is not lower than my highest role.")
         elif type == "mentionable":
-            if value.lower() != "true" and value.lower() != "false":
-                await self.bot.say("The value must be either `true` or `false`")
+            try:
+                bool = convert_to_bool(value)
+            except ValueError:
+                await self.bot.say("`{}` is not a valid boolean".format(value))
                 return
-            bool = value.lower() == "true"
             try:
                 await self.bot.edit_role(ctx.message.server, role, mentionable=bool)
                 await self.bot.say("Successfully edited the role named `{}`".format(name))
@@ -401,7 +407,7 @@ class Moderation():
 
     @commands.command(pass_context=True)
     async def massban(self, ctx, *, ids:str):
-        """Mass bans users by ids (separate ids by spaces)"""
+        """Mass bans users by ids (separate ids with spaces)"""
         mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
         mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
         if not mod:
@@ -416,7 +422,6 @@ class Moderation():
             except:
                 pass
         await self.bot.say("Successfully banned {}/{} users".format(success, len(ids)))
-
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

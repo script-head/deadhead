@@ -30,6 +30,15 @@ def extract_emote_id(arg):
     if match:
         return str(match.group(2))
 
+def get_avatar(user, animate=True):
+    if user.avatar_url:
+        avatar = user.avatar_url
+    else:
+        avatar = user.default_avatar_url
+    if not animate:
+        avatar = avatar.replace(".gif", ".png")
+    return avatar
+
 def make_message_embed(author, color, message, *, formatUser=False, useNick=False):
     if formatUser:
         name = str(author)
@@ -38,17 +47,14 @@ def make_message_embed(author, color, message, *, formatUser=False, useNick=Fals
             name = author.nick
         else:
             name = author.name
-    if author.avatar_url:
-        avatar = author.avatar_url
-    else:
-        avatar = author.default_avatar_url
     embed = discord.Embed(color=color, description=message)
-    embed.set_author(name=name, icon_url=avatar)
+    embed.set_author(name=name, icon_url=get_avatar(author))
     return embed
 
 def remove_html(arg):
     arg = arg.replace("&quot;", "\"").replace("<br />", "").replace("[i]", "*").replace("[/i]", "*")
-    arg = arg.replace("&ldquo;", "\"").replace("&rdquo;", "\"").replace("&#039;", "'")
+    arg = arg.replace("&ldquo;", "\"").replace("&rdquo;", "\"").replace("&#039;", "'").replace("&mdash;", "—")
+    arg = arg.replace("&ndash;", "–")
     return arg
 
 def make_list_embed(fields):
@@ -58,11 +64,25 @@ def make_list_embed(fields):
     return embed
 
 def format_time(time):
-    return time.strftime("%B %d, %Y %I:%M %p UTC")
+    return time.strftime("%B %d, %Y %I:%M %p EST")
 
 def convert_to_bool(arg):
     arg = str(arg).lower()
-    if arg in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
+    if arg in ["yes", "y", "true", "t", "1", "enable", "on"]:
         return True
-    elif arg in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
+    elif arg in ["no", "n", "false", "f", "0", "disable", "off"]:
         return False
+    else:
+        raise ValueError
+
+def strip_global_mentions(message, ctx=None):
+    if ctx:
+        perms = ctx.message.channel.permissions_for(ctx.message.author)
+        if perms.mention_everyone:
+            return message
+    remove_everyone = re.compile(re.escape("@everyone"), re.IGNORECASE)
+    remove_here = re.compile(re.escape("@here"), re.IGNORECASE)
+    message = remove_everyone.sub("everyone", message)
+    message = remove_here.sub("here", message)
+    return message
+

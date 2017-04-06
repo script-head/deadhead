@@ -136,5 +136,72 @@ class NSFW():
                 return
         await self.bot.say("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
 
+    @commands.command(pass_context=True)
+    async def gelbooru(self, ctx, *, tags:str):
+        """Searches gelbooru.com for the specified tagged images"""
+        nsfw = discord.utils.get(ctx.message.server.me.roles, name="NSFW")
+        nsfw_channel_name = read_data_entry(ctx.message.server.id, "nsfw-channel")
+        if not ctx.message.channel.name == nsfw_channel_name:
+            if not nsfw:
+                await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
+                return
+        await self.bot.send_typing(ctx.message.channel)
+        download_file("http://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags),"data/gelbooru.json")
+        with open("data/gelbooru.json", encoding="utf8") as file:
+            try:
+                data = json.load(file)
+            except json.JSONDecodeError:
+                await self.bot.say("No results found for `{}`".format(tags))
+                return
+        count = len(data)
+        if count == 0:
+            await self.bot.say("No results found for `{}`".format(tags))
+            return
+        image_count = 4
+        if count < 4:
+            image_count = count
+        images = []
+        for i in range(image_count):
+            try:
+                images.append("http:{}".format(data[random.randint(0, count)]["file_url"]))
+            except KeyError:
+                await self.bot.say(data["message"])
+                return
+        await self.bot.say("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
+
+    @commands.command(pass_context=True)
+    async def xbooru(self, ctx, *, tags: str):
+        """Searches xbooru.com for the specified tagged images"""
+        nsfw = discord.utils.get(ctx.message.server.me.roles, name="NSFW")
+        nsfw_channel_name = read_data_entry(ctx.message.server.id, "nsfw-channel")
+        if not ctx.message.channel.name == nsfw_channel_name:
+            if not nsfw:
+                await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
+                return
+        await self.bot.send_typing(ctx.message.channel)
+        download_file("http://xbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags),"data/xbooru.json")
+        with open("data/xbooru.json", encoding="utf8") as file:
+            try:
+                data = json.load(file)
+            except json.JSONDecodeError:
+                await self.bot.say("No results found for `{}`".format(tags))
+                return
+        count = len(data)
+        if count == 0:
+            await self.bot.say("No results found for `{}`".format(tags))
+            return
+        image_count = 4
+        if count < 4:
+            image_count = count
+        images = []
+        for i in range(image_count):
+            try:
+                post = data[random.randint(0, count)]
+                images.append("http://img3.xbooru.com/images/{}/{}".format(post["directory"], post["image"]))
+            except KeyError:
+                await self.bot.say(data["message"])
+                return
+        await self.bot.say("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
+
 def setup(bot):
     bot.add_cog(NSFW(bot))

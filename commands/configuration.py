@@ -19,7 +19,7 @@ class Configuration():
             update_data_entry(ctx.message.server.id, type, value)
             await self.bot.say("Successfully set the {} to `{}`".format(type, value))
         else:
-            await self.bot.say("`{}` is not a valid type! If you need help go to http://ruby.creeperseth.com".format(type))
+            await self.bot.say("`{}` is not a valid type! Valid types are `mod-role`, `nsfw-channel`, and `mute-role`".format(type))
 
     @commands.command(pass_context=True)
     async def showconfig(self, ctx):

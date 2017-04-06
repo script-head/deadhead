@@ -259,7 +259,7 @@ class Music:
         if state.is_playing():
             player = state.player
             player.pause()
-            await self.bot.say("Song paused")
+            await self.bot.say("Paused")
         else:
             await self.bot.say("Nothing is playing!")
 
@@ -270,7 +270,7 @@ class Music:
         if state.is_playing():
             player = state.player
             player.resume()
-            await self.bot.say("Song resumed")
+            await self.bot.say("Resumed")
         else:
             await self.bot.say("Nothing is playing!")
 

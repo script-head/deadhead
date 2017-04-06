@@ -7,6 +7,8 @@ from discord.ext import commands
 from utils.tools import *
 from utils.unicode import *
 from utils.fun.lists import *
+from utils import imagetools
+from PIL import Image
 #from cleverbot import Cleverbot
 
 class Fun():
@@ -21,7 +23,7 @@ class Fun():
             await self.bot.delete_message(ctx.message)
         except:
             pass
-        await self.bot.say(message)
+        await self.bot.say(strip_global_mentions(message, ctx))
 
     @commands.command(pass_context=True)
     async def cat(self, ctx):
@@ -41,12 +43,6 @@ class Fun():
     async def nicememe(self):
         """Nice Meme!"""
         await self.bot.say("http://niceme.me")
-
-    @commands.command(pass_context=True)
-    async def allahuakbar(self, ctx):
-        """ALLAHU AKBAR!"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/allahuakbar.gif")
 
     @commands.command(pass_context=True)
     async def yiffinhell(self, ctx):
@@ -148,11 +144,6 @@ class Fun():
         await self.bot.send_message(ctx.message.author, message)
         await self.bot.say(":ok_hand: check your DMs")
 
-    @commands.command()
-    async def fuckherrightinthepussy(self):
-        """FUCK HER RIGHT IN THE PUSSY! #FHRITP"""
-        await self.bot.say("https://www.youtube.com/watch?v=x7-nzLx4Oa0")
-
     @commands.command(pass_context=True)
     async def quote(self, ctx, id:str):
         """Quotes a message with the specified message ID"""
@@ -172,10 +163,23 @@ class Fun():
     @commands.command()
     async def spellout(self, *, msg:str):
         """S P E L L O U T"""
-        if msg.replace(" ", "") is None:
-            await self.bot.say("You must specifiy a message!")
-            return
         await self.bot.say(" ".join(list(msg.upper())))
+
+    @commands.command(pass_context=True)
+    async def trigger(self, ctx, *, member:discord.Member=None):
+        """Triggers a user"""
+        await self.bot.send_typing(ctx.message.channel)
+        if member is None:
+            member = ctx.message.author
+        download_file(get_avatar(member, animate=False), "data/trigger.png")
+        avatar = Image.open("data/trigger.png")
+        triggered = imagetools.rescale(Image.open("assets/imgs/pillow/triggered.jpg"), avatar.size)
+        position = 0, avatar.getbbox()[3] - triggered.getbbox()[3]
+        avatar.paste(triggered, position)
+        avatar.save("data/trigger.png")
+        await self.bot.send_file(ctx.message.channel, "data/trigger.png")
+
+
 
 def setup(bot):
     bot.add_cog(Fun(bot))

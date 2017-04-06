@@ -1,0 +1,11 @@
+discord.py
+youtube-dl
+colorlog
+asyncio
+cffi
+pynacl
+aiohttp
+python-nmap
+random-cat
+pythonwhois
+pillow

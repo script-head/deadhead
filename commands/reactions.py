@@ -45,7 +45,7 @@ class Reactions():
     async def delet(self, ctx):
         """Delet this"""
         await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/delet_this.jpg")
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/delet_this.png")
 
     @commands.command(pass_context=True)
     async def what(self, ctx):
@@ -76,6 +76,30 @@ class Reactions():
         """WOAH THERE THAT'S LEWD!"""
         await self.bot.send_typing(ctx.message.channel)
         await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/lewd.gif")
+
+    @commands.command(pass_context=True)
+    async def nolewding(self, ctx):
+        """No lewding!"""
+        await self.bot.send_typing(ctx.message.channel)
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/nolewding.jpg")
+
+    @commands.command(pass_context=True)
+    async def nolewding(self, ctx):
+        """No lewding!"""
+        await self.bot.send_typing(ctx.message.channel)
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/nolewding.jpg")
+
+    @commands.command(pass_context=True)
+    async def repost(self, ctx):
+        """It's just a repost smh"""
+        await self.bot.send_typing(ctx.message.channel)
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/repost.gif")
+
+    @commands.command(pass_context=True)
+    async def boi(self, ctx):
+        """BOI"""
+        await self.bot.send_typing(ctx.message.channel)
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/boi.jpg")
 
 def setup(bot):
     bot.add_cog(Reactions(bot))

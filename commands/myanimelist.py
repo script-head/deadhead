@@ -42,14 +42,20 @@ class MyAnimeList():
         status = anime.getElementsByTagName("status")[0].firstChild.nodeValue
         start_date = anime.getElementsByTagName("start_date")[0].firstChild.nodeValue
         end_date = anime.getElementsByTagName("end_date")[0].firstChild.nodeValue
+        image = anime.getElementsByTagName("image")[0].firstChild.nodeValue
         synopsis = saxutils.unescape(anime.getElementsByTagName("synopsis")[0].firstChild.nodeValue)
         synopsis = remove_html(synopsis)
-        print(len(synopsis))
-        if len(synopsis) > 500:
-            synopsis = synopsis[:500] + "..."
+        if len(synopsis) > 300:
+            synopsis = synopsis[:300] + "..."
         url = "https://myanimelist.net/anime/{}".format(id)
-        msg = "```Title: {}\nEnglish title: {}\nEpisodes: {}\nScore: {}\nType: {}\nStatus: {}\nStart date: {}\nEnd Date: {}```{}\nRead more: {}".format(title, english, episodes, score, type, status, start_date, end_date, synopsis, url)
-        await self.bot.say(msg)
+        fields = {"English Title":english, "Episodes":episodes, "MAL Score":score, "Type":type, "Status":status, "Start Date":start_date, "End Date":end_date}
+        embed = make_list_embed(fields)
+        embed.title = title
+        embed.description = synopsis
+        embed.url = url
+        embed.color = 0xFF0000
+        embed.set_thumbnail(url=image)
+        await self.bot.say(embed=embed)
 
     @commands.command(pass_context=True)
     async def manga(self, ctx, *, name:str):
@@ -68,23 +74,34 @@ class MyAnimeList():
             await self.bot.say("Couldn't find any manga named `{}`".format(name))
             return
         # pls no flame
-        anime = xmldoc.getElementsByTagName("entry")[0]
-        id = anime.getElementsByTagName("id")[0].firstChild.nodeValue
-        title = anime.getElementsByTagName("title")[0].firstChild.nodeValue
+        manga = xmldoc.getElementsByTagName("entry")[0]
+        id = manga.getElementsByTagName("id")[0].firstChild.nodeValue
+        title = manga.getElementsByTagName("title")[0].firstChild.nodeValue
         try:
-            english = anime.getElementsByTagName("english")[0].firstChild.nodeValue
+            english = manga.getElementsByTagName("english")[0].firstChild.nodeValue
         except:
             english = title
-        chapters = anime.getElementsByTagName("chapters")[0].firstChild.nodeValue
-        volumes = anime.getElementsByTagName("volumes")[0].firstChild.nodeValue
-        score = anime.getElementsByTagName("score")[0].firstChild.nodeValue
-        type = anime.getElementsByTagName("type")[0].firstChild.nodeValue
-        status = anime.getElementsByTagName("status")[0].firstChild.nodeValue
-        start_date = anime.getElementsByTagName("start_date")[0].firstChild.nodeValue
-        end_date = anime.getElementsByTagName("end_date")[0].firstChild.nodeValue
+        chapters = manga.getElementsByTagName("chapters")[0].firstChild.nodeValue
+        volumes = manga.getElementsByTagName("volumes")[0].firstChild.nodeValue
+        score = manga.getElementsByTagName("score")[0].firstChild.nodeValue
+        type = manga.getElementsByTagName("type")[0].firstChild.nodeValue
+        status = manga.getElementsByTagName("status")[0].firstChild.nodeValue
+        start_date = manga.getElementsByTagName("start_date")[0].firstChild.nodeValue
+        end_date = manga.getElementsByTagName("end_date")[0].firstChild.nodeValue
+        image = manga.getElementsByTagName("image")[0].firstChild.nodeValue
+        synopsis = saxutils.unescape(manga.getElementsByTagName("synopsis")[0].firstChild.nodeValue)
+        synopsis = remove_html(synopsis)
+        if len(synopsis) > 300:
+            synopsis = synopsis[:300] + "..."
         url = "https://myanimelist.net/manga/{}".format(id)
-        msg = "```Title: {}\nEnglish title: {}\nChapters: {}\nVolumes: {}\nScore: {}\nType: {}\nStatus: {}\nStart date: {}\nEnd Date: {}```\nRead more: {}".format(title, english, chapters, volumes, score, type, status, start_date, end_date, url)
-        await self.bot.say(msg)
+        fields = {"English Title":english, "Chapters":chapters, "Volumes":volumes, "MAL Score":score, "Type":type, "Status":status, "Start Date":start_date, "End Date":end_date}
+        embed = make_list_embed(fields)
+        embed.title = title
+        embed.description = synopsis
+        embed.url = url
+        embed.color = 0xFF0000
+        embed.set_thumbnail(url=image)
+        await self.bot.say(embed=embed)
 
 def setup(bot):
     bot.add_cog(MyAnimeList(bot))
