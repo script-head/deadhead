@@ -21,10 +21,8 @@ class MyAnimeList():
             log.critical("The MyAnimeList credinals are incorrect, please check your MyAnimeList login information in the config.")
             await self.bot.say("The MyAnimeList credinals are incorrect, contact the bot developer!")
             return
-        with open("data/anime.xml", "wb") as xml:
-            xml.write(r.content)
         try:
-            xmldoc = minidom.parse("data/anime.xml")
+            xmldoc = minidom.parseString(r.text)
         except XmlParserErrors.ExpatError:
             await self.bot.say("Couldn't find any anime named `{}`".format(name))
             return
@@ -66,10 +64,8 @@ class MyAnimeList():
             log.critical("The MyAnimeList credinals are incorrect, please check your MyAnimeList login information in the config.")
             await self.bot.say("The MyAnimeList credinals are incorrect, contact the bot developer!")
             return
-        with open("data/manga.xml", "wb") as xml:
-            xml.write(r.content)
         try:
-            xmldoc = minidom.parse("data/manga.xml")
+            xmldoc = minidom.parseString(r.text)
         except XmlParserErrors.ExpatError:
             await self.bot.say("Couldn't find any manga named `{}`".format(name))
             return

@@ -1,9 +1,10 @@
 import asyncio
-import os
 import aiohttp
 import time
 import sys
 import subprocess
+import os
+import json
 
 start_time = time.time()
 
@@ -31,30 +32,35 @@ channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
 
-extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music", "commands.reactions"]
+extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music", "commands.reactions", "commands.economy"]
 
 # Thy changelog
 change_log = [
+    "--> PLEASE READ r!econotice AND r!ranksysinfo<--"
     "Commands:",
-    "+ portscan",
-    "+ getnumericip",
-    "+ whois",
-    "+ color",
-    "+ nolewding",
-    "+ trigger",
-    "+ repost",
-    "+ boi",
-    "- allahuakbar",
-    "- fuckherrightinthepussy",
-    "+ getuserbyid",
-    "+ gelbooru",
-    "+ xbooru",
+    "- announce",
+    "+ memegen",
+    "+ memelist",
+    "+ blackandwhite",
+    "+ thiscommanddoesfuckingnothing",
+    "+ ecostats",
+    "+ pay",
+    "+ setbalance",
+    "+ givemeaheadpat",
+    "+ slotmachine",
+    "+ dailyroses",
+    "+ resetdailycooldown",
+    "+ balance",
+    "+ econotice",
+    "+ ranksysvote",
+    "+ ranksysvoteresults",
+    "+ ranksysinfo"
     "Other things:",
-    "The bot no longer responds to other bots",
-    "Unless the user has the \"Mention Everyone\" permission the bot will filter out @everyone and @here from commands like r!say",
-    "Changed the delet command reaction image",
-    "The anime and manga commands now use embeds",
-    "You can now specify a user and only delete that user's messages (you might have to specify a large amount to delete as it will only check the amount you specify including messages not sent by the uspeicifed user, this is out of my control)"
+    "If you run r!volume without specifying a new volume, the bot will now display the current volume",
+    "r!stats now shows a true user count (it removes duplicate ids now)",
+    "Added an economy system",
+    "The massban command now shows the ids that failed to be banned (if any)",
+    "The bot doesn't download some data files anymore, this should speed up some commands"
 ]
 
 async def _restart_bot():
@@ -143,6 +149,8 @@ async def on_ready():
             log.info("Carbonitex stats updated")
         else:
             log.error("Failed to update the carbonitex stats, double check the key in the config!")
+    if not os.path.isfile("data/ranksysvotes.json"):
+        write_file("data/ranksysvotes.json", ["{}"])
 
 @bot.event
 async def on_command_error(error, ctx):
@@ -259,6 +267,10 @@ async def debug(ctx, *, shit:str):
     """This is the part where I make 20,000 typos before I get it right"""
     # "what the fuck is with your variable naming" - EJH2
     # seth seriously what the fuck - Robin
+    import os
+    import random
+    import re
+    from datetime import datetime, timedelta
     try:
         rebug = eval(shit)
         if asyncio.iscoroutine(rebug):
@@ -407,7 +419,7 @@ async def stream(ctx, *, name:str):
             return
     await bot.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
     await bot.say("Now streaming `{}`".format(name))
-    await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.message.author.id, ctx.message.author, name))
+    await channel_logger.log_to_channel(":informationp_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.message.author.id, ctx.message.author, name))
 
 @bot.command(pass_context=True)
 async def changestatus(ctx, status:str, *, name:str=None):
@@ -538,7 +550,11 @@ async def stats():
     for server in bot.servers:
         if server.me.voice_channel:
             voice_clients.append(server.me.voice_channel)
-    fields = {"Users":len(list(bot.get_all_members())), "Servers":len(bot.servers), "Channels":len(list(bot.get_all_channels())), "Private Channels":len((bot.private_channels)), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":BUILD_VERSION, "Built by":BUILD_AUTHORS}
+    users = []
+    for user in list(bot.get_all_members()):
+        if user.id not in users:
+            users.append(user.id)
+    fields = {"Users":len(users), "Servers":len(bot.servers), "Channels":len(list(bot.get_all_channels())), "Private Channels":len((bot.private_channels)), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":BUILD_VERSION, "Built by":BUILD_AUTHORS}
     embed = make_list_embed(fields)
     embed.title = str(bot.user)
     embed.color = 0xFF0000
@@ -563,6 +579,49 @@ async def top10servers():
                 members += 1
         servers.append("{}: {} members, {} bots ({} total)".format(server.name, members, bots, total))
     await bot.say("```{}```".format("\n\n".join(servers)))
+
+@bot.command(pass_context=True)
+async def ranksysvote(ctx, vote:str):
+    """Vote to oppose or object an optional rank system"""
+    with open("data/ranksysvotes.json", "r") as jsonFile:
+        votes = json.load(jsonFile)
+    voted = False
+    try:
+        votes[ctx.message.author.id]
+        voted = True
+    except KeyError:
+        pass
+    if voted:
+        await bot.say("You already voted!")
+        return
+    vote = vote.lower()
+    if vote == "yes" or vote == "no":
+        votes[ctx.message.author.id] = vote
+        await bot.say("Successfully voted!")
+    else:
+        await bot.say("Valid vote options are `yes` and `no`")
+        return
+    with open("data/ranksysvotes.json", "w") as jsonFile:
+        json.dump(votes, jsonFile)
+
+@bot.command()
+async def ranksysvoteresults():
+    """Results for the rank system poll"""
+    with open("data/ranksysvotes.json", "r") as jsonFile:
+        votes = json.load(jsonFile)
+    yes = []
+    no = []
+    for vote in votes.values():
+        if vote == "yes":
+            yes.append(vote)
+        elif vote == "no":
+            no.append(vote)
+    await bot.say("Results for the rank system poll:\nYes: {}\nNo: {}".format(len(yes), len(no)))
+
+@bot.command()
+async def ranksysinfo():
+    """Some info on the ranking system poll"""
+    await bot.say("".join(open("assets/RankSysInfo.txt", mode="r").readlines()))
 
 print("Connecting...")
 bot.run(config._token)

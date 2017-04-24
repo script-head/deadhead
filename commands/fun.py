@@ -2,6 +2,7 @@ import asyncio
 import cat
 import random
 import os
+import json
 
 from discord.ext import commands
 from utils.tools import *
@@ -27,7 +28,7 @@ class Fun():
 
     @commands.command(pass_context=True)
     async def cat(self, ctx):
-        """Sends a random cute cat gif because cats are soooo cuteeee <3 >.<"""
+        """Sends a random cute catto gif because cats are soooo cuteeee <3 >.<"""
         await self.bot.send_typing(ctx.message.channel)
         cat.getCat(directory="data", filename="cat", format="gif")
         await asyncio.sleep(1) # This is so the bot has enough time to download the file
@@ -117,11 +118,10 @@ class Fun():
         """I got drunk on halloween in 2016 it was great"""
         await self.bot.say(random.choice(drunkaf))
 
-    @commands.command()
-    async def talk(self, *, message=None):
+    @commands.command(enabled=False)
+    async def talk(self, *, message):
         """Talk to the bot"""
         #await self.bot.say(self.cb.ask(message))
-        await self.bot.say("Disabled because 5,000 calls won't cut it and I'm not paying money to get more. See https://cleverbot.com/api")
 
     @commands.command(pass_context=True)
     async def rate(self, ctx, user:discord.User=None):
@@ -179,7 +179,46 @@ class Fun():
         avatar.save("data/trigger.png")
         await self.bot.send_file(ctx.message.channel, "data/trigger.png")
 
+    @commands.command(pass_context=True)
+    async def memegen(self, ctx, name:str, line1:str, line2:str):
+        """Run r!memelist of the list of memes. Example: r!memegen snek \"No booper\" \"do NOT!\""""
+        def escape_literals(url):
+            return url.replace("-", "--").replace("_", "__").replace("?", "~q").replace(" ", "%20").replace("''", "\"")
+        url = "https://memegen.link/{}/{}/{}.jpg".format(name, escape_literals(line1), escape_literals(line2))
+        #await self.bot.say(url)
+        file = url_to_bytes(url)
+        await self.bot.send_file(ctx.message.channel, file["content"], filename=file["filename"])
 
+    @commands.command(pass_context=True)
+    async def memelist(self, ctx):
+        """Gets a list of names for the memegen command"""
+        await self.bot.send_typing(ctx.message.channel)
+        await self.bot.send_file(ctx.message.channel, "assets/MemeList.txt")
+
+    @commands.command(pass_context=True)
+    async def blackandwhite(self, ctx, user:discord.Member=None):
+        """Turns your avatar or the specified user's avatar black and white"""
+        await self.bot.send_typing(ctx.message.channel)
+        if user is None:
+            user = ctx.message.author
+        download_file(get_avatar(user, animate=False), "data/blackandwhite.png")
+        avatar = Image.open("data/blackandwhite.png").convert("L")
+        avatar.save("data/blackandwhite.png")
+        await self.bot.send_file(ctx.message.channel, "data/blackandwhite.png")
+
+    @commands.command()
+    async def headpat(self):
+        """Posts a random headpat from headp.at"""
+        download_file("http://headp.at/js/pats.json", "data/pats.json")
+        pats = json.load(open("data/pats.json"))
+        pat = random.choice(pats)
+        await self.bot.say("http://headp.at/pats/{}".format(pat))
+
+    @commands.command(pass_context=True)
+    async def thiscommanddoesfuckingnothing(self, ctx):
+        """It doesn't do a fucking thing (or does it? OwO)"""
+        await self.bot.wait_for_reaction(message=ctx.message, user=ctx.message.author)
+        await self.bot.say("{} OKAY OKAY YOU FOUND OUT WHAT IT DOES GG SCREENSHOT THIS AND DM `Seth#0346` OR USE `r!notifydev` FOR A HEAD PAT".format(ctx.message.author.mention))
 
 def setup(bot):
     bot.add_cog(Fun(bot))

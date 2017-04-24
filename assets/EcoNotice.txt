@@ -1,0 +1,6 @@
+Okay with this new economy system I added I have one **huge** problem: What should you be able to buy with roses?
+
+- I don't want to do stupid shit like "Get a virtual hug from the bot for 2 roses" because that would be gay af.
+- The `givemeaheadpat` command is something I'm probably gonna remove in the next update.
+- I can't make dashboard customization because that would be ripping off tatsumaki AND I don't have the knowledge to make a dashboard.
+- If you have a suggestion for things to buy please suggest it with `r!suggest`. 

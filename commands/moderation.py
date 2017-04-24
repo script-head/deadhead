@@ -174,24 +174,6 @@ class Moderation():
             pass
 
     @commands.command(pass_context=True)
-    async def announce(self, ctx, *, announcement:str):
-        """Sends an announcement to the announcement channel"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
-        announcement_channel = discord.utils.get(ctx.message.server.channels, name="announcements")
-        if announcement_channel is None:
-            await self.bot.say("I could not find a channel named `announcements`")
-            return
-        msg = make_message_embed(ctx.message.author, ctx.message.author.color, announcement, useNick=True)
-        try:
-            await self.bot.send_message(announcement_channel, "@everyone Announcement!", embed=msg)
-        except discord.errors.Forbidden:
-            await self.bot.say("I do not have permission to send messages in the `announcements` channel")
-
-    @commands.command(pass_context=True)
     async def pin(self, ctx, id:str):
         """Pins the message with the specified ID to the channel"""
         mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
@@ -413,14 +395,18 @@ class Moderation():
         if not mod:
             await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
             return
+        await self.bot.send_typing(ctx.message.channel)
         ids = ids.split(" ")
+        failed_ids = []
         success = 0
         for id in ids:
             try:
                 await self.bot.http.ban(id, ctx.message.server.id)
                 success += 1
             except:
-                pass
+                failed_ids.append("`{}`".format(id))
+        if len(failed_ids) != 0:
+            await self.bot.say("Failed to ban the following id(s): {}".format(", ".join(ids)))
         await self.bot.say("Successfully banned {}/{} users".format(success, len(ids)))
 
 def setup(bot):

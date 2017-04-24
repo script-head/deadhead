@@ -1,4 +1,4 @@
-BUILD_VERSION = "12.0"
-BUILD_AUTHORS = "Seth#0780 and Robin#0052"
-BUILD_CODENAME = "OwO What's this?"
-BUILD_DATE = "April 6th, 2017 at 3:23 PM GMT -7:00"
+BUILD_VERSION = "12.5"
+BUILD_AUTHORS = "Seth#0346 and based robin#0052"
+BUILD_CODENAME = "All I think about is you, constantly, that's the hard part"
+BUILD_DATE = "April 24th, 2017 at 12:27 PM GMT -7:00"

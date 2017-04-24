@@ -1,0 +1,6 @@
+I know a lot of bots have this already but I wanted to give it a shot for myself. 
+Basically what this ranking system will do is give you points for sending a message greater than or equal to a certain length after a specific time intervel passes.
+As you get more points you can eventually level up. I was thinking about adding automated roles when you reach a certain level.
+This will be disabled by default and will have to be enabled via the `r!config` command.
+
+If you wish to vote on this run `r!ranksysvote yes` or `r!ranksysvote no`. To view the poll results simply run `r!ranksysvoteresults`

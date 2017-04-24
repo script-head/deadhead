@@ -205,9 +205,10 @@ class Information():
         embed.set_thumbnail(url=emote.url)
         await self.bot.say(embed=embed)
 
-    @commands.command()
-    async def portscan(self, host:str, ports:str):
+    @commands.command(pass_context=True)
+    async def portscan(self, ctx, host:str, ports:str):
         """Uses nmap to scan the specified ports from the specified host"""
+        await self.bot.send_typing(ctx.message.channel)
         scanner = nmap.PortScanner()
         try:
             host = socket.gethostbyname(host)
@@ -273,7 +274,7 @@ class Information():
             return
         if user.game:
             game = user.game.name
-        fields = {"Name":user.name, "Discriminator":user.discriminator, "ID":user.id, "Status":str(user.status).replace("_", " ").replace("dnd", "do not disturb"), "Game":game, "Bot":user.bot}
+        fields = {"Name":user.name, "Discriminator":user.discriminator, "ID":user.id, "Status":str(user.status).replace("dnd", "do not disturb"), "Game":game, "Bot":user.bot}
         embed = make_list_embed(fields)
         embed.title = str(user)
         embed.color = 0xFF0000

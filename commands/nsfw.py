@@ -24,13 +24,11 @@ class NSFW():
                 await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
                 return
         await self.bot.send_typing(ctx.message.channel)
-        download_file("http://rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags), "data/rule34.json")
-        with open("data/rule34.json", encoding="utf8") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                await self.bot.say("No results found for `{}`".format(tags))
-                return
+        try:
+            data = json.loads(requests.get("http://rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
+        except json.JSONDecodeError:
+            await self.bot.say("No results found for `{}`".format(tags))
+            return
 
         count = len(data)
         if count == 0:
@@ -55,13 +53,11 @@ class NSFW():
                 await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
                 return
         await self.bot.send_typing(ctx.message.channel)
-        download_file("https://e621.net/post/index.json?limit={}&tags={}".format(limit, tags), "data/e621.json")
-        with open("data/e621.json", encoding="utf8") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                await self.bot.say("No results found for `{}`".format(tags))
-                return
+        try:
+            data = json.loads(requests.get("https://e621.net/post/index.json?limit={}&tags={}".format(limit, tags)).text)
+        except json.JSONDecodeError:
+            await self.bot.say("No results found for `{}`".format(tags))
+            return
         count = len(data)
         if count == 0:
             await self.bot.say("No results found for `{}`".format(tags))
@@ -84,13 +80,11 @@ class NSFW():
                 await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
                 return
         await self.bot.send_typing(ctx.message.channel)
-        download_file("https://yande.re/post/index.json?limit={}&tags={}".format(limit, tags), "data/yandere.json")
-        with open("data/yandere.json", encoding="utf8") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                await self.bot.say("No results found for `{}`".format(tags))
-                return
+        try:
+            data = json.loads(requests.get("https://yande.re/post/index.json?limit={}&tags={}".format(limit, tags)).text)
+        except json.JSONDecodeError:
+            await self.bot.say("No results found for `{}`".format(tags))
+            return
         count = len(data)
         if count == 0:
             await self.bot.say("No results found for `{}`".format(tags))
@@ -113,13 +107,11 @@ class NSFW():
                 await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
                 return
         await self.bot.send_typing(ctx.message.channel)
-        download_file("http://danbooru.donmai.us/post/index.json?limit={}&tags={}".format(limit, tags), "data/danbooru.json")
-        with open("data/danbooru.json", encoding="utf8") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                await self.bot.say("No results found for `{}`".format(tags))
-                return
+        try:
+            data = json.loads(requests.get("https://danbooru.donmai.us/post/index.json?limit={}&tags={}".format(limit, tags)).text)
+        except json.JSONDecodeError:
+            await self.bot.say("No results found for `{}`".format(tags))
+            return
         count = len(data)
         if count == 0:
             await self.bot.say("No results found for `{}`".format(tags))
@@ -146,13 +138,11 @@ class NSFW():
                 await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
                 return
         await self.bot.send_typing(ctx.message.channel)
-        download_file("http://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags),"data/gelbooru.json")
-        with open("data/gelbooru.json", encoding="utf8") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                await self.bot.say("No results found for `{}`".format(tags))
-                return
+        try:
+            data = json.loads(requests.get("https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
+        except json.JSONDecodeError:
+            await self.bot.say("No results found for `{}`".format(tags))
+            return
         count = len(data)
         if count == 0:
             await self.bot.say("No results found for `{}`".format(tags))
@@ -179,13 +169,11 @@ class NSFW():
                 await self.bot.say("I must have the \"NSFW\" role in order to use that command in other channels that are not named `{}`".format(nsfw_channel_name))
                 return
         await self.bot.send_typing(ctx.message.channel)
-        download_file("http://xbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags),"data/xbooru.json")
-        with open("data/xbooru.json", encoding="utf8") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                await self.bot.say("No results found for `{}`".format(tags))
-                return
+        try:
+            data = json.loads(requests.get("https://xbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
+        except json.JSONDecodeError:
+            await self.bot.say("No results found for `{}`".format(tags))
+            return
         count = len(data)
         if count == 0:
             await self.bot.say("No results found for `{}`".format(tags))

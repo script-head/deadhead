@@ -180,11 +180,14 @@ class Music:
             log.debug("{}: {}\n\n{}".format(type(e).__name__, e, traceback.format_exc()))
 
     @commands.command(pass_context=True, no_pm=True)
-    async def volume(self, ctx, amount:int):
+    async def volume(self, ctx, amount:int=None):
         """Sets the volume"""
         state = self.get_voice_state(ctx.message.server)
+        player = state.player
+        if not amount:
+            await self.bot.say("The current volume is `{:.0%}`".format(player.volume))
+            return
         if state.is_playing():
-            player = state.player
             player.volume = amount / 100
             state.volume = amount / 100
             await self.bot.say("Set the volume to `{:.0%}`".format(player.volume))

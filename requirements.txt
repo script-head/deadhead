@@ -9,3 +9,4 @@ python-nmap
 random-cat
 pythonwhois
 pillow
+requests

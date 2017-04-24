@@ -1,6 +1,7 @@
 import re
 import requests
 import discord
+import io
 
 _USER_ID_MATCH = re.compile(r"<@(\d+)>")
 
@@ -43,10 +44,8 @@ def make_message_embed(author, color, message, *, formatUser=False, useNick=Fals
     if formatUser:
         name = str(author)
     else:
-        if useNick and author.nick:
-            name = author.nick
-        else:
-            name = author.name
+        if useNick:
+            name = author.display_name
     embed = discord.Embed(color=color, description=message)
     embed.set_author(name=name, icon_url=get_avatar(author))
     return embed
@@ -86,3 +85,11 @@ def strip_global_mentions(message, ctx=None):
     message = remove_here.sub("here", message)
     return message
 
+def format_number(number):
+    return "{:,d}".format(number)
+
+def url_to_bytes(url):
+    data = requests.get(url)
+    content = io.BytesIO(data.content)
+    filename = url.rsplit("/", 1)[-1]
+    return {"content":content, "filename":filename}
