@@ -106,6 +106,7 @@ def get_user_economy_data(user):
     return eco_data
 
 def set_balance(user, amount):
+    exists = get_user_economy_data(user)
     cur.execute("""UPDATE economy SET balance=(?) WHERE id=(?)""", (amount, user.id))
     conn.commit()
 
