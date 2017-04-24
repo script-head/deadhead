@@ -60,7 +60,9 @@ change_log = [
     "r!stats now shows a true user count (it removes duplicate ids now)",
     "Added an economy system",
     "The massban command now shows the ids that failed to be banned (if any)",
-    "The bot doesn't download some data files anymore, this should speed up some commands"
+    "The bot doesn't download some data files anymore, this should speed up some commands",
+    "2nd update:",
+    "Had to revert the true user count as it completely freezes the bot as it cycles through the thousands of members"
 ]
 
 async def _restart_bot():
@@ -419,7 +421,7 @@ async def stream(ctx, *, name:str):
             return
     await bot.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
     await bot.say("Now streaming `{}`".format(name))
-    await channel_logger.log_to_channel(":informationp_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.message.author.id, ctx.message.author, name))
+    await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.message.author.id, ctx.message.author, name))
 
 @bot.command(pass_context=True)
 async def changestatus(ctx, status:str, *, name:str=None):
@@ -550,11 +552,7 @@ async def stats():
     for server in bot.servers:
         if server.me.voice_channel:
             voice_clients.append(server.me.voice_channel)
-    users = []
-    for user in list(bot.get_all_members()):
-        if user.id not in users:
-            users.append(user.id)
-    fields = {"Users":len(users), "Servers":len(bot.servers), "Channels":len(list(bot.get_all_channels())), "Private Channels":len((bot.private_channels)), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":BUILD_VERSION, "Built by":BUILD_AUTHORS}
+    fields = {"Users":len(list(bot.get_all_members())), "Servers":len(bot.servers), "Channels":len(list(bot.get_all_channels())), "Private Channels":len((bot.private_channels)), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":BUILD_VERSION, "Built by":BUILD_AUTHORS}
     embed = make_list_embed(fields)
     embed.title = str(bot.user)
     embed.color = 0xFF0000
