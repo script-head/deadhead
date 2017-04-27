@@ -22,9 +22,6 @@ def read_data_entry(id, type):
         if type == "mod-role":
             insert_data_entry(id, type, "Mods")
             val = "Mods"
-        elif type == "nsfw-channel":
-            insert_data_entry(id, type, "nsfw")
-            val = "nsfw"
         elif type == "mute-role":
             insert_data_entry(id, type, "Muted")
             val = "Muted"

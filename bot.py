@@ -36,33 +36,10 @@ extensions = ["commands.fun", "commands.information", "commands.moderation", "co
 
 # Thy changelog
 change_log = [
-    "--> PLEASE READ r!econotice AND r!ranksysinfo<--"
-    "Commands:",
-    "- announce",
-    "+ memegen",
-    "+ memelist",
-    "+ blackandwhite",
-    "+ thiscommanddoesfuckingnothing",
-    "+ ecostats",
-    "+ pay",
-    "+ setbalance",
-    "+ givemeaheadpat",
-    "+ slotmachine",
-    "+ dailyroses",
-    "+ resetdailycooldown",
-    "+ balance",
-    "+ econotice",
-    "+ ranksysvote",
-    "+ ranksysvoteresults",
-    "+ ranksysinfo"
+    "Commands:"
+    "+ roleid",
     "Other things:",
-    "If you run r!volume without specifying a new volume, the bot will now display the current volume",
-    "r!stats now shows a true user count (it removes duplicate ids now)",
-    "Added an economy system",
-    "The massban command now shows the ids that failed to be banned (if any)",
-    "The bot doesn't download some data files anymore, this should speed up some commands",
-    "2nd update:",
-    "Had to revert the true user count as it completely freezes the bot as it cycles through the thousands of members"
+    "Instead of defining an nsfw channel, now the channel must be named \"nsfw\" or start with the \"nsfw-\" prefix for nsfw commands to work in them"
 ]
 
 async def _restart_bot():

@@ -13,22 +13,21 @@ class Configuration():
             await self.bot.say("Only the server owner (`{}`) can use this command.".format(ctx.message.server.owner))
             return
         await self.bot.send_typing(ctx.message.channel)
-        if type == "mod-role" or type == "nsfw-channel" or type == "mute-role":
+        if type == "mod-role" or type == "mute-role":
             if type == "nsfw-channel":
                 value = value.lower().strip(" ")
             update_data_entry(ctx.message.server.id, type, value)
             await self.bot.say("Successfully set the {} to `{}`".format(type, value))
         else:
-            await self.bot.say("`{}` is not a valid type! Valid types are `mod-role`, `nsfw-channel`, and `mute-role`".format(type))
+            await self.bot.say("`{}` is not a valid type! Valid types are `mod-role`, and `mute-role`".format(type))
 
     @commands.command(pass_context=True)
     async def showconfig(self, ctx):
         """Shows the server's configuration"""
         await self.bot.send_typing(ctx.message.channel)
         mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        nsfw_channel_name = read_data_entry(ctx.message.server.id, "nsfw-channel")
         mute_role_name = read_data_entry(ctx.message.server.id, "mute-role")
-        fields = {"Mod Role":mod_role_name, "NSFW Channel":nsfw_channel_name, "Mute Role":mute_role_name}
+        fields = {"Mod Role":mod_role_name, "Mute Role":mute_role_name}
         embed = make_list_embed(fields)
         embed.title = "Server Configuration"
         embed.color = 0xFF0000

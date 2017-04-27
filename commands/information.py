@@ -281,5 +281,10 @@ class Information():
         embed.set_thumbnail(url=get_avatar(user))
         await self.bot.say(embed=embed)
 
+    @commands.command()
+    async def roleid(self, role:discord.Role):
+        """Gets the id for the specified role"""
+        await self.bot.say("The role ID for `{}` is `{}`".format(role.name, role.id))
+
 def setup(bot):
     bot.add_cog(Information(bot))
