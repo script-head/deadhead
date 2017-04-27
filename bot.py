@@ -36,7 +36,7 @@ extensions = ["commands.fun", "commands.information", "commands.moderation", "co
 
 # Thy changelog
 change_log = [
-    "Commands:"
+    "Commands:",
     "+ roleid",
     "Other things:",
     "Instead of defining an nsfw channel, now the channel must be named \"nsfw\" or start with the \"nsfw-\" prefix for nsfw commands to work in them"
