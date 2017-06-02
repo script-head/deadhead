@@ -4,20 +4,17 @@ from discord.ext import commands
 from utils.mysql import *
 from utils.channel_logger import Channel_Logger
 from utils.tools import *
+from utils import checks
 
 class Moderation():
     def __init__(self, bot):
         self.bot = bot
         self.logger = Channel_Logger(bot)
 
+    @checks.server_mod_or_perms(kick_members=True)
     @commands.command(pass_context=True)
     async def kick(self, ctx, user:discord.Member, *, reason:str=None):
         """Kicks the specified user from the server"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         if reason is None:
             reason = "No reason was specified"
         try:
@@ -27,14 +24,10 @@ class Moderation():
             return
         await self.logger.mod_log(ctx.message.server, "`{}` kicked `{}` Reason: `{}`".format(ctx.message.author, user, reason))
 
+    @checks.server_mod_or_perms(ban_members=True)
     @commands.command(pass_context=True)
     async def ban(self, ctx, user:discord.Member, *, reason:str=None):
         """Bans the specified user from the server"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         if reason is None:
             reason = "No reason was specified"
         try:
@@ -45,14 +38,10 @@ class Moderation():
         await self.bot.say("Successfully banned `{}`".format(user))
         await self.logger.mod_log(ctx.message.server, "`{}` banned `{}` Reason: `{}`".format(ctx.message.author, user, reason))
 
+    @checks.server_mod_or_perms(ban_members=True)
     @commands.command(pass_context=True)
     async def unban(self, ctx, *, username:str):
         """Unbans the user with the specifed name from the server"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         try:
             banlist = await self.bot.get_bans(ctx.message.server)
         except discord.errors.Forbidden:
@@ -66,14 +55,10 @@ class Moderation():
         await self.bot.say("Successfully unbanned `{}`".format(user))
         await self.logger.mod_log(ctx.message.server, "`{}` unbanned `{}`".format(ctx.message.author, user))
 
+    @checks.server_mod_or_perms(ban_members=True)
     @commands.command(pass_context=True)
     async def banid(self, ctx, id:str, *, reason:str=None):
         """Bans the user with the specified id from the server (Useful if the user isn't on the server yet)"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         if reason is None:
             reason = "No reason was specified"
         try:
@@ -97,21 +82,27 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I do not have the `Ban Members` permission")
             return
+        banlist = list(map(str, banlist))
         bancount = len(banlist)
+        display_bans = []
+        bans = ""
         if bancount == 0:
-            banlist = "No users are banned from this server"
+            bans = "No users are banned from this server"
         else:
-            banlist = ", ".join(map(str, banlist))
-        await self.bot.say("Total bans: `{}`\n```{}```".format(bancount, banlist))
+            for user in banlist:
+                if len(", ".join(display_bans)) < 1800:
+                    display_bans.append(user)
+                else:
+                    bans = ", ".join(display_bans) + "\n... and {} more".format(len(banlist) - len(display_bans))
+                    break
+        if not bans:
+            bans = ", ".join(display_bans)
+        await self.bot.say("Total bans: `{}`\n```{}```".format(bancount, bans))
 
+    @checks.server_mod_or_perms()
     @commands.command(pass_context=True)
     async def mute(self, ctx, user:discord.Member, *, reason:str=None):
         """Mutes the specified user"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         if reason is None:
             reason = "No reason was specified"
         mute_role_name = read_data_entry(ctx.message.server.id, "mute-role")
@@ -126,14 +117,10 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role is not higher than the `{}` role".format(mute_role_name))
 
+    @checks.server_mod_or_perms()
     @commands.command(pass_context=True)
     async def unmute(self, ctx, user:discord.Member):
         """Unmutes the specified user"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         mute_role_name = read_data_entry(ctx.message.server.id, "mute-role")
         mute_role = discord.utils.get(ctx.message.server.roles, name=mute_role_name)
         if mute_role is None:
@@ -146,14 +133,10 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role is not higher than the `{}` role".format(mute_role_name))
 
+    @checks.server_mod_or_perms(manage_messages=True)
     @commands.command(pass_context=True)
     async def prune(self, ctx, amount:int, *, user:discord.Member=None):
         """Prunes the specified amount of messages (you can also prune messages from a specific user too)"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         try:
             await self.bot.delete_message(ctx.message)
         except discord.errors.Forbidden:
@@ -173,14 +156,10 @@ class Moderation():
         except:
             pass
 
+    @checks.server_mod_or_perms(manage_messages=True)
     @commands.command(pass_context=True)
     async def pin(self, ctx, id:str):
         """Pins the message with the specified ID to the channel"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         try:
             message = await self.bot.get_message(ctx.message.channel, id)
         except discord.errors.NotFound:
@@ -191,14 +170,10 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I do not have the `Manage Messages` permission")
 
+    @checks.server_mod_or_perms(manage_messages=True)
     @commands.command(pass_context=True)
     async def unpin(self, ctx, id:str):
         """Unpins the message with the specified ID from the channel"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         pinned_messages = await self.bot.pins_from(ctx.message.channel)
         message = discord.utils.get(pinned_messages, id=id)
         if message is None:
@@ -210,14 +185,10 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I do not have the `Manage Messages` permission")
 
+    @checks.server_mod_or_perms(manage_roles=True)
     @commands.command(pass_context=True)
     async def addrole(self, ctx, user:discord.Member, *,  name:str):
         """Adds the specified role to the specified user"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         role = discord.utils.get(ctx.message.server.roles, name=name)
         if role is None:
             await self.bot.say("No role with the name of `{}` was found on this server".format(name))
@@ -229,14 +200,10 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role isn't higher than the `{}` role".format(name))
 
+    @checks.server_mod_or_perms(manage_roles=True)
     @commands.command(pass_context=True)
     async def removerole(self, ctx, user:discord.Member, *, name:str):
         """Removes the specified role from the specified user"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         role = discord.utils.get(ctx.message.server.roles, name=name)
         if role is None:
             await self.bot.say("No role with the name of `{}` was found on this server".format(name))
@@ -248,28 +215,20 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role isn't higher than the `{}` role".format(name))
 
+    @checks.server_mod_or_perms(manage_roles=True)
     @commands.command(pass_context=True)
     async def createrole(self, ctx, *, name:str):
         """Creates a role with the specified name"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         try:
             await self.bot.create_role(ctx.message.server, name=name)
             await self.bot.say("Successfully created a role named `{}`".format(name))
         except discord.errors.Forbidden:
             await self.bot.say("I do not have the `Manage Roles` permission")
 
+    @checks.server_mod_or_perms(manage_roles=True)
     @commands.command(pass_context=True)
     async def deleterole(self, ctx, *, name:str):
         """Deletes the role with the specified name"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         role = discord.utils.get(ctx.message.server.roles, name=name)
         if role is None:
             await self.bot.say("No role was found on this server with the name of `{}`".format(name))
@@ -280,14 +239,10 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I do not have the `Manage Roles` permission")
 
+    @checks.server_mod_or_perms(manage_roles=True)
     @commands.command(pass_context=True)
     async def editrole(self, ctx, type:str, value:str, *, name:str):
         """Edits a role with the specified name"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         role = discord.utils.get(ctx.message.server.roles, name=name)
         if role is None:
             await self.bot.say("No role was found on this server with the name of `{}`".format(name))
@@ -367,14 +322,10 @@ class Moderation():
         else:
             await self.bot.say("Invalid type specified, valid types are `color`, `permissions`, `position`, `separate`, and `mentionable`")
 
+    @checks.server_mod_or_perms(manage_roles=True)
     @commands.command(pass_context=True)
     async def renamerole(self, ctx, name:str, newname:str):
         """Renames a role with the specified name, be sure to put double quotes (\") around the name and the new name"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         role = discord.utils.get(ctx.message.server.roles, name=name)
         if role is None:
             await self.bot.say("No role was found on this server with the name of `{}`".format(name))
@@ -387,14 +338,10 @@ class Moderation():
         except discord.errors.NotFound:
             await self.bot.say("That role is higher than my highest role")
 
+    @checks.server_mod_or_perms(ban_members=True)
     @commands.command(pass_context=True)
     async def massban(self, ctx, *, ids:str):
         """Mass bans users by ids (separate ids with spaces)"""
-        mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
-        mod = discord.utils.get(ctx.message.author.roles, name=mod_role_name)
-        if not mod:
-            await self.bot.say("You must have the `{}` role in order to use that command.".format(mod_role_name))
-            return
         await self.bot.send_typing(ctx.message.channel)
         ids = ids.split(" ")
         failed_ids = []

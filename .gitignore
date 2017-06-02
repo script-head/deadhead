@@ -8,6 +8,7 @@ __pycache__/
 
 # Bot files
 data/
+logs/
 config/config.ini
 
 # Windows nonsense

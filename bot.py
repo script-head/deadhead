@@ -6,6 +6,8 @@ import subprocess
 import os
 import json
 
+from datetime import datetime
+
 start_time = time.time()
 
 # Initialize the logger first so the colors and shit are setup
@@ -16,6 +18,7 @@ from utils.bootstrap import Bootstrap
 Bootstrap.run_checks()
 
 from utils import checks
+from utils import ranking
 
 from discord.ext import commands
 from utils.config import Config
@@ -25,6 +28,7 @@ from utils.mysql import *
 from utils.buildinfo import *
 
 config = Config()
+log.setupRotator(config.log_dateformat, config.log_timeformat)
 if config.debug:
     log.enableDebugging() # pls no flame
 bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=True)
@@ -32,14 +36,29 @@ channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
 
-extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music", "commands.reactions", "commands.economy"]
+extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music", "commands.reactions", "commands.economy", "commands.ranking"]
 
 # Thy changelog
 change_log = [
+    "Side note: Read r!econotice because I still need suggestions for the eco system.",
     "Commands:",
-    "+ roleid",
+    "+ editmessage",
+    "+ rank",
+    "+ rankuproles",
+    "+ addrankuprole",
+    "+ removerankuprole",
+    "+ topranked",
+    "+ reverse",
+    "+ react",
+    "+ intellect",
     "Other things:",
-    "Instead of defining an nsfw channel, now the channel must be named \"nsfw\" or start with the \"nsfw-\" prefix for nsfw commands to work in them"
+    "Added the ranking system",
+    "Reworked the terminal command so it performs better",
+    "Added a missing invalid type message to the joinleave command",
+    "Re-worked my check functions to be less confusing",
+    "- Removed the mod-log channel feature as audit logs are a better alternative. If you wish for users to see audit logs just give them the `View Audit Log` permission.",
+    "",
+    "Added a ranking system, it is disabled by default and can be enabled with the config command. You can gain xp from sending messages after a 2 minute interval from recieving xp from a previous message. You can add and remove roles to be added after achieving a certain level with the addrankuprole and the removerankuprole commands."
 ]
 
 async def _restart_bot():
@@ -128,8 +147,6 @@ async def on_ready():
             log.info("Carbonitex stats updated")
         else:
             log.error("Failed to update the carbonitex stats, double check the key in the config!")
-    if not os.path.isfile("data/ranksysvotes.json"):
-        write_file("data/ranksysvotes.json", ["{}"])
 
 @bot.event
 async def on_command_error(error, ctx):
@@ -138,9 +155,23 @@ async def on_command_error(error, ctx):
     if isinstance(error, commands.DisabledCommand):
         await bot.send_message(ctx.message.channel, "This command has been disabled")
         return
-
+    if isinstance(error, checks.dev_only):
+        await bot.send_message(ctx.message.channel, "This command can only be ran by the bot developers")
+        return
+    if isinstance(error, checks.owner_only):
+        await bot.send_message(ctx.message.channel, "This command can only be ran by the bot owner")
+        return
+    if isinstance(error, checks.not_nsfw_channel):
+        await bot.send_message(ctx.message.channel, "This command can only be ran in NSFW enabled channels. It must either be named `nsfw` or the name must start with `nsfw-`")
+        return
+    if isinstance(error, checks.not_server_owner):
+        await bot.send_message(ctx.message.channel, "Only the server owner (`{}`) can use this command".format(ctx.message.server.owner))
+        return
+    if isinstance(error, checks.no_permission):
+        await bot.send_message(ctx.message.channel, "You do not have permission to use this command".format(ctx.message.server.owner))
+        return
     if ctx.message.channel.is_private:
-        await bot.send_message(ctx.message.channel, "An error occured while trying to run this command, this is most likely because it was ran in this private message channel. Please try running this command on a server.")
+        await bot.send_message(ctx.message.channel, "An error occured while trying to run this command, this is most likely because it was ran in a private message channel. Please try running this command on a server.")
         return
 
     # In case the bot failed to send a message to the channel, the try except pass statement is to prevent another error
@@ -156,7 +187,11 @@ async def on_command(command, ctx):
         server = "Private Message"
     else:
         server = "{}/{}".format(ctx.message.server.id, ctx.message.server.name)
-    print("[Command] [{}] [{}/{}]: {}".format(server, ctx.message.author.id, ctx.message.author, ctx.message.content))
+    log_line = "[Command] [{}] [{}/{}]: {}".format(server, ctx.message.author.id, ctx.message.author, ctx.message.content)
+    print(log_line)
+    log_file = open("logs/latest.log", "a+")
+    log_file.write("{} {}\n".format(datetime.now().strftime("{} {}".format(config.log_dateformat, config.log_timeformat)), log_line))
+    log_file.close()
 
 @bot.event
 async def on_message(message):
@@ -167,30 +202,18 @@ async def on_message(message):
             return
     if getblacklistentry(message.author.id) is not None:
         return
+    if not message.channel.is_private:
+        if read_data_entry(message.server.id, "enable-ranking"):
+            if ranking.level_up(message.author, message.server):
+                level = ranking.get_rank_data(message.author, message.server)["level"]
+                role_rank_ups = ranking.get_rankup_role_dict(message.server)
+                try:
+                    role = discord.utils.get(message.server.roles, id=role_rank_ups[level])
+                    await bot.add_roles(message.author, role)
+                except:
+                    pass
+                await bot.send_message(message.channel, "{} you've leveled up to level **{}**!".format(message.author.mention, level))
     await bot.process_commands(message)
-
-@bot.event
-async def on_server_update(before:discord.Server, after:discord.Server):
-    if before.name != after.name:
-        await channel_logger.mod_log(after, "Server name was changed from `{}` to `{}`".format(before.name, after.name))
-    if before.region != after.region:
-        await channel_logger.mod_log(after, "Server region was changed from `{}` to `{}`".format(before.region, after.region))
-    if before.afk_channel != after.afk_channel:
-        await channel_logger.mod_log(after, "Server afk channel was changed from `{}` to `{}`".format(before.afk_channel.name, after.afk_channel.name))
-    if before.afk_timeout != after.afk_timeout:
-        await channel_logger.mod_log(after, "Server afk timeout was changed from `{}` seconds to `{}` seconds".format(before.afk_timeout, after.afk_timeout))
-    if before.icon != after.icon:
-        await channel_logger.mod_log(after, "Server icon was changed from {} to {}".format(before.icon_url, after.icon_url))
-    if before.mfa_level != after.mfa_level:
-        if after.mfa_level == 0:
-            mfa = "enabled"
-        else:
-            mfa = "disabled"
-        await channel_logger.mod_log(after, "Server two-factor authentication requirement has been `{}`".format(mfa))
-    if before.verification_level != after.verification_level:
-        await channel_logger.mod_log(after, "Server verification level was changed from `{}` to `{}`".format(before.verification_level, after.verification_level))
-    if before.owner != after.owner:
-        await channel_logger.mod_log(after, "Server ownership was transferred from `{}` to `{}`".format(before.owner, after.owner))
 
 @bot.event
 async def on_member_join(member:discord.Member):
@@ -432,7 +455,7 @@ async def terminal(ctx, *, command:str):
     """Runs terminal commands and shows the output via a message. Oooh spoopy!"""
     try:
         await bot.send_typing(ctx.message.channel)
-        await bot.say(xl.format(os.popen(command).read()))
+        await bot.say(xl.format(subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0].decode("ascii")))
     except:
         await bot.say("Error, couldn't send command")
 
@@ -539,6 +562,21 @@ async def stats():
         embed.set_footer(text=bot_owner, icon_url=get_avatar(bot_owner))
     await bot.say(embed=embed)
 
+@bot.command(pass_context=True)
+@checks.is_dev()
+async def editmessage(ctx, id:str, *, newmsg:str):
+    """Edits a message sent by the bot"""
+    try:
+        msg = await bot.get_message(ctx.message.channel, id)
+    except discord.errors.NotFound:
+        await bot.say("Couldn't find a message with an ID of `{}` in this channel".format(id))
+        return
+    if msg.author != ctx.message.server.me:
+        await bot.say("That message was not sent by me")
+        return
+    await bot.edit_message(msg, newmsg)
+    await bot.say("edit af")
+
 @bot.command()
 async def top10servers():
     """Gets the top 10 most populated servers the bot is on"""
@@ -555,10 +593,11 @@ async def top10servers():
         servers.append("{}: {} members, {} bots ({} total)".format(server.name, members, bots, total))
     await bot.say("```{}```".format("\n\n".join(servers)))
 
-@bot.command(pass_context=True)
-async def ranksysvote(ctx, vote:str):
-    """Vote to oppose or object an optional rank system"""
-    with open("data/ranksysvotes.json", "r") as jsonFile:
+@bot.command(pass_context=True, hidden=True, enable=False)
+async def vote(ctx, vote:str):
+    """Vote command"""
+    # Left this code here for future purposes so in the event I run another poll I don't need to recode a vote command
+    with open("data/votes.json", "r") as jsonFile:
         votes = json.load(jsonFile)
     voted = False
     try:
@@ -579,24 +618,21 @@ async def ranksysvote(ctx, vote:str):
     with open("data/ranksysvotes.json", "w") as jsonFile:
         json.dump(votes, jsonFile)
 
-@bot.command()
+@bot.command(hidden=True, enable=False)
 async def ranksysvoteresults():
-    """Results for the rank system poll"""
-    with open("data/ranksysvotes.json", "r") as jsonFile:
+    """Vote results command"""
+    # Left this code here for future purposes so in the event I run another poll I don't need to recode a vote results command
+    with open("data/votes.json", "r") as jsonFile:
         votes = json.load(jsonFile)
-    yes = []
-    no = []
+    yes = 0
+    no = 0
     for vote in votes.values():
         if vote == "yes":
-            yes.append(vote)
+            yes += 1
         elif vote == "no":
-            no.append(vote)
-    await bot.say("Results for the rank system poll:\nYes: {}\nNo: {}".format(len(yes), len(no)))
+            no += 1
+    await bot.say("Results for the rank system poll:\nYes: {}\nNo: {}".format(yes, no))
 
-@bot.command()
-async def ranksysinfo():
-    """Some info on the ranking system poll"""
-    await bot.say("".join(open("assets/RankSysInfo.txt", mode="r").readlines()))
 
 print("Connecting...")
 bot.run(config._token)

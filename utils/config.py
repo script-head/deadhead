@@ -14,6 +14,7 @@ class Defaults:
     channel_logger_id = None
     debug = False
     log_timeformat = "%H:%M:%S"
+    log_dateformat = "%m-%d-%Y"
     lock_status = False
     enable_default_status = False
     default_status_name = None
@@ -60,6 +61,7 @@ class Config:
         self.debug = config.getboolean("Logging", "Debug", fallback=Defaults.debug)
         self.channel_logger_id = config.get("Logging", "Channel_Logger_ID", fallback=Defaults.channel_logger_id)
         self.log_timeformat = config.get("Logging", "Time_Format", fallback=Defaults.log_timeformat)
+        self.log_dateformat = config.get("Logging", "Date_Format", fallback=Defaults.log_dateformat)
         self.enableMal = config.getboolean("MyAnimeList", "enable", fallback=Defaults.enableMal)
         self._malUsername = config.get("MyAnimeList", "username", fallback=Defaults.malUsername)
         self._malPassword = config.get("MyAnimeList", "password", fallback=Defaults.malPassword)

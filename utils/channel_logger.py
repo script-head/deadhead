@@ -19,11 +19,3 @@ class Channel_Logger():
                     await self.bot.send_message(channel, ":stopwatch: `{}` {}".format(time.strftime(config.log_timeformat), msg))
                 except discord.errors.Forbidden:
                     log.warning("Could not log to the channel log channel because I do not have permission to send messages in it!")
-
-    async def mod_log(self, server, msg):
-        log_channel = discord.utils.get(server.channels, name="mod-log")
-        if log_channel:
-            try:
-                await self.bot.send_message(log_channel, ":information_source: Moderator action: {}".format(msg))
-            except:
-                pass

@@ -60,6 +60,9 @@ Debug = no
 ; H = Hour, M = Minute, S = Second
 Time_Format = %H:%M:%S
 
+; m = Month, d = Day, Y = Year
+Date_Format = %m-%d-%Y
+
 [MyAnimeList]
 ; Should the anime and manga command be enabled?
 enable = no

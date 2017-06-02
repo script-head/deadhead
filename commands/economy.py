@@ -1,4 +1,3 @@
-import traceback
 import random
 
 from discord.ext import commands
@@ -14,32 +13,31 @@ class Economy():
     def __init__(self, bot):
         self.bot = bot
 
+    #TODO: ADD MORE FUCKING SHIT TO BUY
+
     @commands.command(pass_context=True)
     async def ecostats(self, ctx, user:discord.Member=None):
         """Gets economy stats for you or the specified user"""
         await self.bot.send_typing(ctx.message.channel)
-        try:
-            if user is None:
-                user = ctx.message.author
-            if user.bot:
-                await self.bot.say("Bots can not use the economy system!")
-                return
-            eco_data = get_user_economy_data(user)
-            fields = {"Balance":format_currency(eco_data["balance"])}
-            for key, value in eco_data["data"].items():
-                try:
-                    is_valid = eco_data_defaults[key]
-                except KeyError:
-                    continue
-                if key == "lastdailyroses":
-                    continue
-                fields[key.capitalize()] = value
-            embed = make_list_embed(fields)
-            embed.title = "Economy Stats ({})".format(user)
-            embed.color = 0xFF0000
-            await self.bot.say(embed=embed)
-        except:
-            await self.bot.say(traceback.format_exc())
+        if user is None:
+            user = ctx.message.author
+        if user.bot:
+            await self.bot.say("Bots can not use the economy system!")
+            return
+        eco_data = get_user_economy_data(user)
+        fields = {"Balance":format_currency(eco_data["balance"])}
+        for key, value in eco_data["data"].items():
+            try:
+                is_valid = eco_data_defaults[key]
+            except KeyError:
+                continue
+            if key == "lastdailyroses":
+                continue
+            fields[key.capitalize()] = value
+        embed = make_list_embed(fields)
+        embed.title = "Economy Stats ({})".format(user)
+        embed.color = 0xFF0000
+        await self.bot.say(embed=embed)
 
     @commands.command(pass_context=True)
     async def pay(self, ctx, user:discord.Member, amount:int):
@@ -88,7 +86,7 @@ class Economy():
     async def slotmachine(self, ctx):
         """Try your luck at the good ol' slot machine. Costs 2 roses to play. You get 5 roses per straight row"""
         await self.bot.send_typing(ctx.message.channel)
-        if not can_afford(ctx.message.author):
+        if not can_afford(ctx.message.author, 2):
             await self.bot.say(needs_amount(2))
             return
         remove_roses(ctx.message.author, 2)
@@ -149,7 +147,7 @@ class Economy():
         await self.bot.send_typing(ctx.message.channel)
         if user is None:
             user = ctx.message.author
-        await self.bot.say("{}'s balance is {}".format(format_currency(user.name, get_user_economy_data(user)["balance"])))
+        await self.bot.say("{}'s balance is {}".format(user.name, format_currency(get_user_economy_data(user)["balance"])))
 
     @commands.command()
     async def econotice(self):

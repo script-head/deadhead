@@ -185,7 +185,6 @@ class Fun():
         def escape_literals(url):
             return url.replace("-", "--").replace("_", "__").replace("?", "~q").replace(" ", "%20").replace("''", "\"")
         url = "https://memegen.link/{}/{}/{}.jpg".format(name, escape_literals(line1), escape_literals(line2))
-        #await self.bot.say(url)
         file = url_to_bytes(url)
         await self.bot.send_file(ctx.message.channel, file["content"], filename=file["filename"])
 
@@ -206,19 +205,56 @@ class Fun():
         avatar.save("data/blackandwhite.png")
         await self.bot.send_file(ctx.message.channel, "data/blackandwhite.png")
 
-    @commands.command()
-    async def headpat(self):
+    @commands.command(pass_context=True)
+    async def headpat(self, ctx):
         """Posts a random headpat from headp.at"""
-        download_file("http://headp.at/js/pats.json", "data/pats.json")
-        pats = json.load(open("data/pats.json"))
+        pats = json.loads(requests.get("http://headp.at/js/pats.json").json())
         pat = random.choice(pats)
-        await self.bot.say("http://headp.at/pats/{}".format(pat))
+        file = url_to_bytes("http://headp.at/pats/{}".format(pat))
+        await self.bot.send_file(ctx.message.channel, file["content"], filename=file["filename"])
 
     @commands.command(pass_context=True)
     async def thiscommanddoesfuckingnothing(self, ctx):
         """It doesn't do a fucking thing (or does it? OwO)"""
         await self.bot.wait_for_reaction(message=ctx.message, user=ctx.message.author)
         await self.bot.say("{} OKAY OKAY YOU FOUND OUT WHAT IT DOES GG SCREENSHOT THIS AND DM `Seth#0346` OR USE `r!notifydev` FOR A HEAD PAT".format(ctx.message.author.mention))
+
+    @commands.command()
+    async def reverse(self, *, msg:str):
+        """ffuts esreveR"""
+        await self.bot.say(msg[::-1])
+
+    @commands.command(pass_context=True)
+    async def react(self, ctx, id:str, emote:str):
+        """Reacts to a message with the specifed message id and the specified emote"""
+        try:
+             message = await self.bot.get_message(ctx.message.channel, id=id)
+        except discord.errors.NotFound:
+            await self.bot.say("No message in this channel was found with an ID of `{}`".format(id))
+            return
+        emote_id = extract_emote_id(emote)
+        if emote_id is not None:
+            server_emote = discord.utils.get(list(self.bot.get_all_emojis()), id=emote_id)
+            if server_emote is not None:
+                emote = server_emote
+            else:
+                await self.bot.say("I am not on the server that contains that emote")
+                return
+        try:
+            await self.bot.add_reaction(message, emote)
+        except discord.errors.Forbidden:
+            await self.bot.say("I do not have the `Add Reactions` permission")
+        except discord.errors.HTTPException:
+            await self.bot.say("The emote specified is invalid")
+
+    @commands.command()
+    async def intellect(self, *, msg:str):
+        """Me, an intellectual"""
+        await self.bot.send_typing()
+        intellectify = ""
+        for char in msg:
+            intellectify += random.choice([char.upper(), char.lower()])
+        await self.bot.say(intellectify)
 
 def setup(bot):
     bot.add_cog(Fun(bot))

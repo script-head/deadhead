@@ -43,9 +43,10 @@ def get_avatar(user, animate=True):
 def make_message_embed(author, color, message, *, formatUser=False, useNick=False):
     if formatUser:
         name = str(author)
+    elif useNick:
+        name = author.display_name
     else:
-        if useNick:
-            name = author.display_name
+        name = author.name
     embed = discord.Embed(color=color, description=message)
     embed.set_author(name=name, icon_url=get_avatar(author))
     return embed
