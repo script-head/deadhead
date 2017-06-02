@@ -22,7 +22,6 @@ class Moderation():
         except discord.errors.Forbidden:
             await self.bot.say("I either do not the `Kick Members` permission or my highest role is not higher than that users highest role.")
             return
-        await self.logger.mod_log(ctx.message.server, "`{}` kicked `{}` Reason: `{}`".format(ctx.message.author, user, reason))
 
     @checks.server_mod_or_perms(ban_members=True)
     @commands.command(pass_context=True)
@@ -36,7 +35,6 @@ class Moderation():
             await self.bot.say("I either do not have the `Ban Members` permission or my highest role is not higher than that users highest role.")
             return
         await self.bot.say("Successfully banned `{}`".format(user))
-        await self.logger.mod_log(ctx.message.server, "`{}` banned `{}` Reason: `{}`".format(ctx.message.author, user, reason))
 
     @checks.server_mod_or_perms(ban_members=True)
     @commands.command(pass_context=True)
@@ -53,7 +51,6 @@ class Moderation():
             return
         await self.bot.unban(ctx.message.server, user)
         await self.bot.say("Successfully unbanned `{}`".format(user))
-        await self.logger.mod_log(ctx.message.server, "`{}` unbanned `{}`".format(ctx.message.author, user))
 
     @checks.server_mod_or_perms(ban_members=True)
     @commands.command(pass_context=True)
@@ -72,7 +69,6 @@ class Moderation():
         banlist = await self.bot.get_bans(ctx.message.server)
         user = discord.utils.get(banlist, id=id)
         await self.bot.say("Successfully banned `{}`".format(user))
-        await self.logger.mod_log(ctx.message.server, "`{}` banned `{}` Reason: `{}`".format(ctx.message.author, user, reason))
 
     @commands.command(pass_context=True)
     async def banlist(self, ctx):
@@ -113,7 +109,6 @@ class Moderation():
         try:
             await self.bot.add_roles(user, mute_role)
             await self.bot.say("Successfully muted `{}`".format(user))
-            await self.logger.mod_log(ctx.message.server, "`{}` muted `{}` Reason: `{}`".format(ctx.message.author, user, reason))
         except discord.errors.Forbidden:
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role is not higher than the `{}` role".format(mute_role_name))
 
@@ -129,7 +124,6 @@ class Moderation():
         try:
             await self.bot.remove_roles(user, mute_role)
             await self.bot.say("Successfully unmuted `{}`".format(user))
-            await self.logger.mod_log(ctx.message.server, "`{}` unmuted `{}`".format(ctx.message.author, user))
         except discord.errors.Forbidden:
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role is not higher than the `{}` role".format(mute_role_name))
 
@@ -196,7 +190,6 @@ class Moderation():
         try:
             await self.bot.add_roles(user, role)
             await self.bot.say("Successfully added the `{}` role to `{}`".format(name, user))
-            await self.logger.mod_log(ctx.message.server, "`{}` added the `{}` role to `{}`".format(ctx.message.author, name, user))
         except discord.errors.Forbidden:
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role isn't higher than the `{}` role".format(name))
 
@@ -211,7 +204,6 @@ class Moderation():
         try:
             await self.bot.remove_roles(user, role)
             await self.bot.say("Successfully removed the `{}` role from `{}`".format(name, user))
-            await self.logger.mod_log(ctx.message.server, "`{}` removed the `{}` role from `{}`".format(ctx.message.author, name, user))
         except discord.errors.Forbidden:
             await self.bot.say("I either do not have the `Manage Roles` permission or my highest role isn't higher than the `{}` role".format(name))
 
