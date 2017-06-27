@@ -10,9 +10,12 @@ from utils.tools import *
 from utils.mysql import *
 from utils.logger import log
 from utils.opus_loader import load_opus_lib
+from utils.config import Config;
 from utils import checks
 
 load_opus_lib()
+
+config = Config();
 
 ytdl_format_options = {"format": "bestaudio/best", "extractaudio": True, "audioformat": "mp3", "noplaylist": True, "nocheckcertificate": True, "ignoreerrors": False, "logtostderr": False, "quiet": True, "no_warnings": True, "default_search": "auto", "source_address": "0.0.0.0", "preferredcodec": "libmp3lame"}
 
@@ -148,7 +151,10 @@ class Music:
                     return
             ytdl = get_ytdl(ctx.message.server.id)
             try:
-                song_info = ytdl.extract_info(song, download=False, process=False)
+                try:
+                    song_info = ytdl.extract_info(song, download=False, process=False)
+                except youtube_dl.DownloadError:
+                    await self.bot.say("Invalid url!")
                 if "url" in song_info:
                     if song_info["url"].startswith("ytsearch"):
                         song_info = ytdl.extract_info(song_info["url"], download=False, process=False)
@@ -167,14 +173,20 @@ class Music:
                 file_url = "data/music/{}/{}.mp3".format(ctx.message.server.id, id)
                 await asyncio.sleep(2)
                 player = state.voice.create_ffmpeg_player(file_url, stderr=subprocess.PIPE, after=state.toggle_next)
-            except Exception as e:
-                await self.bot.say("An error occurred while processing this request: {}".format(py.format("{}: {}\n{}".format(type(e).__name__, e, traceback.format_exc()))))
+            except youtube_dl.utils.UnsupportedError:
+                await self.bot.say("The URL you specified was not a valid youtube video url")
                 return
             player.volume = state.volume
             entry = VoiceEntry(ctx.message, player, song_info, file_url)
             await self.bot.say("Enqueued {}".format(entry))
             await state.songs.put(entry)
             state.queue.append(entry)
+        #except youtube_dl.utils.UnsupportedError:
+            #await self.bot.say("The URL provided is not a valid youtube url")
+            #return
+        except youtube_dl.utils.DownloadError:
+            await self.bot.say("Failed to download the youtube video")
+            return
         except Exception as e:
             await self.bot.say(traceback.format_exc())
             log.debug("{}: {}\n\n{}".format(type(e).__name__, e, traceback.format_exc()))
@@ -226,7 +238,7 @@ class Music:
         mod_role_name = read_data_entry(ctx.message.server.id, "mod-role")
         mod = discord.utils.get(voter.roles, name=mod_role_name)
         if voter == state.current.requester:
-            await self.bot.say("Requester requested to skip the song, skipping song...")
+            await self.bot.say("Song requester requested to skip the song, skipping song...")
             state.skip()
         elif mod:
             await self.bot.say("Server moderator requested to skip the song, skipping song...")
@@ -234,7 +246,7 @@ class Music:
         elif voter == ctx.message.server.owner:
             await self.bot.say("Server owner requested to skip the song, skipping song...")
             state.skip()
-        elif checks.is_dev_check(ctx.message.author):
+        elif ctx.message.author.id in config.dev_ids:
             await self.bot.say("Bot developer requested to skip the song, skipping song...")
             state.skip()
         elif voter.id not in state.skip_votes:

@@ -31,7 +31,7 @@ config = Config()
 log.setupRotator(config.log_dateformat, config.log_timeformat)
 if config.debug:
     log.enableDebugging() # pls no flame
-bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=True)
+bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=None)
 channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
@@ -42,23 +42,9 @@ extensions = ["commands.fun", "commands.information", "commands.moderation", "co
 change_log = [
     "Side note: Read r!econotice because I still need suggestions for the eco system.",
     "Commands:",
-    "+ editmessage",
-    "+ rank",
-    "+ rankuproles",
-    "+ addrankuprole",
-    "+ removerankuprole",
-    "+ topranked",
-    "+ reverse",
-    "+ react",
-    "+ intellect",
+    "None",
     "Other things:",
-    "Added the ranking system",
-    "Reworked the terminal command so it performs better",
-    "Added a missing invalid type message to the joinleave command",
-    "Re-worked my check functions to be less confusing",
-    "- Removed the mod-log channel feature as audit logs are a better alternative. If you wish for users to see audit logs just give them the `View Audit Log` permission.",
-    "",
-    "Added a ranking system, it is disabled by default and can be enabled with the config command. You can gain xp from sending messages after a 2 minute interval from recieving xp from a previous message. You can add and remove roles to be added after achieving a certain level with the addrankuprole and the removerankuprole commands."
+    "Fixed the bug where you could pay users a negative amount of roses with r!pay"
 ]
 
 async def _restart_bot():
@@ -333,7 +319,6 @@ async def notifydev(ctx, *, message:str):
     for id in config.dev_ids:
         await bot.send_message(discord.User(id=id), "You have received a new message! The user's ID is `{}` Server: {}".format(ctx.message.author.id, server), embed=msg)
     await bot.send_message(ctx.message.author, "You have sent the developers a message! The message you sent was: `{}`".format(message))
-    await bot.say("Message sent!")
 
 @bot.command(pass_context=True)
 async def suggest(ctx, *, suggestion:str):
@@ -347,7 +332,6 @@ async def suggest(ctx, *, suggestion:str):
     for id in config.dev_ids:
         await bot.send_message(discord.User(id=id), "You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.message.author.id, server), embed=msg)
     await bot.send_message(ctx.message.author, "You have sent the developers a suggestion! The suggestion you sent was: `{}`".format(suggestion))
-    await bot.say("Suggestion sent!")
 
 @bot.command(hidden=True, pass_context=True)
 @checks.is_dev()
@@ -525,7 +509,7 @@ async def joinserver(ctx):
 @bot.command(pass_context=True)
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
-    await bot.send_message(ctx.message.author, "Here is the link to my server: discord.gg/m5BEde5\n\n(if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
+    await bot.send_message(ctx.message.author, "Here is the link to my server: <https://discord.gg/RJTFyBd>\n\n(if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
 
 @bot.command()
 async def ping():

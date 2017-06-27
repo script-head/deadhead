@@ -49,6 +49,9 @@ class Economy():
         if user.bot:
             await self.bot.say("Bots can not use the economy system!")
             return
+        if amount < 0:
+            await self.bot.say("You can not pay users a negative amount of roses!")
+            return
         if not can_afford(ctx.message.author, amount):
             await self.bot.say("You do not have enough roses to pay that much!")
             return
@@ -68,19 +71,6 @@ class Economy():
             amount = 0
         set_balance(user, amount)
         await self.bot.say("Set {}'s balance to {}".format(user.name, format_currency(amount)))
-
-    @commands.command(pass_context=True)
-    async def givemeaheadpat(self, ctx):
-        """I'll give you a headpat for 1 rose"""
-        await self.bot.send_typing(ctx.message.channel)
-        if not can_afford(ctx.message.author):
-            await self.bot.say(needs_amount(2))
-            return
-        remove_roses(ctx.message.author, 1)
-        pat_count = get_eco_data_entry(ctx.message.author, "headpats") + 1
-        update_eco_data_entry(ctx.message.author, "headpats", pat_count)
-        await self.bot.send_message(discord.User(id=config.owner_id), "{} (`{}`) has requested a headpat".format(ctx.message.author.mention, ctx.message.author))
-        await self.bot.say("Successfully bought a headpat for {}\n\nThe bot owner has been notified of your request and will headpat you soon! uwu <3".format(format_currency(1)))
 
     @commands.command(pass_context=True)
     async def slotmachine(self, ctx):

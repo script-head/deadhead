@@ -247,10 +247,10 @@ class Fun():
         except discord.errors.HTTPException:
             await self.bot.say("The emote specified is invalid")
 
-    @commands.command()
-    async def intellect(self, *, msg:str):
+    @commands.command(pass_context=True)
+    async def intellect(self, ctx, *, msg:str):
         """Me, an intellectual"""
-        await self.bot.send_typing()
+        await self.bot.send_typing(ctx.message.channel)
         intellectify = ""
         for char in msg:
             intellectify += random.choice([char.upper(), char.lower()])
