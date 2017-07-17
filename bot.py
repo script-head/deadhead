@@ -42,9 +42,10 @@ extensions = ["commands.fun", "commands.information", "commands.moderation", "co
 change_log = [
     "Side note: Read r!econotice because I still need suggestions for the eco system.",
     "Commands:",
-    "None",
+    "+ facepalm",
+    "+ facedesk",
     "Other things:",
-    "Fixed the bug where you could pay users a negative amount of roses with r!pay"
+    "Added missing descriptions on the balance and resetdailycooldown economy commands"
 ]
 
 async def _restart_bot():

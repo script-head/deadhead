@@ -101,5 +101,17 @@ class Reactions():
         await self.bot.send_typing(ctx.message.channel)
         await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/boi.jpg")
 
+    @commands.command(pass_context=True)
+    async def facepalm(self, ctx):
+        """when someone is retarded"""
+        await self.bot.send_typing(ctx.message.channel)
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/facepalm.gif")
+
+    @commands.command(pass_context=True)
+    async def facedesk(self, ctx):
+        """when someone is REALLY retarded"""
+        await self.bot.send_typing(ctx.message.channel)
+        await self.bot.send_file(ctx.message.channel, "assets/imgs/reactions/facedesk.gif")
+
 def setup(bot):
     bot.add_cog(Reactions(bot))

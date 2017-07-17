@@ -126,6 +126,7 @@ class Economy():
     @commands.command(pass_context=True, hidden=True)
     @checks.is_dev()
     async def resetdailycooldown(self, ctx, user:discord.Member=None):
+        """Resets the daily cooldown for yourself or the specified user"""
         await self.bot.send_typing(ctx.message.channel)
         if user is None:
             user = ctx.message.author
@@ -134,6 +135,7 @@ class Economy():
 
     @commands.command(pass_context=True)
     async def balance(self, ctx, user:discord.Member=None):
+        """Displays your current balance"""
         await self.bot.send_typing(ctx.message.channel)
         if user is None:
             user = ctx.message.author
