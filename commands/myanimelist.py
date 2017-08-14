@@ -12,19 +12,19 @@ class MyAnimeList():
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def anime(self, ctx, *, name:str):
         """Searches MyAnimeList for the specified anime"""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing()
         r = requests.get("https://myanimelist.net/api/anime/search.xml?q={}".format(name), auth=requests.auth.HTTPBasicAuth(config._malUsername, config._malPassword))
         if r.status_code == 401:
             log.critical("The MyAnimeList credinals are incorrect, please check your MyAnimeList login information in the config.")
-            await self.bot.say("The MyAnimeList credinals are incorrect, contact the bot developer!")
+            await ctx.send("The MyAnimeList credinals are incorrect, contact the bot developer!")
             return
         try:
             xmldoc = minidom.parseString(r.text)
         except XmlParserErrors.ExpatError:
-            await self.bot.say("Couldn't find any anime named `{}`".format(name))
+            await ctx.send("Couldn't find any anime named `{}`".format(name))
             return
         # pls no flame
         anime = xmldoc.getElementsByTagName("entry")[0]
@@ -53,21 +53,21 @@ class MyAnimeList():
         embed.url = url
         embed.color = 0xFF0000
         embed.set_thumbnail(url=image)
-        await self.bot.say(embed=embed)
+        await ctx.send(embed=embed)
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def manga(self, ctx, *, name:str):
         """Searches MyAnimeList for the specified manga"""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing()
         r = requests.get("https://myanimelist.net/api/manga/search.xml?q={}".format(name), auth=requests.auth.HTTPBasicAuth(config._malUsername, config._malPassword))
         if r.status_code == 401:
             log.critical("The MyAnimeList credinals are incorrect, please check your MyAnimeList login information in the config.")
-            await self.bot.say("The MyAnimeList credinals are incorrect, contact the bot developer!")
+            await ctx.send("The MyAnimeList credinals are incorrect, contact the bot developer!")
             return
         try:
             xmldoc = minidom.parseString(r.text)
         except XmlParserErrors.ExpatError:
-            await self.bot.say("Couldn't find any manga named `{}`".format(name))
+            await ctx.send("Couldn't find any manga named `{}`".format(name))
             return
         # pls no flame
         manga = xmldoc.getElementsByTagName("entry")[0]
@@ -97,7 +97,7 @@ class MyAnimeList():
         embed.url = url
         embed.color = 0xFF0000
         embed.set_thumbnail(url=image)
-        await self.bot.say(embed=embed)
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(MyAnimeList(bot))

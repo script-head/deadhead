@@ -15,14 +15,14 @@ class Economy():
 
     #TODO: ADD MORE FUCKING SHIT TO BUY
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def ecostats(self, ctx, user:discord.Member=None):
         """Gets economy stats for you or the specified user"""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing()
         if user is None:
-            user = ctx.message.author
+            user = ctx.author
         if user.bot:
-            await self.bot.say("Bots can not use the economy system!")
+            await ctx.send("Bots can not use the economy system!")
             return
         eco_data = get_user_economy_data(user)
         fields = {"Balance":format_currency(eco_data["balance"])}
@@ -37,49 +37,46 @@ class Economy():
         embed = make_list_embed(fields)
         embed.title = "Economy Stats ({})".format(user)
         embed.color = 0xFF0000
-        await self.bot.say(embed=embed)
+        await ctx.send(embed=embed)
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def pay(self, ctx, user:discord.Member, amount:int):
         """Pays the specified user the specified number of roses"""
-        await self.bot.send_typing(ctx.message.channel)
-        if user == ctx.message.author:
-            await self.bot.say("You can't pay yourself!")
-            return
-        if user.bot:
-            await self.bot.say("Bots can not use the economy system!")
+        await ctx.channel.trigger_typing()
+        if user == ctx.author:
+            await ctx.send("You can't pay yourself!")
             return
         if amount < 0:
-            await self.bot.say("You can not pay users a negative amount of roses!")
+            await ctx.send("You can not pay users a negative amount of roses!")
             return
-        if not can_afford(ctx.message.author, amount):
-            await self.bot.say("You do not have enough roses to pay that much!")
+        if not can_afford(ctx.author, amount):
+            await ctx.send("You do not have enough roses to pay that much!")
             return
-        remove_roses(ctx.message.author, amount)
+        remove_roses(ctx.author, amount)
         add_roses(user, amount)
-        await self.bot.say("Gave {} {}".format(user.name, format_currency(amount)))
+        await ctx.send("Gave {} {}".format(user.name, format_currency(amount)))
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     @checks.is_dev()
     async def setbalance(self, ctx, user:discord.Member, amount:int):
         """Sets the specified user's balance"""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing()
         if user.bot:
-            await self.bot.say("Bots can not use the economy system!")
+            await ctx.send("Bots can not use the economy system!")
             return
         if amount < 0:
             amount = 0
         set_balance(user, amount)
-        await self.bot.say("Set {}'s balance to {}".format(user.name, format_currency(amount)))
+        await ctx.send("Set {}'s balance to {}".format(user.name, format_currency(amount)))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def slotmachine(self, ctx):
         """Try your luck at the good ol' slot machine. Costs 2 roses to play. You get 5 roses per straight row"""
-        await self.bot.send_typing(ctx.message.channel)
-        if not can_afford(ctx.message.author, 2):
-            await self.bot.say(needs_amount(2))
+        await ctx.channel.trigger_typing()
+        if not can_afford(ctx.author, 2):
+            await ctx.send(needs_amount(2))
             return
-        remove_roses(ctx.message.author, 2)
+        remove_roses(ctx.author, 2)
         emotes = [":eyes:", ":thinking:", ":rose:"]
         rows = []
         for i in range(3):
@@ -92,18 +89,18 @@ class Economy():
                 wins += 1
         if wins != 0:
             roses = (5 * wins)
-            add_roses(ctx.message.author, roses)
+            add_roses(ctx.author, roses)
             slots.append("\nYou've won {}!".format(format_currency(roses)))
         else:
             slots.append("\nYou didn't win anything! Good luck next time!")
-        await self.bot.say("\n".join(slots))
+        await ctx.send("\n".join(slots))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def dailyroses(self, ctx):
         """Get your daily roses. You can only run this once every 24 hours."""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing()
         now = datetime.now()
-        last = get_eco_data_entry(ctx.message.author, "lastdailyroses")
+        last = get_eco_data_entry(ctx.author, "lastdailyroses")
         if last is not None:
             last = datetime.fromtimestamp(last)
             time_remaining = (last - now).seconds
@@ -111,40 +108,40 @@ class Economy():
                 second = time_remaining
                 minute, second = divmod(second, 60)
                 hour, minute = divmod(minute, 60)
-                await self.bot.say("You have {} hours, {} minutes, and {} seconds remaining until you can use this command again.".format(hour, minute, second))
+                await ctx.send("You have {} hours, {} minutes, and {} seconds remaining until you can use this command again.".format(hour, minute, second))
                 return
             wait_time = now + timedelta(hours=24)
-            update_eco_data_entry(ctx.message.author, "lastdailyroses", wait_time.timestamp())
-            add_roses(ctx.message.author, daily_rose_amount)
-            await self.bot.say("You've been given your daily {} roses!".format(format_currency(daily_rose_amount)))
+            update_eco_data_entry(ctx.author, "lastdailyroses", wait_time.timestamp())
+            add_roses(ctx.author, daily_rose_amount)
+            await ctx.send("You've been given your daily {} roses!".format(format_currency(daily_rose_amount)))
         else:
             wait_time = now + timedelta(hours=24)
-            update_eco_data_entry(ctx.message.author, "lastdailyroses", wait_time.timestamp())
-            add_roses(ctx.message.author, daily_rose_amount)
-            await self.bot.say("You've been given your daily {} roses!".format(format_currency(daily_rose_amount)))
+            update_eco_data_entry(ctx.author, "lastdailyroses", wait_time.timestamp())
+            add_roses(ctx.author, daily_rose_amount)
+            await ctx.send("You've been given your daily {} roses!".format(format_currency(daily_rose_amount)))
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     @checks.is_dev()
     async def resetdailycooldown(self, ctx, user:discord.Member=None):
         """Resets the daily cooldown for yourself or the specified user"""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing()
         if user is None:
-            user = ctx.message.author
+            user = ctx.author
         update_eco_data_entry(user, "lastdailyroses", None)
-        await self.bot.say("Reset the daily cooldown for `{}`".format(user))
-
-    @commands.command(pass_context=True)
-    async def balance(self, ctx, user:discord.Member=None):
-        """Displays your current balance"""
-        await self.bot.send_typing(ctx.message.channel)
-        if user is None:
-            user = ctx.message.author
-        await self.bot.say("{}'s balance is {}".format(user.name, format_currency(get_user_economy_data(user)["balance"])))
+        await ctx.send("Reset the daily cooldown for `{}`".format(user))
 
     @commands.command()
-    async def econotice(self):
+    async def balance(self, ctx, user:discord.Member=None):
+        """Displays your current balance"""
+        await ctx.channel.trigger_typing()
+        if user is None:
+            user = ctx.author
+        await ctx.send("{}'s balance is {}".format(user.name, format_currency(get_user_economy_data(user)["balance"])))
+
+    @commands.command()
+    async def econotice(self, ctx):
         """A short notice on the new economy system"""
-        await self.bot.say("".join(open("assets/EcoNotice.txt", mode="r").readlines()))
+        await ctx.send("".join(open("assets/EcoNotice.txt", mode="r").readlines()))
 
 def setup(bot):
     bot.add_cog(Economy(bot))

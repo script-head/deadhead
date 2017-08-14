@@ -11,10 +11,11 @@ class Defaults:
     owner_id = None
     command_prefix = "*"
     dev_ids = []
+    skip_votes_needed = 3
     channel_logger_id = None
     debug = False
-    log_timeformat = "%H:%M:%S"
-    log_dateformat = "%m-%d-%Y"
+    log_time_format = "%H:%M:%S"
+    log_date_format = "%m-%d-%Y"
     lock_status = False
     enable_default_status = False
     default_status_name = None
@@ -54,14 +55,15 @@ class Config:
         self.command_prefix = config.get("Bot", "Command_Prefix", fallback=Defaults.command_prefix)
         self.max_nsfw_count = config.getint("Bot", "Max_NSFW_Count", fallback=Defaults.max_nsfw_count)
         self.dev_ids = config.get("Bot", "Developer_IDs", fallback=Defaults.dev_ids)
+        self.skip_votes_needed = config.getint("Bot", "Skip_Votes_Needed", fallback=Defaults.skip_votes_needed)
         self.lock_status = config.getboolean("Status", "Lock_Status", fallback=Defaults.lock_status)
         self.enable_default_status = config.getboolean("Status", "Enable_Default_Status", fallback=Defaults.enable_default_status)
         self.default_status_name = config.get("Status", "Default_Status_Name", fallback=Defaults.default_status_name)
         self.default_status_type = config.get("Status", "Default_Status_Type", fallback=Defaults.default_status_type)
         self.debug = config.getboolean("Logging", "Debug", fallback=Defaults.debug)
         self.channel_logger_id = config.get("Logging", "Channel_Logger_ID", fallback=Defaults.channel_logger_id)
-        self.log_timeformat = config.get("Logging", "Time_Format", fallback=Defaults.log_timeformat)
-        self.log_dateformat = config.get("Logging", "Date_Format", fallback=Defaults.log_dateformat)
+        self.log_time_format = config.get("Logging", "Time_Format", fallback=Defaults.log_time_format)
+        self.log_date_format = config.get("Logging", "Date_Format", fallback=Defaults.log_date_format)
         self.enableMal = config.getboolean("MyAnimeList", "enable", fallback=Defaults.enableMal)
         self._malUsername = config.get("MyAnimeList", "username", fallback=Defaults.malUsername)
         self._malPassword = config.get("MyAnimeList", "password", fallback=Defaults.malPassword)

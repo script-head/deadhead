@@ -34,6 +34,9 @@ Command_Prefix = *
 ; How many results should the NSFW commands get?
 Max_NSFW_Count = 500
 
+; How many votes is needed to perform a song skip
+Skips_Votes_Needed = 3
+
 [Status]
 ; Should users be able to edit the bot's status with the stream and changestatus command?
 ; (The bot owner and the bot developers can always change it regardless of this setting)

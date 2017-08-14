@@ -8,18 +8,18 @@ conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 
 def create_tables():
-    cur.execute("""CREATE TABLE IF NOT EXISTS servers(id TEXT, type TEXT, value TEXT)""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS blacklist(id TEXT, name TEXT, discrim TEXT, reason TEXT)""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS economy(id TEXT, balance INTEGER, data TEXT)""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS ranking(userid TEXT, serverid TEXT, waittime TEXT, level INTEGER, xp INTEGER, xpneeded INTEGER)""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS rankuproles(serverid TEXT, roles TEXT)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS guilds(id INTEGER, type TEXT, value TEXT)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS blacklist(id INTEGER, name TEXT, discrim TEXT, reason TEXT)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS economy(id INTEGER, balance INTEGER, data TEXT)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS ranking(userid INTEGER, guildid INTEGER, waittime TEXT, level INTEGER, xp INTEGER, xpneeded INTEGER)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS rankuproles(guildid INTEGER, roles TEXT)""")
 
 def insert_data_entry(id, type, value):
-    cur.execute("""INSERT INTO servers(id, type, value) VALUES (?, ?, ?)""", (id, type, value))
+    cur.execute("""INSERT INTO guilds(id, type, value) VALUES (?, ?, ?)""", (id, type, value))
     conn.commit()
 
 def read_data_entry(id, type):
-    cur.execute("""SELECT value FROM servers WHERE id=(?) AND type=(?)""", (id, type))
+    cur.execute("""SELECT value FROM guilds WHERE id=(?) AND type=(?)""", (id, type))
     val = None
     try:
         val = cur.fetchone()[0]
@@ -52,11 +52,11 @@ def read_data_entry(id, type):
 
 def update_data_entry(id, type, value):
     exists = read_data_entry(id, type)
-    cur.execute("""UPDATE servers SET value=(?) WHERE id=(?) AND type=(?)""", (value, id, type))
+    cur.execute("""UPDATE guilds SET value=(?) WHERE id=(?) AND type=(?)""", (value, id, type))
     conn.commit()
 
 def delete_data_entry(id, type):
-    cur.execute("""DELETE FROM servers WHERE id=(?) AND type=(?)""", (id, type))
+    cur.execute("""DELETE FROM guilds WHERE id=(?) AND type=(?)""", (id, type))
     conn.commit()
 
 def blacklistuser(id, name, discrim, reason):
@@ -64,11 +64,11 @@ def blacklistuser(id, name, discrim, reason):
     conn.commit()
 
 def unblacklistuser(id):
-    cur.execute("""DELETE FROM blacklist WHERE id=""" + id)
+    cur.execute("""DELETE FROM blacklist WHERE id=""" + str(id))
     conn.commit()
 
 def getblacklistentry(id):
-    cur.execute("""SELECT id FROM blacklist WHERE id=""" + id)
+    cur.execute("""SELECT id FROM blacklist WHERE id=""" + str(id))
     id = None
     name = None
     discrim = None
@@ -98,17 +98,17 @@ def getblacklist():
 eco_data_defaults = {"headpats":0, "lastdailyroses":None}
 
 def get_user_economy_data(user):
-    cur.execute("""SELECT id, balance, data FROM economy WHERE id=""" + user.id)
+    cur.execute("""SELECT id, balance, data FROM economy WHERE id=""" + str(user.id))
     try:
         cur.fetchone()[0]
     except:
         cur.execute("""INSERT INTO economy(id, balance, data) VALUES (?, ?, ?)""", (user.id, 0, str(eco_data_defaults)))
         conn.commit()
-        cur.execute("""SELECT id, balance, data FROM economy WHERE id=""" + user.id)
+        cur.execute("""SELECT id, balance, data FROM economy WHERE id=""" + str(user.id))
         cur.fetchone()[0]
-    cur.execute("""SELECT balance FROM economy WHERE id=""" + user.id)
+    cur.execute("""SELECT balance FROM economy WHERE id=""" + str(user.id))
     balance = cur.fetchone()[0]
-    cur.execute("""SELECT data FROM economy WHERE id=""" + user.id)
+    cur.execute("""SELECT data FROM economy WHERE id=""" + str(user.id))
     data = cur.fetchone()[0]
     eco_data = {"balance":balance, "data":eval(data)}
     return eco_data
@@ -125,14 +125,14 @@ def update_eco_data_entry(user, key, value):
     cur.execute("""UPDATE economy SET data=(?) WHERE id=(?)""", (str(data), user.id))
     conn.commit()
 
-def get_rank_data(user, server):
-    cur.execute("""SELECT waittime, level, xp, xpneeded FROM ranking WHERE userid=(?) AND serverid=(?)""", (user.id, server.id))
+def get_rank_data(user, guild):
+    cur.execute("""SELECT waittime, level, xp, xpneeded FROM ranking WHERE userid=(?) AND guildid=(?)""", (user.id, guild.id))
     try:
         data = cur.fetchall()[0]
     except:
-        cur.execute("""INSERT INTO ranking(userid, serverid, waittime, level, xp, xpneeded) VALUES (?, ?, ?, ?, ? ,?)""", (user.id, server.id, None, 0, 0, 1000))
+        cur.execute("""INSERT INTO ranking(userid, guildid, waittime, level, xp, xpneeded) VALUES (?, ?, ?, ?, ? ,?)""", (user.id, guild.id, None, 0, 0, 1000))
         conn.commit()
-        data = cur.execute("""SELECT waittime, level, xp, xpneeded FROM ranking WHERE userid=(?) AND serverid=(?)""", (user.id, server.id))
+        data = cur.execute("""SELECT waittime, level, xp, xpneeded FROM ranking WHERE userid=(?) AND guildid=(?)""", (user.id, guild.id))
         cur.fetchall()[0]
     try:
         waittime = data["waittime"]
@@ -143,39 +143,39 @@ def get_rank_data(user, server):
     xpneeded = data["xpneeded"]
     return {"waittime":waittime, "level":level, "xp":xp, "xpneeded":xpneeded}
 
-def update_all_rank_data(user, server, waittime, level, xp, xpneeded):
-    exists = get_rank_data(user, server)
-    cur.execute("""UPDATE ranking SET waittime=(?), level=(?), xp=(?), xpneeded=(?) WHERE userid=(?) AND serverid=(?)""", (waittime, level, xp, xpneeded, user.id, server.id))
+def update_all_rank_data(user, guild, waittime, level, xp, xpneeded):
+    exists = get_rank_data(user, guild)
+    cur.execute("""UPDATE ranking SET waittime=(?), level=(?), xp=(?), xpneeded=(?) WHERE userid=(?) AND guildid=(?)""", (waittime, level, xp, xpneeded, user.id, guild.id))
     conn.commit()
 
-def get_rankup_roles(server):
-    cur.execute("""SELECT roles FROM rankuproles WHERE serverid=""" + server.id)
+def get_rankup_roles(guild):
+    cur.execute("""SELECT roles FROM rankuproles WHERE guildid=""" + guild.id)
     entries = []
     try:
         data = cur.fetchone()[0]
     except:
-        cur.execute("""INSERT INTO rankuproles(serverid, roles) VALUES (?, ?)""", (server.id, "{}"))
+        cur.execute("""INSERT INTO rankuproles(guildid, roles) VALUES (?, ?)""", (guild.id, "{}"))
         conn.commit()
-        cur.execute("""SELECT roles FROM rankuproles WHERE serverid=""" + server.id)
+        cur.execute("""SELECT roles FROM rankuproles WHERE guildid=""" + str(guild.id))
         data = cur.fetchone()[0]
     for level, roleid in eval(data).items():
-        role = discord.utils.get(server.roles, id=roleid).name
+        role = discord.utils.get(guild.roles, id=roleid).name
         entries.append("Level {}: {}".format(level, role))
     return entries
 
-def get_rankup_role_dict(server):
-    exists = get_rankup_roles(server)
-    cur.execute("""SELECT roles FROM rankuproles WHERE serverid=""" + server.id)
+def get_rankup_role_dict(guild):
+    exists = get_rankup_roles(guild)
+    cur.execute("""SELECT roles FROM rankuproles WHERE guildid=""" + str(guild.id))
     data = cur.fetchone()[0]
     return eval(data)
 
-def set_rankup_roles(server, roles):
-    exists = get_rankup_roles(server)
-    cur.execute("""UPDATE rankuproles SET roles=(?) WHERE serverid=(?)""", (str(roles), server.id))
+def set_rankup_roles(guild, roles):
+    exists = get_rankup_roles(guild)
+    cur.execute("""UPDATE rankuproles SET roles=(?) WHERE guildid=(?)""", (str(roles), guild.id))
     conn.commit()
 
-def get_user_ranks(server):
-    cur.execute("""SELECT userid, level, xp FROM ranking WHERE serverid=""" + server.id)
+def get_user_ranks(guild):
+    cur.execute("""SELECT userid, level, xp FROM ranking WHERE guildid=""" + str(guild.id))
     return cur.fetchall()
 
 create_tables()

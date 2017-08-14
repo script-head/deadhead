@@ -73,11 +73,11 @@ class log:
         logging.getLogger(__package__).addHandler(shandler)
         logging.getLogger(__package__).setLevel(logging.DEBUG)
 
-    def setupRotator(dateformat, timeformat):
+    def setupRotator(date_format, time_format):
         if not os.path.exists("logs"):
             os.mkdir("logs")
         rotator = TimedCompressedRotatingFileHandler("logs/latest.log", "d", 1)
-        rotator.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "{} {}".format(dateformat, timeformat)))
+        rotator.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "{} {}".format(date_format, time_format)))
         logging.getLogger(__package__).addHandler(rotator)
 
 

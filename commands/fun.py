@@ -17,220 +17,221 @@ class Fun():
         self.bot = bot
         #self.cb = Cleverbot()
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def say(self, ctx, *, message:str):
         """Make the bot say whatever you want it to say"""
         try:
             await self.bot.delete_message(ctx.message)
         except:
             pass
-        await self.bot.say(strip_global_mentions(message, ctx))
+        await ctx.send(strip_global_mentions(message, ctx))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def cat(self, ctx):
         """Sends a random cute catto gif because cats are soooo cuteeee <3 >.<"""
-        await self.bot.send_typing(ctx.message.channel)
+        # Watch Nero spam this command until the bot crashes
+        await ctx.channel.trigger_typing(ctx.channel)
         cat.getCat(directory="data", filename="cat", format="gif")
         await asyncio.sleep(1) # This is so the bot has enough time to download the file
-        await self.bot.send_file(ctx.message.channel, "data/cat.gif")
-        # Watch Nero spam this command until the bot crashes
+        await ctx.send(file=discord.File("data/cat.gif", "cat.gif"))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def f(self, ctx):
         """Press F to pay your respects"""
-        await self.bot.say("`{}` has paid their respects! Respects paid: {}".format(ctx.message.author, random.randint(1, 10000)))
+        await ctx.send("`{}` has paid their respects! Respects paid: {}".format(ctx.author, random.randint(1, 10000)))
 
     @commands.command()
-    async def nicememe(self):
+    async def nicememe(self, ctx):
         """Nice Meme!"""
-        await self.bot.say("http://niceme.me")
+        await ctx.send("http://niceme.me")
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def yiffinhell(self, ctx):
         """snek yiff"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/yiffinhell.png")
+        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.send(file=discord.File("assets/imgs/yiffinhell.png"))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def spam(self, ctx):
         """SPAM SPAM SPAM"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/spam.png")
+        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.send(file=discord.File("assets/imgs/spam.png"))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def internetrules(self, ctx):
         """The rules of the internet"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/InternetRules.txt")
+        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.send(file=discord.File("assets/InternetRules.txt"))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def quoteaf(self, ctx):
         """Don't quote me on that"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/quotes/{}.png".format(random.randint(1, len([file for file in os.listdir("assets/imgs/quotes")]))))
+        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.send(file=discord.File("assets/imgs/quotes/{}.png".format(random.randint(1, len([file for file in os.listdir("assets/imgs/quotes")])))))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def b1nzy(self, ctx):
         """b1nzy pls no ;-;"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/b1nzy_with_banhammer.png")
+        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.send(file=discord.File("assets/imgs/b1nzy_with_banhammer.png"))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def cykablyat(self, ctx):
         """Cyka blyat!"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/cykablyat.jpg")
+        await ctx.channel.trigger_typing()
+        await ctx.send(file=discord.File("assets/imgs/cykablyat.jpg"))
 
     @commands.command()
-    async def sombra(self):
+    async def sombra(self, ctx):
         """Boop me Sombra <3"""
-        await self.bot.say(sombra)
+        await ctx.send(sombra)
 
     @commands.command()
-    async def lenny(self):
+    async def lenny(self, ctx):
         """<Insert lenny face here>"""
-        await self.bot.say(lenny)
+        await ctx.send(lenny)
 
     @commands.command()
-    async def psat(self):
+    async def psat(self, ctx):
         """Please."""
-        await self.bot.say(random.choice(psat_memes))
+        await ctx.send(random.choice(psat_memes))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def hoodaf(self, ctx):
         """Me in my hood"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/imgs/TheHood.gif")
-        await self.bot.say("I look good in a hood, amirite?")
+        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.send(file=discord.File("assets/imgs/TheHood.gif"))
+        await ctx.send("I look good in a hood, amirite?")
 
-    @commands.command(pass_context=True, name="8ball")
+    @commands.command(name="8ball")
     async def ball(self, ctx, *, question:str):
         """It's just python random don't take it seriously kthx"""
-        await self.bot.say("{}: {}".format(ctx.message.author.name, random.choice(magic_conch_shell)))
+        await ctx.send("{}: {}".format(ctx.author.name, random.choice(magic_conch_shell)))
 
     @commands.command()
-    async def insult(self, *, user:str):
+    async def insult(self, ctx, *, user:str):
         """Insult those ass wipes"""
-        await self.bot.say("{} {}".format(user, random.choice(insults)))
+        await ctx.send("{} {}".format(user, random.choice(insults)))
 
     @commands.command()
-    async def actdrunk(self):
+    async def actdrunk(self, ctx):
         """I got drunk on halloween in 2016 it was great"""
-        await self.bot.say(random.choice(drunkaf))
+        await ctx.send(random.choice(drunkaf))
 
-    @commands.command(enabled=False)
+    @commands.command(enabled=False, hidden=True)
     async def talk(self, *, message):
         """Talk to the bot"""
-        #await self.bot.say(self.cb.ask(message))
-
-    @commands.command(pass_context=True)
-    async def rate(self, ctx, user:discord.User=None):
-        """Have the bot rate yourself or another user (rigged af)"""
-        if user is None or user.id == ctx.message.author.id:
-            await self.bot.say("I rate you a 10/10")
-        elif user == self.bot.user:
-            await self.bot.say("I rate myself a -1/10")
-        else:
-            await self.bot.say("I rate {} a {}/10".format(user.name, random.randint(0, 10)))
+        #await ctx.send(self.cb.ask(message))
 
     @commands.command()
-    async def honk(self):
-        """Honk honk mother fucka"""
-        await self.bot.say(random.choice(honkhonkfgt))
+    async def rate(self, ctx, user:discord.User=None):
+        """Have the bot rate yourself or another user (rigged af)"""
+        if user is None or user.id == ctx.author.id:
+            await ctx.send("I rate you a 10/10")
+        elif user == self.bot.user:
+            await ctx.send("I rate myself a -1/10")
+        else:
+            await ctx.send("I rate {} a {}/10".format(user.name, random.randint(0, 10)))
 
-    @commands.command(pass_context=True)
+    @commands.command()
+    async def honk(self, ctx):
+        """Honk honk mother fucka"""
+        await ctx.send(random.choice(honkhonkfgt))
+
+    @commands.command()
     async def plzmsgme(self, ctx, *, message:str):
         """Makes the bot DM you with the specified message"""
-        await self.bot.send_message(ctx.message.author, message)
-        await self.bot.say(":ok_hand: check your DMs")
+        await ctx.author.dm_channel.send(message)
+        await ctx.send(":ok_hand: check your DMs")
 
-    @commands.command(pass_context=True)
-    async def quote(self, ctx, id:str):
+    @commands.command()
+    async def quote(self, ctx, id:int):
         """Quotes a message with the specified message ID"""
-        message = await self.bot.get_message(ctx.message.channel, id)
-        if message is None:
-            await self.bot.say("I could not find a message with an ID of `{}` in this channel".format(id))
+        try:
+            message = await ctx.channel.get_message(id)
+        except discord.errors.NotFound:
+            await ctx.send("I could not find a message with an ID of `{}` in this channel".format(id))
             return
         embed = make_message_embed(message.author, message.author.color, message.content, formatUser=True)
         embed.timestamp = message.timestamp
-        await self.bot.say(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
-    async def twentyoneify(self, *, input:str):
+    async def twentyoneify(self, ctx, *, input:str):
         """EVERYTHING NEEDS TWENTY ØNE PILØTS!"""
-        await self.bot.say(input.replace("O", "Ø").replace("o", "ø"))
+        await ctx.send(input.replace("O", "Ø").replace("o", "ø"))
 
     @commands.command()
-    async def spellout(self, *, msg:str):
+    async def spellout(self, ctx, *, msg:str):
         """S P E L L O U T"""
-        await self.bot.say(" ".join(list(msg.upper())))
+        await ctx.send(" ".join(list(msg.upper())))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def trigger(self, ctx, *, member:discord.Member=None):
         """Triggers a user"""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing(ctx.channel)
         if member is None:
-            member = ctx.message.author
+            member = ctx.author
         download_file(get_avatar(member, animate=False), "data/trigger.png")
         avatar = Image.open("data/trigger.png")
         triggered = imagetools.rescale(Image.open("assets/imgs/pillow/triggered.jpg"), avatar.size)
         position = 0, avatar.getbbox()[3] - triggered.getbbox()[3]
         avatar.paste(triggered, position)
         avatar.save("data/trigger.png")
-        await self.bot.send_file(ctx.message.channel, "data/trigger.png")
+        await ctx.send(file=discord.File("data/trigger.png"))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def memegen(self, ctx, name:str, line1:str, line2:str):
         """Run r!memelist of the list of memes. Example: r!memegen snek \"No booper\" \"do NOT!\""""
         def escape_literals(url):
             return url.replace("-", "--").replace("_", "__").replace("?", "~q").replace(" ", "%20").replace("''", "\"")
         url = "https://memegen.link/{}/{}/{}.jpg".format(name, escape_literals(line1), escape_literals(line2))
         file = url_to_bytes(url)
-        await self.bot.send_file(ctx.message.channel, file["content"], filename=file["filename"])
+        await ctx.send(file=discord.File(file["content"], file["filename"]))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def memelist(self, ctx):
         """Gets a list of names for the memegen command"""
-        await self.bot.send_typing(ctx.message.channel)
-        await self.bot.send_file(ctx.message.channel, "assets/MemeList.txt")
+        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.send(file=discord.File("assets/MemeList.txt"))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def blackandwhite(self, ctx, user:discord.Member=None):
         """Turns your avatar or the specified user's avatar black and white"""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing(ctx.channel)
         if user is None:
-            user = ctx.message.author
+            user = ctx.author
         download_file(get_avatar(user, animate=False), "data/blackandwhite.png")
         avatar = Image.open("data/blackandwhite.png").convert("L")
         avatar.save("data/blackandwhite.png")
-        await self.bot.send_file(ctx.message.channel, "data/blackandwhite.png")
+        await ctx.send(file=discord.File("data/blackandwhite.png"))
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def headpat(self, ctx):
         """Posts a random headpat from headp.at"""
         pats = json.loads(requests.get("http://headp.at/js/pats.json").json())
         pat = random.choice(pats)
         file = url_to_bytes("http://headp.at/pats/{}".format(pat))
-        await self.bot.send_file(ctx.message.channel, file["content"], filename=file["filename"])
-
-    @commands.command(pass_context=True)
-    async def thiscommanddoesfuckingnothing(self, ctx):
-        """It doesn't do a fucking thing (or does it? OwO)"""
-        await self.bot.wait_for_reaction(message=ctx.message, user=ctx.message.author)
-        await self.bot.say("{} OKAY OKAY YOU FOUND OUT WHAT IT DOES GG SCREENSHOT THIS AND DM `Seth#0346` OR USE `r!notifydev` FOR A HEAD PAT".format(ctx.message.author.mention))
+        await ctx.send(file=discord.File(file["content"], file["filename"]))
 
     @commands.command()
-    async def reverse(self, *, msg:str):
-        """ffuts esreveR"""
-        await self.bot.say(msg[::-1])
+    async def thiscommanddoesfuckingnothing(self, ctx):
+        """It doesn't do a fucking thing (or does it? OwO)"""
+        await self.bot.wait_for_reaction(message=ctx.message, user=ctx.author)
+        await ctx.send("{} OKAY OKAY YOU FOUND OUT WHAT IT DOES GG SCREENSHOT THIS AND DM `Seth#0346` OR USE `r!notifydev` FOR A HEAD PAT".format(ctx.author.mention))
 
-    @commands.command(pass_context=True)
-    async def react(self, ctx, id:str, emote:str):
+    @commands.command()
+    async def reverse(self, ctx, *, msg:str):
+        """ffuts esreveR"""
+        await ctx.send(msg[::-1])
+
+    @commands.command()
+    async def react(self, ctx, id:int, emote:str):
         """Reacts to a message with the specifed message id and the specified emote"""
         try:
-             message = await self.bot.get_message(ctx.message.channel, id=id)
+             message = await self.bot.get_message(ctx.channel, id=id)
         except discord.errors.NotFound:
-            await self.bot.say("No message in this channel was found with an ID of `{}`".format(id))
+            await ctx.send("No message in this channel was found with an ID of `{}`".format(id))
             return
         emote_id = extract_emote_id(emote)
         if emote_id is not None:
@@ -238,23 +239,23 @@ class Fun():
             if server_emote is not None:
                 emote = server_emote
             else:
-                await self.bot.say("I am not on the server that contains that emote")
+                await ctx.send("I am not on the server that contains that emote")
                 return
         try:
             await self.bot.add_reaction(message, emote)
         except discord.errors.Forbidden:
-            await self.bot.say("I do not have the `Add Reactions` permission")
+            await ctx.send("I do not have the `Add Reactions` permission")
         except discord.errors.HTTPException:
-            await self.bot.say("The emote specified is invalid")
+            await ctx.send("The emote specified is invalid")
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def intellect(self, ctx, *, msg:str):
         """Me, an intellectual"""
-        await self.bot.send_typing(ctx.message.channel)
+        await ctx.channel.trigger_typing(ctx.channel)
         intellectify = ""
         for char in msg:
             intellectify += random.choice([char.upper(), char.lower()])
-        await self.bot.say(intellectify)
+        await ctx.send(intellectify)
 
 def setup(bot):
     bot.add_cog(Fun(bot))

@@ -2,6 +2,7 @@ import re
 import requests
 import discord
 import io
+from datetime import datetime
 
 _USER_ID_MATCH = re.compile(r"<@(\d+)>")
 
@@ -64,7 +65,7 @@ def make_list_embed(fields):
     return embed
 
 def format_time(time):
-    return time.strftime("%B %d, %Y %I:%M %p EST")
+    return time.strftime("%B %d, %Y at %I:%M:%S %p")
 
 def convert_to_bool(arg):
     arg = str(arg).lower()
