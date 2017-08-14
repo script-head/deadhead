@@ -1,6 +1,5 @@
 discord.py
-pytube
-ffmpy
+youtube-dl
 colorlog
 asyncio
 cffi
