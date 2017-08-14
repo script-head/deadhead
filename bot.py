@@ -551,7 +551,7 @@ async def stats(ctx):
     voice_clients = []
     for guild in bot.guilds:
         if guild.me.voice:
-            voice_clients.append(guild.me.voice_channel)
+            voice_clients.append(guild.me.voice.voice_channel)
     fields = {"Users":len(list(bot.get_all_members())), "Servers":len(bot.guilds), "Channels":len(list(bot.get_all_channels())), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":BUILD_VERSION, "Built by":BUILD_AUTHORS}
     embed = make_list_embed(fields)
     embed.title = str(bot.user)
