@@ -149,7 +149,7 @@ def update_all_rank_data(user, guild, waittime, level, xp, xpneeded):
     conn.commit()
 
 def get_rankup_roles(guild):
-    cur.execute("""SELECT roles FROM rankuproles WHERE guildid=""" + guild.id)
+    cur.execute("""SELECT roles FROM rankuproles WHERE guildid=""" + str(guild.id))
     entries = []
     try:
         data = cur.fetchone()[0]

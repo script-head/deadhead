@@ -30,7 +30,7 @@ class Fun():
     async def cat(self, ctx):
         """Sends a random cute catto gif because cats are soooo cuteeee <3 >.<"""
         # Watch Nero spam this command until the bot crashes
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         cat.getCat(directory="data", filename="cat", format="gif")
         await asyncio.sleep(1) # This is so the bot has enough time to download the file
         await ctx.send(file=discord.File("data/cat.gif", "cat.gif"))
@@ -48,31 +48,31 @@ class Fun():
     @commands.command()
     async def yiffinhell(self, ctx):
         """snek yiff"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/imgs/yiffinhell.png"))
 
     @commands.command()
     async def spam(self, ctx):
         """SPAM SPAM SPAM"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/imgs/spam.png"))
 
     @commands.command()
     async def internetrules(self, ctx):
         """The rules of the internet"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/InternetRules.txt"))
 
     @commands.command()
     async def quoteaf(self, ctx):
         """Don't quote me on that"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/imgs/quotes/{}.png".format(random.randint(1, len([file for file in os.listdir("assets/imgs/quotes")])))))
 
     @commands.command()
     async def b1nzy(self, ctx):
         """b1nzy pls no ;-;"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/imgs/b1nzy_with_banhammer.png"))
 
     @commands.command()
@@ -99,7 +99,7 @@ class Fun():
     @commands.command()
     async def hoodaf(self, ctx):
         """Me in my hood"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/imgs/TheHood.gif"))
         await ctx.send("I look good in a hood, amirite?")
 
@@ -169,7 +169,7 @@ class Fun():
     @commands.command()
     async def trigger(self, ctx, *, member:discord.Member=None):
         """Triggers a user"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         if member is None:
             member = ctx.author
         download_file(get_avatar(member, animate=False), "data/trigger.png")
@@ -192,13 +192,13 @@ class Fun():
     @commands.command()
     async def memelist(self, ctx):
         """Gets a list of names for the memegen command"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/MemeList.txt"))
 
     @commands.command()
     async def blackandwhite(self, ctx, user:discord.Member=None):
         """Turns your avatar or the specified user's avatar black and white"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         if user is None:
             user = ctx.author
         download_file(get_avatar(user, animate=False), "data/blackandwhite.png")
@@ -209,7 +209,7 @@ class Fun():
     @commands.command()
     async def headpat(self, ctx):
         """Posts a random headpat from headp.at"""
-        pats = json.loads(requests.get("http://headp.at/js/pats.json").json())
+        pats = requests.get("http://headp.at/js/pats.json").json()
         pat = random.choice(pats)
         file = url_to_bytes("http://headp.at/pats/{}".format(pat))
         await ctx.send(file=discord.File(file["content"], file["filename"]))
@@ -217,8 +217,8 @@ class Fun():
     @commands.command()
     async def thiscommanddoesfuckingnothing(self, ctx):
         """It doesn't do a fucking thing (or does it? OwO)"""
-        await self.bot.wait_for_reaction(message=ctx.message, user=ctx.author)
-        await ctx.send("{} OKAY OKAY YOU FOUND OUT WHAT IT DOES GG SCREENSHOT THIS AND DM `Seth#0346` OR USE `r!notifydev` FOR A HEAD PAT".format(ctx.author.mention))
+        await self.bot.wait_for("reaction_add", check=lambda reaction, user: user.id == ctx.message.author.id and reaction.message == ctx.message)
+        await ctx.send("{} wow you found out, even though it wasn't that hard to figure out because you could just look at the github code".format(ctx.author.mention))
 
     @commands.command()
     async def reverse(self, ctx, *, msg:str):
@@ -251,7 +251,7 @@ class Fun():
     @commands.command()
     async def intellect(self, ctx, *, msg:str):
         """Me, an intellectual"""
-        await ctx.channel.trigger_typing(ctx.channel)
+        await ctx.channel.trigger_typing()
         intellectify = ""
         for char in msg:
             intellectify += random.choice([char.upper(), char.lower()])

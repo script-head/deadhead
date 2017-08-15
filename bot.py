@@ -35,26 +35,20 @@ channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
 
-extensions = [
-              "commands.fun",
-              "commands.information",
-              "commands.moderation",
-              "commands.configuration",
-              "commands.rwby",
-              "commands.nsfw",
-              "commands.music",
-              "commands.reactions",
-              "commands.economy",
-              "commands.ranking"
-]
+extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music", "commands.reactions", "commands.economy", "commands.ranking"]
 
 # Thy changelog
 change_log = [
     "Side note: Read r!econotice because I still need suggestions for the eco system.",
     "Commands:",
-    "+ removereactions",
+    "None",
     "Other things:",
-    "Re-wrote some parts of the bot's code to use the discord.py re-write"
+    "Fixed the r!stats command from breaking whenever voice clients were active",
+    "Fixed the r!notifydev and r!suggest commands",
+    "Fixed the dev ids from returning as strings",
+    "Fixed all the \"fun\" commands that were broken from the ctx.channel argument in the trigger_typing method",
+    "Fixed the join and leave messages",
+    "Fixed the join roles"
 ]
 
 async def _restart_bot():
@@ -180,17 +174,13 @@ async def on_command_error(ctx, error):
         pass
     log.error("An error occured while executing the {} command: {}".format(ctx.command.qualified_name, error))
 
-@bot.event
-async def on_command(ctx):
+@bot.before_invoke
+async def on_command_preprocess(ctx):
     if isinstance(ctx.channel, discord.DMChannel):
         guild = "Private Message"
     else:
         guild = "{}/{}".format(ctx.guild.id, ctx.guild.name)
-    log_line = "[Command] [{}] [{}/{}]: {}".format(guild, ctx.author.id, ctx.author, ctx.message.content)
-    print(log_line)
-    log_file = open("logs/latest.log", "a+")
-    log_file.write("{} {}\n".format(datetime.now().strftime("{} {}".format(config.log_date_format, config.log_time_format)), log_line))
-    log_file.close()
+    log.info("[Command] [{}] [{}/{}]: {}".format(guild, ctx.author.id, ctx.author, ctx.message.content))
 
 @bot.event
 async def on_message(message):
@@ -235,12 +225,12 @@ async def on_member_join(member:discord.Member):
         join_role = None
     if join_leave_channel is not None and join_message is not None:
         try:
-            await bot.send_message(join_leave_channel, join_message)
+            await join_leave_channel.send(join_message)
         except:
             pass
     if join_role is not None:
         try:
-            await bot.add_roles(member, join_role)
+            await member.add_roles(join_role)
         except:
             None
 
@@ -258,7 +248,7 @@ async def on_member_remove(member:discord.Member):
         join_leave_channel = None
     if join_leave_channel is not None and leave_message is not None:
         try:
-            await bot.send_message(join_leave_channel, leave_message)
+            await join_leave_channel.send(leave_message)
         except:
             pass
 
@@ -323,28 +313,36 @@ async def setavatar(ctx, *, url:str=None):
 @bot.command()
 async def notifydev(ctx, *, message:str):
     """Sends a message to the developers"""
-    if ctx.channel.is_private:
+    if isinstance(ctx.channel, discord.DMChannel):
         guild = "`No server! Sent via Private Message!`"
     else:
         guild = "`{}` / `{}`".format(ctx.guild.id, ctx.guild.name)
     msg = make_message_embed(ctx.author, 0xFF0000, message, formatUser=True)
-    await bot.send_message(discord.User(id=config.owner_id), "You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
+    owner = bot.get_user(config.owner_id)
+    if owner:
+        await owner.send("You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
     for id in config.dev_ids:
-        await bot.send_message(discord.User(id=id), "You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
-    await bot.send_message(ctx.author, "You have sent the developers a message! The message you sent was: `{}`".format(message))
+        dev = bot.get_user(id)
+        if dev:
+            await dev.send("You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
+    await ctx.author.send("You have sent the developers a message! The message you sent was: `{}`".format(message))
 
 @bot.command()
 async def suggest(ctx, *, suggestion:str):
     """Sends a suggestion to the developers"""
-    if ctx.channel.is_private:
+    if isinstance(ctx.channel, discord.DMChannel):
         guild = "`No server! Sent via Private Message!`"
     else:
         guild = "`{}` / `{}`".format(ctx.guild.id, ctx.guild.name)
     msg = make_message_embed(ctx.author, 0xFF0000, suggestion, formatUser=True)
-    await bot.send_message(discord.User(id=config.owner_id), "You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
+    owner = bot.get_user(config.owner_id)
+    if owner:
+        await owner.send("You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
     for id in config.dev_ids:
-        await bot.send_message(discord.User(id=id), "You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
-    await bot.send_message(ctx.author, "You have sent the developers a suggestion! The suggestion you sent was: `{}`".format(suggestion))
+        dev = bot.get_user(id)
+        if dev:
+            await dev.send("You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
+    await ctx.author.send("You have sent the developers a suggestion! The suggestion you sent was: `{}`".format(suggestion))
 
 @bot.command(hidden=True)
 @checks.is_dev()
@@ -361,7 +359,7 @@ async def blacklist(ctx, id:int, *, reason:str):
     blacklistuser(id, user.name, user.discriminator, reason)
     await ctx.send("Blacklisted `{}` Reason: `{}`".format(user, reason))
     try:
-        await user.dm_channel.send("You have been blacklisted from the bot by `{}` Reason: `{}`".format(ctx.author, reason))
+        await user.send("You have been blacklisted from the bot by `{}` Reason: `{}`".format(ctx.author, reason))
     except:
         log.debug("Couldn't send a message to a user with an ID of \"{}\"".format(id))
     await channel_logger.log_to_channel(":warning: `{}` blacklisted `{}`/`{}` Reason: `{}`".format(ctx.author, id, user, reason))
@@ -381,7 +379,7 @@ async def unblacklist(ctx, id:int):
         return
     await ctx.send("Successfully unblacklisted `{}#{}`".format(entry.get("name"), entry.get("discrim")))
     try:
-        await bot.send_message(discord.User(id=id), "You have been unblacklisted from the bot by `{}`".format(ctx.author))
+        await discord.User(id=id).send("You have been unblacklisted from the bot by `{}`".format(ctx.author))
     except:
         log.debug("Couldn't send a message to a user with an ID of \"{}\"".format(id))
     await channel_logger.log_to_channel(":warning: `{}` unblacklisted `{}`/`{}#{}`".format(ctx.author, id, entry.get("name"), entry.get("discrim")))

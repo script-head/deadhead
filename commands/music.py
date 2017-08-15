@@ -16,12 +16,6 @@ config = Config()
 
 ytdl_format_options = {"format": "bestaudio/best", "extractaudio": True, "audioformat": "mp3", "noplaylist": True, "nocheckcertificate": True, "ignoreerrors": False, "logtostderr": False, "quiet": True, "no_warnings": True, "default_search": "auto", "source_address": "0.0.0.0", "preferredcodec": "libmp3lame"}
 
-def clear_data(id=None):
-    if id is None:
-        shutil.rmtree("data/music")
-    else:
-        shutil.rmtree("data/music/{}".format(id))
-
 def get_ytdl(id):
     format = ytdl_format_options
     format["outtmpl"] = "data/music/{}/%(id)s.mp3".format(id)
@@ -89,9 +83,22 @@ class Music:
             self.queues[ctx.guild.id] = queue
         return queue
 
-    async def disconnect_all_voicr_clients(self):
-        for id in self.queues:
-            await self.queues[id].voice_client.disconnect()
+    async def disconnect_all_voice_clients(self):
+        queues = self.queues
+        for id in queues:
+            try:
+                await self.queues[id].voice_client.disconnect()
+                self.clear_data(id)
+                del self.queues[id]
+            except:
+                pass
+
+    @staticmethod
+    def clear_data(id=None):
+        if id is None:
+            shutil.rmtree("data/music")
+        else:
+            shutil.rmtree("data/music/{}".format(id))
 
     @staticmethod
     def download_video(ctx, url):
@@ -125,9 +132,14 @@ class Music:
         await ctx.channel.trigger_typing()
         if ctx.voice_client is None:
             if ctx.author.voice.channel:
-                await ctx.author.voice.channel.connect()
+                try:
+                    await ctx.author.voice.channel.connect()
+                except discord.errors.Forbidden:
+                    await ctx.send("I do not have permission to join {}".format(ctx.author.voice.channel))
+                    return
             else:
-                return await ctx.send("Not connected to a voice channel.")
+                await ctx.send("You must be connected to a voice channel")
+                return
         queue = self.get_queue(ctx)
         url = url.strip("<>")
         try:
@@ -146,6 +158,8 @@ class Music:
     async def disconnect(self, ctx):
         """Disconnects the bot from the voice channel"""
         await self.get_queue(ctx).voice_client.disconnect()
+        self.clear_data(ctx.guild.id)
+        del self.queues[ctx.guild.id]
         await ctx.send("Disconnected")
 
     @commands.command()

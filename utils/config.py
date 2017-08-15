@@ -51,7 +51,7 @@ class Config:
         self._token = config.get("Credentials", "Token", fallback=Defaults.token)
         self._dbots_token = config.get("Credentials", "Dbots_Token", fallback=Defaults.dbots_token)
         self._carbonitex_key = config.get("Credentials", "Carbonitex_Key", fallback=Defaults.carbonitex_key)
-        self.owner_id = config.get("Bot", "Owner_ID", fallback=Defaults.owner_id)
+        self.owner_id = config.getint("Bot", "Owner_ID", fallback=Defaults.owner_id)
         self.command_prefix = config.get("Bot", "Command_Prefix", fallback=Defaults.command_prefix)
         self.max_nsfw_count = config.getint("Bot", "Max_NSFW_Count", fallback=Defaults.max_nsfw_count)
         self.dev_ids = config.get("Bot", "Developer_IDs", fallback=Defaults.dev_ids)
@@ -83,7 +83,10 @@ class Config:
 
         if len(self.dev_ids) is not 0:
             try:
-                self.dev_ids = list(self.dev_ids.split())
+                ids = self.dev_ids.split()
+                self.dev_ids = []
+                for id in ids:
+                    self.dev_ids.append(int(id))
             except:
                 log.warning("Developer IDs are invalid, all developer IDs have been ignored!")
                 self.dev_ids = Defaults.dev_ids
