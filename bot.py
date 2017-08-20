@@ -48,7 +48,8 @@ change_log = [
     "Fixed the dev ids from returning as strings",
     "Fixed all the \"fun\" commands that were broken from the ctx.channel argument in the trigger_typing method",
     "Fixed the join and leave messages",
-    "Fixed the join roles"
+    "Fixed the join roles",
+    "Fixed r!invite, r!joinserver, and r!dm"
 ]
 
 async def _restart_bot():
@@ -479,15 +480,25 @@ async def version(ctx):
 async def dm(ctx, id:int, *, message:str):
     """DMs a user"""
     msg = make_message_embed(ctx.author, 0xFF0000, message, formatUser=True)
-    try:
-        sent_message = await bot.send_message(discord.User(id=id), "You have received a message from one of the bot developers!", embed=msg)
-        user = sent_message.channel.user
-    except:
-        await ctx.send("Could not send a message to the user.")
-        return
-    await bot.send_message(discord.User(id=config.owner_id), "`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=make_message_embed(ctx.author, 0xFF0000, message))
-    for dev_id in config.dev_ids:
-        await bot.send_message(discord.User(id=dev_id), "`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=make_message_embed(ctx.author, 0xFF0000, message))
+    user = bot.get_user(id)
+    if not user:
+        await ctx.send("Could not find any user with an ID of `{}`".format(id))
+    #await user.send("You have received a message from one of the bot developers!", embed=msg)
+    #owner = bot.get_user(config.owner_id)
+    #if owner:
+        #await owner.send("`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=make_message_embed(ctx.author, 0xFF0000, message))
+    #for dev_id in config.dev_ids:
+        #dev = bot.get_user(id)
+        #if dev:
+            #await dev.send("`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=make_message_embed(ctx.author, 0xFF0000, message))
+    owner = bot.get_user(config.owner_id)
+    if owner:
+        await owner.send("`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=msg)
+    for id in config.dev_ids:
+        dev = bot.get_user(id)
+        if dev:
+            await dev.send("`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=msg)
+    await user.send("You have received a message from one of the bot developers!", embed=msg)
 
 @bot.command()
 async def uptime(ctx):
@@ -515,12 +526,12 @@ async def reload(ctx, *, extension:str):
 @bot.command()
 async def joinserver(ctx):
     """Sends the bot's OAuth2 link"""
-    await bot.send_message(ctx.author, "Here is the link to add me to your server: https://invite.ruby.creeperseth.com")
+    await ctx.author.send("Here is the link to add me to your server: https://invite.ruby.creeperseth.com")
 
 @bot.command()
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
-    await bot.send_message(ctx.author, "Here is the link to my server: <https://discord.gg/RJTFyBd>\n\n(if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
+    await ctx.author.send("Here is the link to my server: <https://discord.gg/RJTFyBd>\n\n(if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
 
 @bot.command()
 async def ping(ctx):
