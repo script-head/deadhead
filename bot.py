@@ -83,7 +83,7 @@ async def set_default_status():
             if config.default_status_name is None:
                 log.critical("If the status type is set to \"stream\" then the default status game must be specified")
                 os._exit(1)
-            game = discord.Game(name=game, url="http://twitch.tv/CreeperSeth", type=1)
+            game = discord.Game(name=game, url="http://twitch.tv/ZeroEpoch1969", type=1)
         else:
             game = discord.Game(name=game)
         await bot.change_presence(status=type, game=game)
@@ -483,14 +483,6 @@ async def dm(ctx, id:int, *, message:str):
     user = bot.get_user(id)
     if not user:
         await ctx.send("Could not find any user with an ID of `{}`".format(id))
-    #await user.send("You have received a message from one of the bot developers!", embed=msg)
-    #owner = bot.get_user(config.owner_id)
-    #if owner:
-        #await owner.send("`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=make_message_embed(ctx.author, 0xFF0000, message))
-    #for dev_id in config.dev_ids:
-        #dev = bot.get_user(id)
-        #if dev:
-            #await dev.send("`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=make_message_embed(ctx.author, 0xFF0000, message))
     owner = bot.get_user(config.owner_id)
     if owner:
         await owner.send("`{}` has replied to a recent DM with `{}` (ID: `{}`)".format(ctx.author, user, id), embed=msg)
@@ -552,7 +544,7 @@ async def website(ctx):
 @bot.command()
 async def github(ctx):
     """Gives the link to the github repo"""
-    await ctx.send("My official github repo can be found here: https://github.com/CreeperSeth/RubyRoseBot")
+    await ctx.send("My official github repo can be found here: https://github.com/ZeroEpoch1969/RubyRoseBot")
 
 @bot.command()
 async def stats(ctx):
