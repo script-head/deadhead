@@ -95,7 +95,7 @@ def getblacklist():
         entries.append(entry)
     return entries
 
-eco_data_defaults = {"headpats":0, "lastdailyroses":None}
+eco_data_defaults = {"lastdailyroses":None}
 
 def get_user_economy_data(user):
     cur.execute("""SELECT id, balance, data FROM economy WHERE id=""" + str(user.id))
