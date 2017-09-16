@@ -217,7 +217,7 @@ class Fun():
     @commands.command()
     async def thiscommanddoesfuckingnothing(self, ctx):
         """It doesn't do a fucking thing (or does it? OwO)"""
-        await self.bot.wait_for("reaction_add", check=lambda reaction, user: user.id == ctx.message.author.id and reaction.message == ctx.message)
+        await ctx.wait_for("reaction_add", check=lambda reaction, user: user.id == ctx.message.author.id and reaction.message == ctx.message)
         await ctx.send("{} wow you found out, even though it wasn't that hard to figure out because you could just look at the github code".format(ctx.author.mention))
 
     @commands.command()
@@ -229,20 +229,20 @@ class Fun():
     async def react(self, ctx, id:int, emote:str):
         """Reacts to a message with the specifed message id and the specified emote"""
         try:
-             message = await self.bot.get_message(ctx.channel, id=id)
+             message = await ctx.channel.get_message(id)
         except discord.errors.NotFound:
             await ctx.send("No message in this channel was found with an ID of `{}`".format(id))
             return
         emote_id = extract_emote_id(emote)
         if emote_id is not None:
-            server_emote = discord.utils.get(list(self.bot.get_all_emojis()), id=emote_id)
+            server_emote = discord.utils.get(list(bot.get_all_emojis)), id=emote_id)
             if server_emote is not None:
                 emote = server_emote
             else:
                 await ctx.send("I am not on the server that contains that emote")
                 return
         try:
-            await self.bot.add_reaction(message, emote)
+            await ctx.add_reaction(message, emote)
         except discord.errors.Forbidden:
             await ctx.send("I do not have the `Add Reactions` permission")
         except discord.errors.HTTPException:

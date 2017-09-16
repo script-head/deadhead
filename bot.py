@@ -568,7 +568,7 @@ async def stats(ctx):
 async def editmessage(ctx, id:int, *, newmsg:str):
     """Edits a message sent by the bot"""
     try:
-        msg = await bot.get_message(ctx.channel, id)
+        msg = await ctx.channel.get_message(id)
     except discord.errors.NotFound:
         await ctx.send("Couldn't find a message with an ID of `{}` in this channel".format(id))
         return
