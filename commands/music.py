@@ -124,7 +124,7 @@ class Music:
 
     @commands.command()
     async def summon(self, ctx):
-        await ctx.send("Please just {}play as it will automatically summont he bot to your voice channel if it isn't already in it")
+        await ctx.send("Please use {}play as it will automatically connect the bot to the voice channel if it isn't already in it.")
 
     @commands.command()
     async def play(self, ctx, *, url:str):
