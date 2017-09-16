@@ -208,7 +208,7 @@ class Moderation():
             await ctx.send("No role with the name of `{}` was found on this server".format(name))
             return
         try:
-            await user.add_roles(role, reason="The role \"test\" was added by {}".format(role.name, ctx.author))
+            await user.add_roles(role, reason="The role \"{}\" was added by {}".format(role.name, ctx.author))
             await ctx.send("Successfully added the `{}` role to `{}`".format(name, user))
         except discord.errors.Forbidden:
             if role.position == ctx.me.top_role.position:
