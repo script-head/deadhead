@@ -235,7 +235,7 @@ class Fun():
             return
         emote_id = extract_emote_id(emote)
         if emote_id is not None:
-            server_emote = discord.utils.get(list(bot.get_all_emojis)), id=emote_id)
+            server_emote = discord.utils.get(list(bot.get_all_emojis), id=emote_id)
             if server_emote is not None:
                 emote = server_emote
             else:
