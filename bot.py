@@ -35,7 +35,16 @@ channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
 
-extensions = ["commands.fun", "commands.information", "commands.moderation", "commands.configuration", "commands.rwby", "commands.nsfw", "commands.music", "commands.reactions", "commands.economy", "commands.ranking"]
+extensions = ["commands.fun", 
+              "commands.information", 
+              "commands.moderation", 
+              "commands.configuration", 
+              "commands.rwby", 
+              "commands.nsfw", 
+              "commands.music", 
+              "commands.reactions", 
+              "commands.economy", 
+              "commands.ranking"]
 
 # Thy changelog
 change_log = [
@@ -122,7 +131,8 @@ async def on_ready():
         log.info("The osu! module has been enabled in the config!")
     if config._dbots_token:
         log.info("Updating DBots Statistics...")
-        r = requests.post("https://bots.discord.pw/api/bots/{}/stats".format(bot.user.id), json={"server_count":len(bot.guilds)}, headers={"Authorization":config._dbots_token})
+        r = requests.post("https://bots.discord.pw/api/bots/{}/stats".format(bot.user.id), json={
+            "server_count":len(bot.guilds)}, headers={"Authorization":config._dbots_token})
         if r.status_code == "200":
             log.info("Discord Bots guild count updated.")
         elif r.status_code == "401":
@@ -383,7 +393,8 @@ async def unblacklist(ctx, id:int):
         await discord.User(id=id).send("You have been unblacklisted from the bot by `{}`".format(ctx.author))
     except:
         log.debug("Couldn't send a message to a user with an ID of \"{}\"".format(id))
-    await channel_logger.log_to_channel(":warning: `{}` unblacklisted `{}`/`{}#{}`".format(ctx.author, id, entry.get("name"), entry.get("discrim")))
+    await channel_logger.log_to_channel(":warning: `{}` unblacklisted `{}`/`{}#{}`".format(ctx.author, id, entry.get("name"), entry.get(
+        "discrim")))
 
 @bot.command()
 async def showblacklist(ctx):
@@ -417,7 +428,8 @@ async def stream(ctx, *, name:str):
             return
     await bot.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
     await ctx.send("Now streaming `{}`".format(name))
-    await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.author.id, ctx.author, name))
+    await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(
+        ctx.author.id, ctx.author, name))
 
 @bot.command()
 async def changestatus(ctx, status:str, *, name:str=None):
@@ -433,7 +445,8 @@ async def changestatus(ctx, status:str, *, name:str=None):
     try:
         statustype = discord.Status(status)
     except ValueError:
-        await ctx.send("`{}` is not a valid status type, valid status types are `online`, `idle`, `do_not_disurb`, and `dnd`".format(status))
+        await ctx.send("`{}` is not a valid status type, valid status types are `online`, `idle`, `do_not_disurb`, and `dnd`".format(
+            status))
         return
     if name != "":
         game = discord.Game(name=name)
@@ -443,7 +456,8 @@ async def changestatus(ctx, status:str, *, name:str=None):
         await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the game name to `{}` with a(n) `{}` status type".format(ctx.author.id, ctx.author, name, status))
     else:
         await ctx.send("Changed status type to `{}`".format(status))
-        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(ctx.author.id, ctx.author, name))
+        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(
+            ctx.author.id, ctx.author, name))
 
 @bot.command(hidden=True)
 @checks.is_dev()
@@ -451,7 +465,8 @@ async def terminal(ctx, *, command:str):
     """Runs terminal commands and shows the output via a message. Oooh spoopy!"""
     try:
         await ctx.channel.trigger_typing()
-        await ctx.send(xl.format(subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0].decode("ascii")))
+        await ctx.send(xl.format(subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(
+        )[0].decode("ascii")))
     except:
         await ctx.send("Error, couldn't send command")
 
@@ -473,7 +488,8 @@ async def changelog(ctx):
 @bot.command()
 async def version(ctx):
     """Get the bot's current version"""
-    await ctx.send("Bot version: {}\nAuthor(s): {}\nCode name: {}\nBuild date: {}".format(BUILD_VERSION, BUILD_AUTHORS, BUILD_CODENAME, BUILD_DATE))
+    await ctx.send("Bot version: {}\nAuthor(s): {}\nCode name: {}\nBuild date: {}".format(
+        BUILD_VERSION, BUILD_AUTHORS, BUILD_CODENAME, BUILD_DATE))
 
 @bot.command(hidden=True)
 @checks.is_dev()
@@ -553,7 +569,9 @@ async def stats(ctx):
     for guild in bot.guilds:
         if guild.me.voice:
             voice_clients.append(guild.me.voice.channel)
-    fields = {"Users":len(list(bot.get_all_members())), "Servers":len(bot.guilds), "Channels":len(list(bot.get_all_channels())), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":BUILD_VERSION, "Built by":BUILD_AUTHORS}
+    fields = {"Users":len(list(bot.get_all_members())), "Servers":len(bot.guilds), "Channels":len(list(
+        bot.get_all_channels())), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":
+              BUILD_VERSION, "Built by":BUILD_AUTHORS}
     embed = make_list_embed(fields)
     embed.title = str(bot.user)
     embed.color = 0xFF0000
