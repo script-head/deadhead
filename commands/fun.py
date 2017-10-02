@@ -141,7 +141,7 @@ class Fun():
     @commands.command()
     async def plzmsgme(self, ctx, *, message:str):
         """Makes the bot DM you with the specified message"""
-        await ctx.author.dm_channel.send(message)
+        await ctx.author.send(message)
         await ctx.send(":ok_hand: check your DMs")
 
     @commands.command()
