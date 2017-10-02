@@ -44,7 +44,8 @@ extensions = ["commands.fun",
               "commands.music", 
               "commands.reactions", 
               "commands.economy", 
-              "commands.ranking"]
+              "commands.ranking"
+]
 
 # Thy changelog
 change_log = [
