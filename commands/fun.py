@@ -253,7 +253,7 @@ class Fun():
 
     @commands.command()
     async def decodemorse(self, ctx, *, msg:str):
-        """Decode something from morse come"""
+        """Decode something from morse code"""
         decoded_message = ""
         for char in msg.split():
             if char == " ":
