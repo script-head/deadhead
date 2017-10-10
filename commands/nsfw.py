@@ -3,9 +3,9 @@ import json
 
 from discord.ext import commands
 from utils.tools import *
-from utils.mysql import *
 from utils.config import Config
 from utils import checks
+from utils.language import Language
 config = Config()
 
 # This is the limit to how many posts are selected
@@ -22,12 +22,12 @@ class NSFW():
         try:
             data = json.loads(requests.get("http://rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
         except json.JSONDecodeError:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
 
         count = len(data)
         if count == 0:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         image_count = 4
         if count < 4:
@@ -36,7 +36,7 @@ class NSFW():
         for i in range(image_count):
             image = data[random.randint(0, count)]
             images.append("http://img.rule34.xxx/images/{}/{}".format(image["directory"], image["image"]))
-        await ctx.send("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
+        await ctx.send(Language.get("nsfw.results", ctx).format(image_count, count, tags, "\n".join(images)))
 
     @checks.is_nsfw_channel()
     @commands.command()
@@ -46,11 +46,11 @@ class NSFW():
         try:
             data = json.loads(requests.get("https://e621.net/post/index.json?limit={}&tags={}".format(limit, tags)).text)
         except json.JSONDecodeError:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         count = len(data)
         if count == 0:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         image_count = 4
         if count < 4:
@@ -58,7 +58,7 @@ class NSFW():
         images = []
         for i in range(image_count):
             images.append(data[random.randint(0, count)]["file_url"])
-        await ctx.send("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
+        await ctx.send(Language.get("nsfw.results", ctx).format(image_count, count, tags, "\n".join(images)))
 
     @checks.is_nsfw_channel()
     @commands.command()
@@ -68,11 +68,11 @@ class NSFW():
         try:
             data = json.loads(requests.get("https://yande.re/post/index.json?limit={}&tags={}".format(limit, tags)).text)
         except json.JSONDecodeError:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         count = len(data)
         if count == 0:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         image_count = 4
         if count < 4:
@@ -80,7 +80,7 @@ class NSFW():
         images = []
         for i in range(image_count):
             images.append(data[random.randint(0, count)]["file_url"])
-        await ctx.send("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
+        await ctx.send(Language.get("nsfw.results", ctx).format(image_count, count, tags, "\n".join(images)))
 
     @checks.is_nsfw_channel()
     @commands.command()
@@ -90,11 +90,11 @@ class NSFW():
         try:
             data = json.loads(requests.get("https://danbooru.donmai.us/post/index.json?limit={}&tags={}".format(limit, tags)).text)
         except json.JSONDecodeError:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         count = len(data)
         if count == 0:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         image_count = 4
         if count < 4:
@@ -106,7 +106,7 @@ class NSFW():
             except KeyError:
                 await ctx.send(data["message"])
                 return
-        await ctx.send("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
+        await ctx.send(Language.get("nsfw.results", ctx).format(image_count, count, tags, "\n".join(images)))
 
     @checks.is_nsfw_channel()
     @commands.command()
@@ -116,11 +116,11 @@ class NSFW():
         try:
             data = json.loads(requests.get("https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
         except json.JSONDecodeError:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         count = len(data)
         if count == 0:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         image_count = 4
         if count < 4:
@@ -132,7 +132,7 @@ class NSFW():
             except KeyError:
                 await ctx.send(data["message"])
                 return
-        await ctx.send("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
+        await ctx.send(Language.get("nsfw.results", ctx).format(image_count, count, tags, "\n".join(images)))
 
     @checks.is_nsfw_channel()
     @commands.command()
@@ -142,11 +142,11 @@ class NSFW():
         try:
             data = json.loads(requests.get("https://xbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
         except json.JSONDecodeError:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         count = len(data)
         if count == 0:
-            await ctx.send("No results found for `{}`".format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
         image_count = 4
         if count < 4:
@@ -159,7 +159,7 @@ class NSFW():
             except KeyError:
                 await ctx.send(data["message"])
                 return
-        await ctx.send("Showing {} out of {} results for `{}`\n{}".format(image_count, count, tags, "\n".join(images)))
+        await ctx.send(Language.get("nsfw.results", ctx).format(image_count, count, tags, "\n".join(images)))
 
 def setup(bot):
     bot.add_cog(NSFW(bot))

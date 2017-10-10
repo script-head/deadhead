@@ -9,7 +9,7 @@ from utils.mysql import *
 from utils.logger import log
 from utils.opus_loader import load_opus_lib
 from utils.config import Config;
-from utils import checks
+from utils.language import Language
 
 load_opus_lib()
 config = Config()
@@ -57,19 +57,17 @@ class Queue():
 
     async def audio_change_task(self):
         while True:
-            log.debug("Change task ran")
             self.play_next_song.clear()
-            log.debug("clear af")
-            if self.current and not self.current.path in [song.path for song in self.song_list]:
-                os.remove(self.current.path)
             self.current = await self.songs.get()
+            log.debug("got next song")
             self.song_list.remove(str(self.current))
             self.skip_votes.clear()
-            await self.text_channel.send("Now playing {}".format(self.current.title_with_requester()))
+            log.debug("sending msg")
+            await self.text_channel.send(Language.get("music.now_playing", self.text_channel).format(self.current.title_with_requester()))
             self.voice_client.play(self.current.entry, after=lambda e: self.play_next_song.set())
-            log.debug("k")
+            log.debug("waiting...")
             await self.play_next_song.wait()
-            log.debug("it pass")
+            log.debug("passed")
 
 class Music:
     def __init__(self, bot):
@@ -124,7 +122,7 @@ class Music:
 
     @commands.command()
     async def summon(self, ctx):
-        await ctx.send("Please use {}play as it will automatically connect the bot to the voice channel if it isn't already in it.")
+        await ctx.send(Language.get("music.summon_notice", ctx).format(self.bot.command_prefix))
 
     @commands.command()
     async def play(self, ctx, *, url:str):
@@ -135,44 +133,44 @@ class Music:
                 try:
                     await ctx.author.voice.channel.connect()
                 except discord.errors.Forbidden:
-                    await ctx.send("I do not have permission to join {}".format(ctx.author.voice.channel))
+                    await ctx.send(Language.get("music.no_connect_perms", ctx).format(ctx.author.voice.channel))
                     return
             else:
-                await ctx.send("You must be connected to a voice channel")
+                await ctx.send(Language.get())
                 return
         queue = self.get_queue(ctx)
         url = url.strip("<>")
         try:
             song = self.download_video(ctx, url)
         except youtube_dl.utils.DownloadError as error:
-            await ctx.send("Failed to download youtube video: {}".format(str(error.exc_info[1]).strip("[youtube] ")))
+            await ctx.send(Language.get("music.failed_download", ctx).format(str(error.exc_info[1]).strip("[youtube] ")))
             return
         except:
             await ctx.send(traceback.format_exc())
             return
         await queue.songs.put(song)
         queue.song_list.append(str(song))
-        await ctx.send("Enqueued {}".format(song))
-        
+        await ctx.send(Language.get("music.enqueued", ctx).format(song))
+
     @commands.command()
     async def disconnect(self, ctx):
         """Disconnects the bot from the voice channel"""
         await self.get_queue(ctx).voice_client.disconnect()
         self.clear_data(ctx.guild.id)
         del self.queues[ctx.guild.id]
-        await ctx.send("Disconnected")
+        await ctx.send(Language.get("music.disconnected", ctx))
 
     @commands.command()
     async def pause(self, ctx):
         """Pauses the current song"""
         self.get_queue(ctx).voice_client.pause()
-        await ctx.send("Paused")
+        await ctx.send(Language.get("music.paused", ctx))
 
     @commands.command()
     async def resume(self, ctx):
         """Resumes playing the current song"""
         self.get_queue(ctx).voice_client.resume()
-        await ctx.send("Resumed")
+        await ctx.send(Language.get("music.resumed", ctx))
 
     @commands.command()
     async def skip(self, ctx):
@@ -180,10 +178,10 @@ class Music:
         queue = self.get_queue(ctx)
         if ctx.author.id in config.dev_ids or ctx.author.id == config.owner_id:
             queue.voice_client.stop()
-            await ctx.send("Bot developer skipped the song")
+            await ctx.send(Language.get("music.bot_dev_skip", ctx))
         elif ctx.author == queue.current.requester:
             queue.voice_client.stop()
-            await ctx.send("Song requester skipped the song")
+            await ctx.send(Language.get("music.song_requester_skip", ctx))
         else:
             needed = config.skip_votes_needed
             channel_members = len([member for member in queue.voice_client.channel.members if not member.bot])
@@ -192,13 +190,13 @@ class Music:
             if ctx.author.id not in queue.skip_votes:
                 queue.skip_votes.append(ctx.author.id)
             else:
-                await ctx.send("You've already voted to skip the song!")
+                await ctx.send(Language.get("music.already_skip_voted", ctx))
                 return
             if len(queue.skip_votes) >= needed:
                 queue.voice_client.stop()
-                await ctx.send("Song skipped")
+                await ctx.send(Language.get("music.skip", ctx))
             else:
-                await ctx.send("Vote added! Currently at {}/{} votes!".format(len(queue.skip_votes), needed))
+                await ctx.send(Language.get("music.skip_vote_added", ctx).format(len(queue.skip_votes), needed))
 
     @commands.command()
     async def queue(self, ctx):
@@ -206,21 +204,23 @@ class Music:
         queue = self.get_queue(ctx)
         if queue.current:
             if not queue.voice_client.is_paused() and not queue.voice_client.is_playing():
-                await ctx.send("Nothing is queued")
+                await ctx.send(Language.get("music.nothing_queued", ctx))
                 return
             else:
-                song_list = "Now playing: {}".format(queue.current)
+                song_list = Language.get("music.now_playing", ctx).format(queue.current)
         else:
-            await ctx.send("Nothing is queued!")
+            await ctx.send(Language.get("music.nothing_queued", ctx))
             return
         if len(queue.song_list) != 0:
             song_list += "\n\n{}".format("\n".join(queue.song_list))
         await ctx.send(song_list)
 
-    @checks.is_dev()
     @commands.command(hidden=True)
     async def volume(self, ctx, amount:float=None):
         """Sets the volume, for developers only because you set the volume via the bot's volume slider. This command is for debugging."""
+        if not ctx.author.id == config.owner_id or ctx.author.id not in config.dev_ids:
+            await ctx.send(Language.get("music.volume_notice", ctx))
+            return
         queue = self.get_queue(ctx)
         if not amount:
             await ctx.send("The current volume is `{:.0%}`".format(queue.voice_client.source.volume))
@@ -231,7 +231,7 @@ class Music:
     @commands.command()
     async def np(self, ctx):
         """Shows the song that is currently playing"""
-        await ctx.send("Now playing: {} (Requested by {})".format(self.get_queue(ctx).current.title_with_requester))
+        await ctx.send(Language.get("music.now_playing_with_requester", ctx).format(self.get_queue(ctx).current.title_with_requester))
 
 def setup(bot):
     bot.add_cog(Music(bot))

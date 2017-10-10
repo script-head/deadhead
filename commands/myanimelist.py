@@ -6,6 +6,7 @@ from discord.ext import commands
 from utils.logger import log
 from utils.config import Config
 from utils.tools import *
+from utils.language import Language
 config = Config()
 
 class MyAnimeList():
@@ -19,12 +20,12 @@ class MyAnimeList():
         r = requests.get("https://myanimelist.net/api/anime/search.xml?q={}".format(name), auth=requests.auth.HTTPBasicAuth(config._malUsername, config._malPassword))
         if r.status_code == 401:
             log.critical("The MyAnimeList credinals are incorrect, please check your MyAnimeList login information in the config.")
-            await ctx.send("The MyAnimeList credinals are incorrect, contact the bot developer!")
+            await ctx.send(Language.get("myanimelist.incorrect_creds", ctx))
             return
         try:
             xmldoc = minidom.parseString(r.text)
         except XmlParserErrors.ExpatError:
-            await ctx.send("Couldn't find any anime named `{}`".format(name))
+            await ctx.send(Language.get("myanimelist.no_anime_found", ctx).format(name))
             return
         # pls no flame
         anime = xmldoc.getElementsByTagName("entry")[0]
@@ -46,7 +47,7 @@ class MyAnimeList():
         if len(synopsis) > 300:
             synopsis = synopsis[:300] + "..."
         url = "https://myanimelist.net/anime/{}".format(id)
-        fields = {"English Title":english, "Episodes":episodes, "MAL Score":score, "Type":type, "Status":status, "Start Date":start_date, "End Date":end_date}
+        fields = {Language.get("myanimelist.english_title", ctx):english, Language.get("myanimelist.episodes", ctx):episodes, Language.get("myanimelist.mal_line", ctx):score, Language.get("myanimelist.type", ctx):type, Language.get("myanimelist.status", ctx):status, Language.get("myanimelist.start_date", ctx):start_date, Language.get("myanimelist.end_date", ctx):end_date}
         embed = make_list_embed(fields)
         embed.title = title
         embed.description = synopsis
@@ -62,12 +63,12 @@ class MyAnimeList():
         r = requests.get("https://myanimelist.net/api/manga/search.xml?q={}".format(name), auth=requests.auth.HTTPBasicAuth(config._malUsername, config._malPassword))
         if r.status_code == 401:
             log.critical("The MyAnimeList credinals are incorrect, please check your MyAnimeList login information in the config.")
-            await ctx.send("The MyAnimeList credinals are incorrect, contact the bot developer!")
+            await ctx.send(Language.get("myanimelist.incorrect_creds", ctx))
             return
         try:
             xmldoc = minidom.parseString(r.text)
         except XmlParserErrors.ExpatError:
-            await ctx.send("Couldn't find any manga named `{}`".format(name))
+            await ctx.send(Language.get("myanimelist.no_manga_found", ctx).format(name))
             return
         # pls no flame
         manga = xmldoc.getElementsByTagName("entry")[0]
@@ -90,7 +91,7 @@ class MyAnimeList():
         if len(synopsis) > 300:
             synopsis = synopsis[:300] + "..."
         url = "https://myanimelist.net/manga/{}".format(id)
-        fields = {"English Title":english, "Chapters":chapters, "Volumes":volumes, "MAL Score":score, "Type":type, "Status":status, "Start Date":start_date, "End Date":end_date}
+        fields = {Language.get("myanimelist.english_title", ctx):english, Language.get("myanimelist.chapaters", ctx):chapters, Language.get("myanimelist.volumes", ctx):volumes, Language.get("myanimelist.mal_history", ctx):score, Language.get("myanimelist.type", ctx):type, Language.get("myanimelist.status", ctx):status, Language.get("myanimelist.start_date", ctx):start_date, Language.get("myanimelist.end_date", ctx):end_date}
         embed = make_list_embed(fields)
         embed.title = title
         embed.description = synopsis

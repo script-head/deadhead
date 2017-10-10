@@ -18,6 +18,7 @@ Bootstrap.run_checks()
 
 from utils import checks
 from utils import ranking
+from utils.language import Language
 
 from discord.ext import commands
 from utils.config import Config
@@ -35,31 +36,28 @@ channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
 
-extensions = ["commands.fun", 
-              "commands.information", 
-              "commands.moderation", 
-              "commands.configuration", 
-              "commands.rwby", 
-              "commands.nsfw", 
-              "commands.music", 
-              "commands.reactions", 
-              "commands.economy", 
-              "commands.ranking"
+extensions = [
+    "commands.fun",
+    "commands.information",
+    "commands.moderation",
+    "commands.configuration",
+    "commands.nsfw",
+    "commands.music",
+    "commands.reactions"
 ]
 
 # Thy changelog
 change_log = [
-    "Side note: Read r!econotice because I still need suggestions for the eco system.",
     "Commands:",
-    "None",
+    "+ encodemorse",
+    "+ decodemorse",
     "Other things:",
-    "Fixed the r!stats command from breaking whenever voice clients were active",
-    "Fixed the r!notifydev and r!suggest commands",
-    "Fixed the dev ids from returning as strings",
-    "Fixed all the \"fun\" commands that were broken from the ctx.channel argument in the trigger_typing method",
-    "Fixed the join and leave messages",
-    "Fixed the join roles",
-    "Fixed r!invite, r!joinserver, and r!dm"
+    "- Removed the ranking system",
+    "- hoodaf",
+    "- The economy system",
+    "- rwby cog",
+    "+ Added a translation system, the only language right now is spanish however the translations aren't added yet",
+    "Fixed the music queue"
 ]
 
 async def _restart_bot():
@@ -155,33 +153,33 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, commands.DisabledCommand):
-        await ctx.send("This command has been disabled")
+        await ctx.send(Language.get("bot.errors.disabled_command", ctx))
         return
     if isinstance(error, checks.dev_only):
-        await ctx.send("This command can only be ran by the bot developers")
+        await ctx.send(Language.get("bot.errors.dev_only", ctx))
         return
     if isinstance(error, checks.owner_only):
-        await ctx.send("This command can only be ran by the bot owner")
+        await ctx.send(Language.get("bot.errors.owner_only", ctx))
         return
     if isinstance(error, checks.not_nsfw_channel):
-        await ctx.send("This command can only be ran in NSFW enabled channels.")
+        await ctx.send(Language.get("bot.errors.not_nsfw_channel", ctx))
         return
     if isinstance(error, checks.not_guild_owner):
-        await ctx.send(ctx.channel, "Only the server owner (`{}`) can use this command".format(ctx.guild.owner))
+        await ctx.send(Language.get("bot.errors.not_guild_owner", ctx))
         return
     if isinstance(error, checks.no_permission):
-        await ctx.send("You do not have permission to use this command".format(ctx.guild.owner))
+        await ctx.send(Language.get("bot.errors.no_permission", ctx))
         return
     if isinstance(error, commands.NoPrivateMessage):
-        await ctx.send("This command can only be ran on servers".format(ctx.guild.owner))
+        await ctx.send(Language.get("bot.errors.no_private_message", ctx))
         return
     if isinstance(ctx.channel, discord.DMChannel):
-        await ctx.send("An error occured while trying to run this command, this is most likely because it was ran in a private message channel. Please try running this command on a guild.")
+        await ctx.send(Language.get("bot.errors.command_error_dm_channel", ctx))
         return
 
     #In case the bot failed to send a message to the channel, the try except pass statement is to prevent another error
     try:
-        await ctx.send("An error occured while processing this command: `{}`".format(error))
+        await ctx.send(Language.get("bot.errors.command_error", ctx).format(error))
     except:
         pass
     log.error("An error occured while executing the {} command: {}".format(ctx.command.qualified_name, error))
@@ -203,17 +201,6 @@ async def on_message(message):
             return
     if getblacklistentry(message.author.id) is not None:
         return
-    if isinstance(message.channel, discord.TextChannel):
-        if read_data_entry(message.guild.id, "enable-ranking"):
-            if ranking.level_up(message.author, message.guild):
-                level = ranking.get_rank_data(message.author, message.guild)["level"]
-                role_rank_ups = ranking.get_rankup_role_dict(message.guild)
-                try:
-                    role = discord.utils.get(message.guild.roles, id=role_rank_ups[level])
-                    await bot.add_roles(message.author, role)
-                except:
-                    pass
-                await message.channel.send("{} you've leveled up to level **{}**!".format(message.author.mention, level))
     await bot.process_commands(message)
 
 @bot.event
@@ -310,16 +297,17 @@ async def restart(ctx):
 async def setavatar(ctx, *, url:str=None):
     """Changes the bot's avatar"""
     if ctx.message.attachments:
-        url = ctx.message.attachments[0]["url"]
+        url = ctx.message.attachments[0].url
     elif url is None:
         await ctx.send("Please specify an avatar url if you did not attach a file")
         return
     try:
         with aiohttp.Timeout(10):
             async with aiosession.get(url.strip("<>")) as image:
-                await bot.edit_profile(avatar=await image.read())
+                await bot.user.edit(avatar=await image.read())
     except Exception as e:
         await ctx.send("Unable to change avatar: {}".format(e))
+        return
     await ctx.send(":eyes:")
 
 @bot.command()
@@ -337,7 +325,7 @@ async def notifydev(ctx, *, message:str):
         dev = bot.get_user(id)
         if dev:
             await dev.send("You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
-    await ctx.author.send("You have sent the developers a message! The message you sent was: `{}`".format(message))
+    await ctx.author.send(Language.get("bot.dev_notify", ctx).format(message))
 
 @bot.command()
 async def suggest(ctx, *, suggestion:str):
@@ -354,7 +342,7 @@ async def suggest(ctx, *, suggestion:str):
         dev = bot.get_user(id)
         if dev:
             await dev.send("You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
-    await ctx.author.send("You have sent the developers a suggestion! The suggestion you sent was: `{}`".format(suggestion))
+    await ctx.author.send(Language.get("bot.errors.dev_suggest", ctx).format(suggestion))
 
 @bot.command(hidden=True)
 @checks.is_dev()
@@ -394,10 +382,10 @@ async def unblacklist(ctx, id:int):
         await discord.User(id=id).send("You have been unblacklisted from the bot by `{}`".format(ctx.author))
     except:
         log.debug("Couldn't send a message to a user with an ID of \"{}\"".format(id))
-    await channel_logger.log_to_channel(":warning: `{}` unblacklisted `{}`/`{}#{}`".format(ctx.author, id, entry.get("name"), entry.get(
-        "discrim")))
+    await channel_logger.log_to_channel(":warning: `{}` unblacklisted `{}`/`{}#{}`".format(ctx.author, id, entry.get("name"), entry.get("discrim")))
 
 @bot.command()
+@checks.is_dev()
 async def showblacklist(ctx):
     """Shows the list of users that are blacklisted from the bot"""
     blacklist = getblacklist()
@@ -425,10 +413,10 @@ async def stream(ctx, *, name:str):
     """Sets the streaming status with the specified name"""
     if lock_status:
         if not ctx.author.id == config.owner_id and not ctx.author.id in config.dev_ids:
-            await ctx.send("The status is currently locked")
+            await ctx.send(Language.get("bot.status_locked", ctx))
             return
     await bot.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
-    await ctx.send("Now streaming `{}`".format(name))
+    await ctx.send(Language.get("bot.now_streaming", ctx).format(name))
     await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(
         ctx.author.id, ctx.author, name))
 
@@ -437,26 +425,25 @@ async def changestatus(ctx, status:str, *, name:str=None):
     """Changes the bot's status with the specified status type and name"""
     if lock_status:
         if not ctx.author.id == config.owner_id and not ctx.author.id in config.dev_ids:
-            await ctx.send("The status is currently locked")
+            await ctx.send(Language.get("bot.status_locked", ctx))
             return
     game = None
     if status == "invisible" or status == "offline":
-        await ctx.send("You can not use the status type `{}`".format(status))
+        await ctx.send(Language.get("bot.forbidden_status_type", ctx).format(status))
         return
     try:
         statustype = discord.Status(status)
     except ValueError:
-        await ctx.send("`{}` is not a valid status type, valid status types are `online`, `idle`, `do_not_disurb`, and `dnd`".format(
-            status))
+        await ctx.send(Language.get("bot.valid_status_types", ctx))
         return
     if name != "":
         game = discord.Game(name=name)
     await bot.change_presence(game=game, status=statustype)
     if name is not None:
-        await ctx.send("Changed game name to `{}` with a(n) `{}` status type".format(name, status))
+        await ctx.send(Language.get("bot.status_change_with_name", ctx).format(name, status))
         await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the game name to `{}` with a(n) `{}` status type".format(ctx.author.id, ctx.author, name, status))
     else:
-        await ctx.send("Changed status type to `{}`".format(status))
+        await ctx.send(Language.get("bot.status_change", ctx).format(status))
         await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(
             ctx.author.id, ctx.author, name))
 
@@ -484,13 +471,12 @@ async def uploadfile(ctx, *, path:str):
 @bot.command()
 async def changelog(ctx):
     """The latest changelog"""
-    await ctx.send("For command usages and a list of commands go to https://ruby.creeperseth.com or do `{0}help` (`{0}help command` for a command usage)\n{1}".format(bot.command_prefix, diff.format("\n".join(map(str, change_log)))))
+    await ctx.send(Language.get("bot.changelog", ctx).format(bot.command_prefix, diff.format("\n".join(map(str, change_log)))))
 
 @bot.command()
 async def version(ctx):
     """Get the bot's current version"""
-    await ctx.send("Bot version: {}\nAuthor(s): {}\nCode name: {}\nBuild date: {}".format(
-        BUILD_VERSION, BUILD_AUTHORS, BUILD_CODENAME, BUILD_DATE))
+    await ctx.send(Language.get("bot.version", ctx).format(BUILD_VERSION, BUILD_AUTHORS, BUILD_CODENAME, BUILD_DATE))
 
 @bot.command(hidden=True)
 @checks.is_dev()
@@ -517,7 +503,7 @@ async def uptime(ctx):
     hour, minute = divmod(minute, 60)
     day, hour = divmod(hour, 24)
     week, day = divmod(day, 7)
-    await ctx.send("I've been online for %d weeks, %d days, %d hours, %d minutes, %d seconds" % (week, day, hour, minute, second))
+    await ctx.send(Language.get("bot.uptime", ctx) % (week, day, hour, minute, second))
 
 @bot.command(hidden=True)
 @checks.is_dev()
@@ -540,7 +526,7 @@ async def joinserver(ctx):
 @bot.command()
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
-    await ctx.author.send("Here is the link to my server: <https://discord.gg/RJTFyBd>\n\n(if the invite link is expired, report it using {}notifydev)".format(bot.command_prefix))
+    await ctx.author.send("Here is the link to my server: <https://discord.gg/RJTFyBd>\n\n(if the invite link is expired, report it using {}notifydev)".format("https://discord.gg/RJTFyBd", bot.command_prefix))
 
 @bot.command()
 async def ping(ctx):
@@ -549,19 +535,19 @@ async def ping(ctx):
     #pingms = await ctx.send("Pinging...")
     #ping = time.monotonic() - pingtime
     #await pingms.edit(content="The ping time is `{%.ms`" % ping)
-    pingms = await ctx.send("Pinging...")
+    pingms = await ctx.send(Language.get("bot.pinging", ctx))
     # await bot.edit_message(pingms, topkek + " // ***{} ms***".format(str(ping)[3:][:3]))
     await pingms.edit(content="{} // **{} ms**".format(pingms.content, pyping.ping("creeperseth.com").avg_rtt))
 
 @bot.command()
 async def website(ctx):
     """Gives the link to the bot docs"""
-    await ctx.send("My official website can be found here: https://ruby.creeperseth.com")
+    await ctx.send(Language.get("bot.website", ctx))
 
 @bot.command()
 async def github(ctx):
     """Gives the link to the github repo"""
-    await ctx.send("My official github repo can be found here: https://github.com/ZeroEpoch1969/RubyRoseBot")
+    await ctx.send(Language.get("bot.github", ctx))
 
 @bot.command()
 async def stats(ctx):
@@ -570,9 +556,9 @@ async def stats(ctx):
     for guild in bot.guilds:
         if guild.me.voice:
             voice_clients.append(guild.me.voice.channel)
-    fields = {"Users":len(list(bot.get_all_members())), "Servers":len(bot.guilds), "Channels":len(list(
-        bot.get_all_channels())), "Voice Clients":len(voice_clients), "Discord.py Version":discord.__version__, "Bot Version":
-              BUILD_VERSION, "Built by":BUILD_AUTHORS}
+    fields = {Language.get("bot.stats.users", ctx):len(list(bot.get_all_members())), Language.get("bot.stats.servers", ctx):len(bot.guilds), Language.get("bot.stats.channels", ctx):len(list(
+        bot.get_all_channels())), Language.get("bot.stats.voice_clients", ctx):len(voice_clients), Language.get("bot.stats.discordpy_version", ctx):discord.__version__, Language.get("bot.stats.bot_version", ctx):
+              BUILD_VERSION, Language.get("bot.stats.built_by", ctx):BUILD_AUTHORS}
     embed = make_list_embed(fields)
     embed.title = str(bot.user)
     embed.color = 0xFF0000
@@ -610,7 +596,7 @@ async def top10servers(ctx):
                 bots += 1
             else:
                 members += 1
-        guilds.append("{}: {} members, {} bots ({} total)".format(guild.name, members, bots, total))
+        guilds.append(Language.get("bot.top10servers", ctx).format(guild.name, members, bots, total))
     await ctx.send("```{}```".format("\n\n".join(guilds)))
 
 @bot.command(hidden=True, enable=False)
@@ -657,6 +643,12 @@ async def ranksysvoteresults(ctx):
 async def test(ctx):
     await ctx.send("owo")
 
+@commands.guild_only()
+@checks.server_mod_or_perms(manage_server=True)
+@bot.command()
+async def setlanguage(ctx, language:str):
+    """Sets the bot's language for the server"""
+    await ctx.send(Language.set_language(ctx.guild, language))
 
 print("Connecting...")
 bot.run(config._token)

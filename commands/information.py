@@ -10,6 +10,8 @@ from utils.logger import log
 from utils.config import Config
 from utils.unicode import *
 from PIL import Image
+from utils.language import Language
+from utils import checks
 config = Config()
 
 halloween = date(2017, 10, 31)
@@ -23,9 +25,9 @@ class Information():
     async def id(self, ctx, user:discord.User=None):
         """Gets your ID or if you @mention a user it gets their id"""
         if user is None:
-            await ctx.send("Your ID is `{}`".format(ctx.author.id))
+            await ctx.send(Language.get("information.author_id", ctx).format(ctx.author.id))
         else:
-            await ctx.send("{}'s ID is `{}`".format(user.mention, user.id))
+            await ctx.send(Language.get("information.user_id", ctx).format(user.mention, user.id))
 
     @commands.guild_only()
     @commands.command()
@@ -34,8 +36,8 @@ class Information():
         guild = ctx.guild
         human_count = len([member for member in guild.members if not member.bot])
         bot_count = len(([member for member in guild.members if member.bot]))
-        timeout_times = {60:"1 minute", 300:"5 minutes", 900:"15 minutes", 1800:"30 minutes", 3600:"1 hour"}
-        fields = {"ID":guild.id, "Created on":format_time(guild.created_at), "Region":guild.region, "Member Count ({} total)".format(len(guild.members)):"{} humans, {} bots".format(human_count, bot_count), "Channel Count ({} total)".format(len(guild.channels)):"{} text, {} voice".format(len(guild.text_channels), len(guild.voice_channels)), "Role Count":len(guild.roles), "Owner":guild.owner, "Owner ID":guild.owner_id, "AFK Channel":guild.afk_channel, "AFK Timeout":timeout_times[guild.afk_timeout], "Verification Level":str(ctx.guild.verification_level).capitalize().replace("High", tableflip).replace("Extreme", doubleflip), "2FA Enabled":convert_to_bool(guild.mfa_level)}
+        timeout_times = {60:Language.get("information.timeout_times.60", ctx), 300:Language.get("information.timeout_times.300", ctx), 900:Language.get("information.timeout_times.900", ctx), 1800:Language.get("information.timeout_times.1800", ctx), 3600:Language.get("information.timeout_times.3600", ctx)}
+        fields = {Language.get("information.id", ctx):guild.id, Language.get("information.created_on", ctx):format_time(guild.created_at), Language.get("information.region", ctx):guild.region, Language.get("information.member_count_title", ctx).format(len(guild.members)):Language.get("information.member_count", ctx).format(human_count, bot_count), Language.get("information.channel_count_title", ctx).format(len(guild.channels)):Language.get("information.channel_count", ctx).format(len(guild.text_channels), len(guild.voice_channels)), Language.get("information.role_count", ctx):len(guild.roles), Language.get("information.owner", ctx):guild.owner, Language.get("information.owner_id", ctx):guild.owner_id, Language.get("information.afk_channel", ctx):guild.afk_channel, Language.get("information.afk_timeout", ctx):timeout_times[guild.afk_timeout], Language.get("information.verifiation_level", ctx):str(ctx.guild.verification_level).capitalize().replace("High", tableflip).replace("Extreme", doubleflip), Language.get("information.2fa_enabled", ctx):convert_to_bool(guild.mfa_level)}
         embed = make_list_embed(fields)
         embed.title = guild.name
         embed.color = 0xFF0000
@@ -63,7 +65,7 @@ class Information():
             self_deaf = user.voice.self_deaf
             server_mute = user.voice.mute
             server_deaf = user.voice.deaf
-        fields = {"ID":user.id, "Bot Account":user.bot, "Created on":format_time(user.created_at), "Game":game, "Status":user.status, "Role Count":len(user.roles), "Joined on":format_time(user.joined_at), "Nickname":user.nick, "Voice Channel":voice_channel, "Self Muted":self_mute, "Self Deafened":self_deaf, "Server Muted":server_mute, "Server Deafened":server_deaf}
+        fields = {Language.get("information.id", ctx):user.id, Language.get("information.bot_account", ctx):user.bot, Language.get("information.created_on", ctx):format_time(user.created_at), Language.get("information.game", ctx):game, Language.get("information.status", ctx):user.status, Language.get("information.role_count", ctx):len(user.roles), Language.get("information.joined_on", ctx):format_time(user.joined_at), Language.get("information.nickname", ctx):user.nick, Language.get("information.voice_channel", ctx):voice_channel, Language.get("information.self_muted", ctx):self_mute, Language.get("information.self_deafened", ctx):self_deaf, Language.get("information.server_muted", ctx):server_mute, Language.get("information.server_deafened", ctx):server_deaf}
         embed = make_list_embed(fields)
         embed.title = str(user)
         embed.color = user.color
@@ -75,17 +77,20 @@ class Information():
         """Gets your avatar url or the avatar url of the specified user"""
         if user is None:
             user = ctx.author
-        await ctx.send("{}'s avatar url is: {}".format(user.mention, get_avatar(user)))
+        await ctx.send(Language.get("information.avatar", ctx).format(user.mention, get_avatar(user)))
 
     @commands.command()
     async def defaultavatar(self, ctx, *, user:discord.User=None):
         """Gets your default avatar url or the default avatar url of the specified user"""
         if user is None:
             user = ctx.author
-        await ctx.send("{}'s default avatar url is: {}".format(user.mention, user.default_avatar_url))
+        await ctx.send(Language.get("default.id", ctx).format(user.mention, user.default_avatar_url))
 
+    # Not gonna bother maintaining the roleinfo command anymore because
+    # of permission changes and because its a giant block
     @commands.guild_only()
-    @commands.command()
+    @checks.is_dev()
+    @commands.command(hidden=True)
     async def roleinfo(self, ctx, *, name:str):
         """Gets information on a role"""
         role = discord.utils.get(ctx.guild.roles, name=name)
@@ -110,7 +115,7 @@ class Information():
         except:
             pass
         if emote_id is None:
-            await ctx.send("That is not a custom emote")
+            await ctx.send(Language.get("information.non-custm_emote", ctx))
             return
         await ctx.send("https://discordapp.com/api/emojis/{}.png".format(emote_id))
 
@@ -122,7 +127,7 @@ class Information():
             if member.discriminator == discriminator and str(member) not in members:
                 members.append(str(member))
         if len(members) == 0:
-            members = "I could not find any users in any of the servers I'm in with a discriminator of `{}`".format(discriminator)
+            members = Language.get("information.no_discrims_found", ctx).format(discriminator)
         else:
             members = "```{}```".format(", ".join(members))
         await ctx.send(members)
@@ -130,14 +135,15 @@ class Information():
     @commands.command()
     async def daystillhalloween(self, ctx):
         """Displays how many days until it's halloween"""
-        await ctx.send("Days until halloween: `{} days`".format((halloween - date.today()).days))
+        await ctx.send(Language.get("information.days_till_halloween", ctx).format((halloween - date.today()).days))
 
     @commands.command()
     async def daystillchristmas(self, ctx):
         """Displays how many days until it's christmas"""
-        await ctx.send("Days until christmas: `{} days`".format((christmas - date.today()).days))
+        await ctx.send(Language.get("information.days_till_christmas", ctx).format((christmas - date.today()).days))
 
-    @commands.command()
+    @commands.command(hidden=True)
+    @checks.is_dev()
     async def getserverinfo(self, ctx, *, name:str):
         """Gets very basic server info on the server with the specified name"""
         guild = discord.utils.get(self.bot.guilds, name=name)
@@ -156,10 +162,10 @@ class Information():
         try:
             starttime = time.time()
             requests.get(url, timeout=3)
-            ping = "%.01f seconds" % (time.time() - starttime)
-            await ctx.send("`{}` is online. Ping time is `{}`".format(url, ping))
+            ping = Language.get("information.ping_time", ctx) % (time.time() - starttime)
+            await ctx.send(Language.get("information.online_ping", ctx).format(url, ping))
         except:
-            await ctx.send("`{}` is offline.".format(url))
+            await ctx.send(Language.get("information.offline_ping", ctx).format(url))
 
     @commands.guild_only()
     @commands.command()
@@ -167,7 +173,7 @@ class Information():
         """Gets a list of the server's emotes"""
         emotes = ctx.guild.emojis
         if len(emotes) == 0:
-            await ctx.send("This server doesn't have any emotes!")
+            await ctx.send(Language.get("information.no_server_emotes", ctx))
             return
         emotes = ["`:{}:` = {}".format(emote.name, emote) for emote in emotes]
         await ctx.send("\n".join(emotes))
@@ -176,13 +182,13 @@ class Information():
     async def osu(self, ctx, *, username:str):
         """Gets an osu! profile stats with the specified name"""
         if not config.enableOsu:
-            await ctx.send("The osu! command has been disabled.")
+            await ctx.send(Language.get("information.osu_command_disabled", ctx))
             return
         try:
             import osuapi
         except ImportError:
             log.critical("The osu api is enabled, but the osuapi module was not found! Please run \"pip install osuapi\"")
-            await ctx.send("Couldn't import the osu! api module, contact the bot developer!")
+            await ctx.send(Language.get("osu_import_fail", ctx))
             return
         await ctx.channel.trigger_typing()
         api = osuapi.OsuApi(config._osuKey, connector=osuapi.AHConnector())
@@ -191,20 +197,20 @@ class Information():
         except osuapi.HTTPError as e:
             if e.code == 401:
                 log.critical("An invalid osu! api key was set, please check the config for instructions on how to get a proper api key!")
-                await ctx.send("An invalid osu! api key was set, contact the bot developer!")
+                await ctx.send(Language.get("information.osu_invalid_key", ctx))
                 return
             else:
                 log.critical("An unknown error occured while trying to get an osu! profile.")
-                await ctx.send("An unknown error occured while trying to get that user's osu! profile, contact the bot developer!")
+                await ctx.send(Language.get("information.osu_unknown_error", ctx))
                 return
         try:
             user = user[0]
         except IndexError:
-            await ctx.send("Could find any osu! profile named `{}`".format(username))
+            await ctx.send(Language.get("information.no_osu_profile_found", ctx).format(username))
             return
-        fields = {"ID":user.user_id, "Country":user.country, "Level":int(user.level), "Hits":user.total_hits, "Score":user.total_score, "Accuracy":"{0:.2f}%".format(user.accuracy), "Play Count":user.playcount, "Ranked Score":user.ranked_score, "A rank":user.count_rank_a, "S rank":user.count_rank_s, "SS rank":user.count_rank_ss}
+        fields = {Language.get("information.id", ctx):user.user_id, Language.get("information.country", ctx):user.country, Language.get("information.level", ctx):int(user.level), Language.get("information.hits", ctx):user.total_hits, Language.get("information.score", ctx):user.total_score, Language.get("information.accuracy", ctx):"{0:.2f}%".format(user.accuracy), Language.get("information.play_count", ctx):user.playcount, Language.get("information.ranked_score", ctx):user.ranked_score, Language.get("information.a_rank", ctx):user.count_rank_a, Language.get("information.s_rank", ctx):user.count_rank_s, Language.get("information.ss_rank", ctx):user.count_rank_ss}
         embed = make_list_embed(fields)
-        embed.title = "{}'s Osu! Stats".format(user.username)
+        embed.title = Language.get("information.osu_stats_title", ctx).format(user.username)
         embed.color = 0xFF00FF
         embed.set_thumbnail(url="http://s.ppy.sh/a/{}".format(user.user_id))
         await ctx.send(embed=embed)
@@ -212,7 +218,7 @@ class Information():
     @commands.command()
     async def emoteinfo(self, ctx, *, emote:discord.Emoji):
         """Gets information on a custom emote (Only works for servers the bot is on)"""
-        fields = {"Name":emote.name, "ID":emote.id, "Server Origin":emote.guild.name, "Created On":format_time(emote.created_at), "Colons Required":emote.require_colons, "Managed by Twitch":emote.managed}
+        fields = {Language.get("information.name", ctx):emote.name, Language.get("information.id", ctx):emote.id, Language.get("information.server_origin", ctx):emote.guild.name, Language.get("information.created_on", ctx):format_time(emote.created_at), Language.get("information.colons_required", ctx):emote.require_colons, Language.get("information.managed_by_twitch", ctx):emote.managed}
         embed = make_list_embed(fields)
         embed.title = ":{}:".format(emote.name)
         embed.color = 0xFF0000
@@ -223,6 +229,10 @@ class Information():
     async def portscan(self, ctx, host:str, ports:str):
         """Uses nmap to scan the specified ports from the specified host"""
         await ctx.channel.trigger_typing()
+        forbidden_hosts = ["localhost", "0.0.0.0", "127.0.0.1"]
+        if host in forbidden_hosts:
+            await ctx.send(Language.get("information.forbidden_host", ctx).format(host))
+            return
         scanner = nmap.PortScanner()
         try:
             host = socket.gethostbyname(host)
@@ -234,8 +244,8 @@ class Information():
         for port, data in ports.items():
             service = data["name"]
             if service == "":
-                service = "unknown"
-            results.append("Port {}({}): {}".format(port, service, data["state"]))
+                service = Language.get("information.unknown", ctx)
+            results.append(Language.get("information.port_status", ctx).format(port, service, data["state"]))
         await ctx.send(xl.format("\n".join(results)))
 
     @commands.command()
@@ -244,7 +254,7 @@ class Information():
         try:
             await ctx.send(socket.gethostbyname(address))
         except socket.gaierror:
-            await ctx.send("`{}` is not a valid address".format(address))
+            await ctx.send(Language.get("information.invalid_address", ctx).format(address))
 
     @commands.command()
     async def whois(self, ctx, domain:str):
@@ -252,17 +262,17 @@ class Information():
         try:
             info = pythonwhois.get_whois(domain)
         except pythonwhois.shared.WhoisException:
-            await ctx.send("Could not find the root server for that TLD")
+            await ctx.send(Language.get("information.root_server_not_found", ctx))
             return
         except KeyError:
-            await ctx.send("Failed to lookup domain")
+            await ctx.send(Language.get("information.failed_domain_lookup", ctx))
             return
         if info["contacts"]["registrant"] is None:
-            await ctx.send(embed=discord.Embed(title="Domain Available", description="`{}` is available for registration".format(domain), color=0x00FF00))
+            await ctx.send(embed=discord.Embed(title=Language.get("information.domain_available_title", ctx), description=Language.get("information.domain_available_description", ctx).format(domain), color=0x00FF00))
             return
-        fields = {"Registrar":info["registrar"][0], "Registered on":format_time(info["creation_date"][0]), "Expires on":format_time(info["expiration_date"][0]), "Last updated":format_time(info["updated_date"][0]), "Name Servers":", ".join(info["nameservers"])}
+        fields = {Language.get("information.registrar", ctx):info["registrar"][0], Language.get("information.registered_on", ctx):format_time(info["creation_date"][0]), Language.get("information.expires_on", ctx):format_time(info["expiration_date"][0]), Language.get("information.last_updated", ctx):format_time(info["updated_date"][0]), Language.get("information.name_servers", ctx):", ".join(info["nameservers"])}
         embed = make_list_embed(fields)
-        embed.title = "Domain Unavailable"
+        embed.title = Language.get("information.domain_unavailable", ctx)
         embed.color = 0xFF0000
         await ctx.send(embed=embed)
 
@@ -275,7 +285,7 @@ class Information():
         try:
             Image.new("RGBA", (50, 50), hexcode).save("data/color.png")
         except ValueError:
-            await ctx.send("`{}` is not a valid hex color code".format(hexcode))
+            await ctx.send(Language.get("bot.invalid_color", ctx).format(hexcode))
             return
             await ctx.send(file=discord.File("data/color.png", "{}.png".format(hexcode.strip("#"))))
 
@@ -284,11 +294,11 @@ class Information():
         """Gets a user by id"""
         user = discord.utils.get(list(self.bot.get_all_members()), id=id)
         if not user:
-            await ctx.send("Could not find any user in my mutual servers with an ID of `{}`".format(id))
+            await ctx.send(Language.get("information.no_mutual_servers", ctx).format(id))
             return
         if user.game:
             game = user.game.name
-        fields = {"Name":user.name, "Discriminator":user.discriminator, "ID":user.id, "Status":str(user.status).replace("dnd", "do not disturb"), "Game":game, "Bot":user.bot}
+        fields = {Language.get("information.name", ctx):user.name, Language.get("information.discriminator", ctx):user.discriminator, Language.get("information.id", ctx):user.id, Language.get("information.statud", ctx):str(user.status).replace("dnd", "do not disturb"), Language.get("information.game", ctx):game, Language.get("information.boot", ctx):user.bot}
         embed = make_list_embed(fields)
         embed.title = str(user)
         embed.color = 0xFF0000
@@ -299,7 +309,7 @@ class Information():
     @commands.command()
     async def roleid(self, ctx, role:discord.Role):
         """Gets the id for the specified role"""
-        await ctx.send("The role ID for `{}` is `{}`".format(role.name, role.id))
+        await ctx.send(Language.get("information.role_id", ctx).format(role.name, role.id))
 
 def setup(bot):
     bot.add_cog(Information(bot))

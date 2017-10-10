@@ -2,7 +2,6 @@ import asyncio
 import cat
 import random
 import os
-import json
 
 from discord.ext import commands
 from utils.tools import *
@@ -10,12 +9,11 @@ from utils.unicode import *
 from utils.fun.lists import *
 from utils import imagetools
 from PIL import Image
-#from cleverbot import Cleverbot
+from utils.language import Language
 
 class Fun():
     def __init__(self, bot):
         self.bot = bot
-        #self.cb = Cleverbot()
 
     @commands.command()
     async def say(self, ctx, *, message:str):
@@ -38,7 +36,7 @@ class Fun():
     @commands.command()
     async def f(self, ctx):
         """Press F to pay your respects"""
-        await ctx.send("`{}` has paid their respects! Respects paid: {}".format(ctx.author, random.randint(1, 10000)))
+        await ctx.send(Language.get("fun.respects", ctx).format(ctx.author, random.randint(1, 10000)))
 
     @commands.command()
     async def nicememe(self, ctx):
@@ -96,13 +94,6 @@ class Fun():
         """Please."""
         await ctx.send(random.choice(psat_memes))
 
-    @commands.command()
-    async def hoodaf(self, ctx):
-        """Me in my hood"""
-        await ctx.channel.trigger_typing()
-        await ctx.send(file=discord.File("assets/imgs/TheHood.gif"))
-        await ctx.send("I look good in a hood, amirite?")
-
     @commands.command(name="8ball")
     async def ball(self, ctx, *, question:str):
         """It's just python random don't take it seriously kthx"""
@@ -118,20 +109,15 @@ class Fun():
         """I got drunk on halloween in 2016 it was great"""
         await ctx.send(random.choice(drunkaf))
 
-    @commands.command(enabled=False, hidden=True)
-    async def talk(self, *, message):
-        """Talk to the bot"""
-        #await ctx.send(self.cb.ask(message))
-
     @commands.command()
     async def rate(self, ctx, user:discord.User=None):
         """Have the bot rate yourself or another user (rigged af)"""
         if user is None or user.id == ctx.author.id:
-            await ctx.send("I rate you a 10/10")
+            await ctx.send(Language.get("fun.rate_author", ctx))
         elif user == self.bot.user:
-            await ctx.send("I rate myself a -1/10")
+            await ctx.send(Language.get("fun.rate_self", ctx))
         else:
-            await ctx.send("I rate {} a {}/10".format(user.name, random.randint(0, 10)))
+            await ctx.send(Language.get("fun.rate_user", ctx).format(user.name, random.randint(0, 10)))
 
     @commands.command()
     async def honk(self, ctx):
@@ -142,7 +128,7 @@ class Fun():
     async def plzmsgme(self, ctx, *, message:str):
         """Makes the bot DM you with the specified message"""
         await ctx.author.send(message)
-        await ctx.send(":ok_hand: check your DMs")
+        await ctx.send(Language.get("fun.plzmsgme", ctx))
 
     @commands.command()
     async def quote(self, ctx, id:int):
@@ -150,7 +136,7 @@ class Fun():
         try:
             message = await ctx.channel.get_message(id)
         except discord.errors.NotFound:
-            await ctx.send("I could not find a message with an ID of `{}` in this channel".format(id))
+            await ctx.send(Language.get("bot.no_message_found", ctx).format(id))
             return
         embed = make_message_embed(message.author, message.author.color, message.content, formatUser=True)
         embed.timestamp = message.timestamp
@@ -218,7 +204,7 @@ class Fun():
     async def thiscommanddoesfuckingnothing(self, ctx):
         """It doesn't do a fucking thing (or does it? OwO)"""
         await ctx.wait_for("reaction_add", check=lambda reaction, user: user.id == ctx.message.author.id and reaction.message == ctx.message)
-        await ctx.send("{} wow you found out, even though it wasn't that hard to figure out because you could just look at the github code".format(ctx.author.mention))
+        await ctx.send(Language.get("fun.nothing", ctx).format(ctx.author.mention))
 
     @commands.command()
     async def reverse(self, ctx, *, msg:str):
@@ -231,22 +217,22 @@ class Fun():
         try:
              message = await ctx.channel.get_message(id)
         except discord.errors.NotFound:
-            await ctx.send("No message in this channel was found with an ID of `{}`".format(id))
+            await ctx.send(Language.get("bot.no_message_found", ctx).format(id))
             return
         emote_id = extract_emote_id(emote)
         if emote_id is not None:
-            server_emote = discord.utils.get(list(bot.get_all_emojis), id=emote_id)
+            server_emote = discord.utils.get(list(self.bot.get_all_emojis), id=emote_id)
             if server_emote is not None:
                 emote = server_emote
             else:
-                await ctx.send("I am not on the server that contains that emote")
+                await ctx.send(Language.get("fun.no_emote_found", ctx))
                 return
         try:
             await ctx.add_reaction(message, emote)
         except discord.errors.Forbidden:
-            await ctx.send("I do not have the `Add Reactions` permission")
+            await ctx.send(Language.get("fun.no_reaction_perms", ctx))
         except discord.errors.HTTPException:
-            await ctx.send("The emote specified is invalid")
+            await ctx.send(Language.get("fun.invalid_emote", ctx))
 
     @commands.command()
     async def intellect(self, ctx, *, msg:str):
@@ -256,6 +242,25 @@ class Fun():
         for char in msg:
             intellectify += random.choice([char.upper(), char.lower()])
         await ctx.send(intellectify)
+
+    @commands.command()
+    async def encodemorse(self, ctx, *, msg:str):
+        """Encode something into morse code"""
+        encoded_message = ""
+        for char in list(msg.upper()):
+            encoded_message += encode_morse[char] + " "
+        await ctx.send(encoded_message)
+
+    @commands.command()
+    async def decodemorse(self, ctx, *, msg:str):
+        """Decode something from morse come"""
+        decoded_message = ""
+        for char in msg.split():
+            if char == " ":
+                print("space")
+                continue
+            decoded_message += decode_morse[char]
+        await ctx.send(decoded_message)
 
 def setup(bot):
     bot.add_cog(Fun(bot))
