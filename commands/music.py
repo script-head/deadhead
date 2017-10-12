@@ -215,17 +215,14 @@ class Music:
             song_list += "\n\n{}".format("\n".join(queue.song_list))
         await ctx.send(song_list)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def volume(self, ctx, amount:float=None):
         """Sets the volume, for developers only because you set the volume via the bot's volume slider. This command is for debugging."""
-        if not ctx.author.id == config.owner_id or ctx.author.id not in config.dev_ids:
-            await ctx.send(Language.get("music.volume_notice", ctx))
-            return
         queue = self.get_queue(ctx)
         if not amount:
             await ctx.send("The current volume is `{:.0%}`".format(queue.voice_client.source.volume))
             return
-        queue.voice_client.source.volume = amount
+        queue.voice_client.source.volume = amount / 100 #owo
         await ctx.send("Set the internal volume to `{:.0%}`".format(queue.voice_client.source.volume))
 
     @commands.command()
