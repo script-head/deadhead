@@ -10,7 +10,7 @@ class Languages:
         english = json.load(file)
     with open("utils/languages/spanish.json") as file:
         spanish = json.load(file)
-    with open("utils/languages/spanish.json") as file:
+    with open("utils/languages/hebrew.json") as file:
         hebrew = json.load(file)
 
 class Language:
