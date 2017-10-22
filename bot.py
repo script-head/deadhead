@@ -5,7 +5,8 @@ import sys
 import subprocess
 import os
 import json
-import pyping
+import requests
+import urllib.request
 
 start_time = time.time()
 
@@ -531,13 +532,15 @@ async def invite(ctx):
 @bot.command()
 async def ping(ctx):
     """Pings the bot"""
-    #pingtime = time.monotonic()
-    #pingms = await ctx.send("Pinging...")
-    #ping = time.monotonic() - pingtime
-    #await pingms.edit(content="The ping time is `{%.ms`" % ping)
+
+    test = time.time()
+
+    with urllib.request.urlopen("https://google.com/") as url:
+        duration = time.time() - test
+
     pingms = await ctx.send(Language.get("bot.pinging", ctx))
     # await bot.edit_message(pingms, topkek + " // ***{} ms***".format(str(ping)[3:][:3]))
-    await pingms.edit(content="{} // **{} ms**".format(pingms.content, pyping.ping("creeperseth.com").avg_rtt))
+    await pingms.edit(content="{0} // **{1} ms**".format(pingms.content, duration))
 
 @bot.command()
 async def website(ctx):
