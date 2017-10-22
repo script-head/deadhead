@@ -180,7 +180,7 @@
 	"information.osu_stats_title":"סטטיסטיקות של {0} ב-osu!",
 	"information.name":"שם",
 	"information.server_origin":"רשת מקור",
-	"information.coolons_required":"קולונים נדרשים",
+	"information.colons_required":"קולונים נדרשים",
 	"information.managed_by_twitch":"מנוהל על ידי Twitch",
 	"information.forbidden_host":"אתה לא ניתן להשתמש במארח `{0}`.",
 	"information.unknown":"לא ידוע",

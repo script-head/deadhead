@@ -2,7 +2,6 @@ import time
 import nmap
 import socket
 import pythonwhois
-import traceback
 
 from discord.ext import commands
 from datetime import date

@@ -53,11 +53,9 @@ change_log = [
     "+ translators",
     "Other things:",
     "+ Added translator field in the stats command",
-    "- hoodaf",
-    "- The economy system",
-    "- rwby cog",
-    "+ Added a translation system, the only language right now is spanish however the translations aren't added yet",
-    "Fixed the music queue"
+    "+ Spanish translations",
+    "+ Hebrew translations",
+    "+ Finnish translations"
 ]
 
 async def _restart_bot():

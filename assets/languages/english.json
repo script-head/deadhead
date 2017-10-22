@@ -180,7 +180,7 @@
 	"information.osu_stats_title":"{0}'s Osu! Stats",
 	"information.name":"Name",
 	"information.server_origin":"Server Origin",
-	"information.coolons_required":"Colons Required",
+	"information.colons_required":"Colons Required",
 	"information.managed_by_twitch":"Managed by Twitch",
 	"information.forbidden_host":"You cannot use the host `{0}`.",
 	"information.unknown":"unknown",
