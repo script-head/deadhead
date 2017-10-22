@@ -533,10 +533,10 @@ async def invite(ctx):
 async def ping(ctx):
     """Pings the bot"""
 
-    test = time.time()
+    start = time.time()
 
     with urllib.request.urlopen("https://google.com/") as url:
-        duration = time.time() - test
+        duration = time.time() - start
 
     pingms = await ctx.send(Language.get("bot.pinging", ctx))
     # await bot.edit_message(pingms, topkek + " // ***{} ms***".format(str(ping)[3:][:3]))
