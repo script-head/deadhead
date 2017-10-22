@@ -1,12 +1,10 @@
 import asyncio
 import traceback
-import os
 import shutil
 import youtube_dl
 
 from discord.ext import commands
 from utils.mysql import *
-from utils.logger import log
 from utils.opus_loader import load_opus_lib
 from utils.config import Config;
 from utils.language import Language
@@ -59,15 +57,11 @@ class Queue():
         while True:
             self.play_next_song.clear()
             self.current = await self.songs.get()
-            log.debug("got next song")
             self.song_list.remove(str(self.current))
             self.skip_votes.clear()
-            log.debug("sending msg")
             await self.text_channel.send(Language.get("music.now_playing", self.text_channel).format(self.current.title_with_requester()))
             self.voice_client.play(self.current.entry, after=lambda e: self.play_next_song.set())
-            log.debug("waiting...")
             await self.play_next_song.wait()
-            log.debug("passed")
 
 class Music:
     def __init__(self, bot):

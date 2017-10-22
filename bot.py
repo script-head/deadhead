@@ -50,10 +50,9 @@ extensions = [
 # Thy changelog
 change_log = [
     "Commands:",
-    "+ encodemorse",
-    "+ decodemorse",
+    "+ translators",
     "Other things:",
-    "- Removed the ranking system",
+    "+ Added translator field in the stats command",
     "- hoodaf",
     "- The economy system",
     "- rwby cog",
@@ -454,8 +453,7 @@ async def terminal(ctx, *, command:str):
     """Runs terminal commands and shows the output via a message. Oooh spoopy!"""
     try:
         await ctx.channel.trigger_typing()
-        await ctx.send(xl.format(subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(
-        )[0].decode("ascii")))
+        await ctx.send(xl.format(subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0].decode("ascii")))
     except:
         await ctx.send("Error, couldn't send command")
 
@@ -532,15 +530,13 @@ async def invite(ctx):
 @bot.command()
 async def ping(ctx):
     """Pings the bot"""
-
-    start = time.time()
-
-    with urllib.request.urlopen("https://google.com/") as url:
-        duration = time.time() - start
-
     pingms = await ctx.send(Language.get("bot.pinging", ctx))
+    start = time.time()
+    async with aiosession.get("https://discordapp.com"):
+        duration = time.time() - start
+    duration = round(duration * 1000)
     # await bot.edit_message(pingms, topkek + " // ***{} ms***".format(str(ping)[3:][:3]))
-    await pingms.edit(content="{0} // **{1} ms**".format(pingms.content, duration))
+    await pingms.edit(content="{0} // **{1}ms**".format(pingms.content, duration))
 
 @bot.command()
 async def website(ctx):
@@ -561,7 +557,7 @@ async def stats(ctx):
             voice_clients.append(guild.me.voice.channel)
     fields = {Language.get("bot.stats.users", ctx):len(list(bot.get_all_members())), Language.get("bot.stats.servers", ctx):len(bot.guilds), Language.get("bot.stats.channels", ctx):len(list(
         bot.get_all_channels())), Language.get("bot.stats.voice_clients", ctx):len(voice_clients), Language.get("bot.stats.discordpy_version", ctx):discord.__version__, Language.get("bot.stats.bot_version", ctx):
-              BUILD_VERSION, Language.get("bot.stats.built_by", ctx):BUILD_AUTHORS}
+              BUILD_VERSION, Language.get("bot.stats.built_by", ctx):BUILD_AUTHORS, Language.get("bot.stats.translators", ctx):", ".join(TRANSLATORS.keys())}
     embed = make_list_embed(fields)
     embed.title = str(bot.user)
     embed.color = 0xFF0000
@@ -652,6 +648,13 @@ async def test(ctx):
 async def setlanguage(ctx, language:str):
     """Sets the bot's language for the server"""
     await ctx.send(Language.set_language(ctx.guild, language))
+
+@bot.command()
+async def translators(ctx):
+    embed = make_list_embed(TRANSLATORS)
+    embed.title = Language.get("bot.stats.translators", ctx)
+    embed.color = 0xFF0000
+    await ctx.send(embed=embed)
 
 print("Connecting...")
 bot.run(config._token)

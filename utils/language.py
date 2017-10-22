@@ -6,23 +6,22 @@ file_path = "data/languages.json"
 language_settings = {}
 
 class Languages:
-    with open("utils/languages/english.json") as file:
+    with open("assets/languages/english.json", encoding="UTF-8") as file:
         english = json.load(file)
-    with open("utils/languages/spanish.json") as file:
+    with open("assets/languages/spanish.json", encoding="UTF-8") as file:
         spanish = json.load(file)
-    with open("utils/languages/hebrew.json", encoding="UTF-8") as file:
+    with open("assets/languages/hebrew.json", encoding="UTF-8") as file:
         hebrew = json.load(file)
+    with open("assets/languages/finnish.json", encoding="UTF-8") as file:
+        finnish = json.load(file)
 
 class Language:
-
     def __init__(self):
         with open(file_path, "r") as file:
             guilds = json.load(file)
         global language_settings
         language_settings = guilds
-
-    codes = {"en":Languages.english, "es":Languages.spanish, "he":Languages.hebrew}
-
+    codes = {"en":Languages.english, "es":Languages.spanish, "he":Languages.hebrew, "fi":Languages.finnish}
     @staticmethod
     def get(line, ctx):
         try:
@@ -37,6 +36,8 @@ class Language:
                             return Languages.spanish[line]
                         elif language_settings[str(ctx.guild.id)] == "he":
                             return Languages.hebrew[line]
+                        elif language_settings[str(ctx.guild.id)] == "fi":
+                            return Languages.finnish[line]
                         else:
                             return None
                     except KeyError:
@@ -44,7 +45,7 @@ class Language:
                 except:
                     return traceback.format_exc()
         except KeyError:
-            return 
+            return
     @staticmethod
     def set_language(guild, language):
         with open(file_path, "r") as file:
@@ -61,7 +62,7 @@ class Language:
             with open(file_path, "w") as file:
                 json.dump(guilds, file)
             return "Language has been set to `english`"
-        elif language.lower() in ["es", "spanish", "español", "espanol"]:
+        elif language.lower() in ["es", "spanish", "español", "espanol", "es-mx"]:
             # Prevent duplicates
             try:
                 del guilds[str(guild.id)]
@@ -74,7 +75,7 @@ class Language:
                 json.dump(guilds, file)
             return "Language has been set to `spanish`"
         elif language.lower() in ["he", "hebrew"]:
-            # prev dups
+            # Prevent duplicates
             try:
                 del guilds[str(guild.id)]
                 del language_settings[str(guild.id)]
@@ -84,5 +85,16 @@ class Language:
             with open(file_path, "w") as file:
                 json.dump(guilds, file)
             return "Language has been set to `hebrew`"
+        elif language.lower() in ["fi", "finnish"]:
+            # Prevent duplicates
+            try:
+                del guilds[str(guild.id)]
+                del language_settings[str(guild.id)]
+            except KeyError:
+                guilds[str(guild.id)] = "fi"
+                language_settings[str(guild.id)] = "fi"
+            with open(file_path, "w") as file:
+                json.dump(guilds, file)
+            return "Language has been set to `finnish`"
         else:
             return "`{}` is not a valid language that is supported".format(language)
