@@ -78,7 +78,7 @@
 	"moderation.no_mute_higher_role":"Je ne peux pas ajouter le rôle de mute à des utilisateurs car c’est un rôle plus haut que mon rôle plus haut.",
 	"moderation.no_unmute_higher_role":"Je ne peux pas enlever le rôle de mute des utilisateurs car c’est un rôle plus haut que mon rôle plus haut.",
 	"moderation.no_manage_role_perms":"Je n’ai pas le permit `Gérer les rôles`.",
-	"moderation.no_manage_messages_perms":"Je n’ai pas le permit `Gérer les messages`
+	"moderation.no_manage_messages_perms":"Je n’ai pas le permit `Gérer les messages`",
 	"moderation.pruned":"{0} supprimé {1} messages",
 	"moderation.no_pinned_message_found":"Aucun message épinglé n’a été trouvé dans ce salon avec une ID `{0}`.",
 	"moderation.unpin_success":"Le message a été désépinglé.",
