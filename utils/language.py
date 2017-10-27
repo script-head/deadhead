@@ -14,6 +14,8 @@ class Languages:
         hebrew = json.load(file)
     with open("assets/languages/finnish.json", encoding="UTF-8") as file:
         finnish = json.load(file)
+    with open("assets/languages/french.json", encoding="UTF-8") as file:
+        french = json.load(file)
 
 class Language:
     def __init__(self):
@@ -21,7 +23,7 @@ class Language:
             guilds = json.load(file)
         global language_settings
         language_settings = guilds
-    codes = {"en":Languages.english, "es":Languages.spanish, "he":Languages.hebrew, "fi":Languages.finnish}
+    codes = {"en":Languages.english, "es":Languages.spanish, "he":Languages.hebrew, "fi":Languages.finnish, "fr":Languages.french}
     @staticmethod
     def get(line, ctx):
         try:
@@ -38,6 +40,8 @@ class Language:
                             return Languages.hebrew[line]
                         elif language_settings[str(ctx.guild.id)] == "fi":
                             return Languages.finnish[line]
+                        elif language_settings[str(ctx.guild.id)] == "fr":
+                            return Languages.french[line]
                         else:
                             return None
                     except KeyError:
@@ -96,5 +100,16 @@ class Language:
             with open(file_path, "w") as file:
                 json.dump(guilds, file)
             return "Language has been set to `finnish`"
+        elif language.lower() in ["fr", "french"]:
+            # Prevent duplicates
+            try:
+                del guilds[str(guild.id)]
+                del language_settings[str(guild.id)]
+            except KeyError:
+                guilds[str(guild.id)] = "fr"
+                language_settings[str(guild.id)] = "fr"
+            with open(file_path, "w") as file:
+                json.dump(guilds, file)
+            return "Language has been set to `french`"
         else:
             return "`{}` is not a valid language that is supported".format(language)

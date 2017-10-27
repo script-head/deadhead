@@ -50,12 +50,9 @@ extensions = [
 # Thy changelog
 change_log = [
     "Commands:",
-    "+ translators",
+    "None",
     "Other things:",
-    "+ Added translator field in the stats command",
-    "+ Spanish translations",
-    "+ Hebrew translations",
-    "+ Finnish translations"
+    "+ French translations",
 ]
 
 async def _restart_bot():
@@ -518,7 +515,7 @@ async def reload(ctx, *, extension:str):
 @bot.command()
 async def joinserver(ctx):
     """Sends the bot's OAuth2 link"""
-    await ctx.author.send("Here is the link to add me to your server: https://invite.ruby.creeperseth.com")
+    await ctx.author.send("Here is the link to add me to your server: https://invite.ruby.zeroepoch1969.rip")
 
 @bot.command()
 async def invite(ctx):
