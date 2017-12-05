@@ -152,6 +152,7 @@
 	"information.self_muted":"Muet par soi-même",
 	"information.self_deafened":"assourdi par soi-même",
 	"information.server_muted":"Muet dans le serveur",
+	"information.server_muted":"Server Deafened",
 	"information.avatar":"l’url de l’avater de {0} est: {1}",
 	"information.non-custom_emote":"Cela n’est pas un émoji personnalisé.",
 	"information.no_discrims_found":"Je n’ai pas pu trouver aucun utilisateur dans aucun des serveurs ou je me trouve avec un discriminateur `{0}`.",

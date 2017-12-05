@@ -130,7 +130,7 @@ class Music:
                     await ctx.send(Language.get("music.no_connect_perms", ctx).format(ctx.author.voice.channel))
                     return
             else:
-                await ctx.send(Language.get())
+                await ctx.send(Language.get("music.no_voice_channel", ctx))
                 return
         queue = self.get_queue(ctx)
         url = url.strip("<>")
@@ -149,9 +149,12 @@ class Music:
     @commands.command()
     async def disconnect(self, ctx):
         """Disconnects the bot from the voice channel"""
-        await self.get_queue(ctx).voice_client.disconnect()
-        self.clear_data(ctx.guild.id)
-        del self.queues[ctx.guild.id]
+        await ctx.voice_client.disconnect()
+        try:
+            self.clear_data(ctx.guild.id)
+            del self.queues[ctx.guild.id]
+        except:
+            pass
         await ctx.send(Language.get("music.disconnected", ctx))
 
     @commands.command()

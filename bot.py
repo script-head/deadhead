@@ -5,8 +5,7 @@ import sys
 import subprocess
 import os
 import json
-import requests
-import urllib.request
+import traceback
 
 start_time = time.time()
 
@@ -18,7 +17,6 @@ from utils.bootstrap import Bootstrap
 Bootstrap.run_checks()
 
 from utils import checks
-from utils import ranking
 from utils.language import Language
 
 from discord.ext import commands
@@ -50,9 +48,10 @@ extensions = [
 # Thy changelog
 change_log = [
     "Commands:",
-    "None",
+    "Fixed userinfo",
+    "Fixed serverinfo",
     "Other things:",
-    "+ French translations",
+    "Now using python 3.6",
 ]
 
 async def _restart_bot():
@@ -439,8 +438,7 @@ async def changestatus(ctx, status:str, *, name:str=None):
         await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the game name to `{}` with a(n) `{}` status type".format(ctx.author.id, ctx.author, name, status))
     else:
         await ctx.send(Language.get("bot.status_change", ctx).format(status))
-        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(
-            ctx.author.id, ctx.author, name))
+        await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the status type to `{}`".format(ctx.author.id, ctx.author, name))
 
 @bot.command(hidden=True)
 @checks.is_dev()
@@ -507,7 +505,11 @@ async def reload(ctx, *, extension:str):
     if extension in extension:
         await ctx.send("Reloading {}...".format(extension))
         bot.unload_extension(extension)
-        bot.load_extension(extension)
+        try:
+            bot.load_extension(extension)
+        except:
+            await ctx.send(py.format(traceback.format_exc()))
+            return
         await ctx.send("Successfully reloaded the {} extension!".format(extension))
     else:
         await ctx.send("Extension doesn't exist")
@@ -515,12 +517,12 @@ async def reload(ctx, *, extension:str):
 @bot.command()
 async def joinserver(ctx):
     """Sends the bot's OAuth2 link"""
-    await ctx.author.send("Here is the link to add me to your server: https://invite.ruby.zeroepoch1969.rip")
+    await ctx.author.send(Language.get("bot.join_server", ctx))
 
 @bot.command()
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
-    await ctx.author.send("Here is the link to my server: <https://discord.gg/RJTFyBd>\n\n(if the invite link is expired, report it using {}notifydev)".format("https://discord.gg/RJTFyBd", bot.command_prefix))
+    await ctx.author.send(Language.get("bot.join_server", ctx).format("https://discord.gg/RJTFyBd", bot.command_prefix))
 
 @bot.command()
 async def ping(ctx):
@@ -530,7 +532,6 @@ async def ping(ctx):
     async with aiosession.get("https://discordapp.com"):
         duration = time.time() - start
     duration = round(duration * 1000)
-    # await bot.edit_message(pingms, topkek + " // ***{} ms***".format(str(ping)[3:][:3]))
     await pingms.edit(content="{0} // **{1}ms**".format(pingms.content, duration))
 
 @bot.command()

@@ -153,6 +153,7 @@
 	"information.self_muted":"Self Muted",
 	"information.self_deafened":"Self Deafened",
 	"information.server_muted":"Server Muted",
+	"information.server_deafened":"Server Deafened",
 	"information.avatar":"{0}'s avatar url is: {1}",
 	"information.non-custom_emote":"That is not a custom emote.",
 	"information.no_discrims_found":"I could not find any users in any of the servers I'm in with a discriminator of `{0}`.",

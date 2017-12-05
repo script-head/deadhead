@@ -3,6 +3,9 @@ import nmap
 import socket
 import pythonwhois
 
+#TODO: remove
+import traceback
+
 from discord.ext import commands
 from datetime import date
 from utils.tools import *
@@ -37,7 +40,7 @@ class Information():
         human_count = len([member for member in guild.members if not member.bot])
         bot_count = len(([member for member in guild.members if member.bot]))
         timeout_times = {60:Language.get("information.timeout_times.60", ctx), 300:Language.get("information.timeout_times.300", ctx), 900:Language.get("information.timeout_times.900", ctx), 1800:Language.get("information.timeout_times.1800", ctx), 3600:Language.get("information.timeout_times.3600", ctx)}
-        fields = {Language.get("information.id", ctx):guild.id, Language.get("information.created_on", ctx):format_time(guild.created_at), Language.get("information.region", ctx):guild.region, Language.get("information.member_count_title", ctx).format(len(guild.members)):Language.get("information.member_count", ctx).format(human_count, bot_count), Language.get("information.channel_count_title", ctx).format(len(guild.channels)):Language.get("information.channel_count", ctx).format(len(guild.text_channels), len(guild.voice_channels)), Language.get("information.role_count", ctx):len(guild.roles), Language.get("information.owner", ctx):guild.owner, Language.get("information.owner_id", ctx):guild.owner_id, Language.get("information.afk_channel", ctx):guild.afk_channel, Language.get("information.afk_timeout", ctx):timeout_times[guild.afk_timeout], Language.get("information.verifiation_level", ctx):str(ctx.guild.verification_level).capitalize().replace("High", tableflip).replace("Extreme", doubleflip), Language.get("information.2fa_enabled", ctx):convert_to_bool(guild.mfa_level)}
+        fields = {Language.get("information.id", ctx):guild.id, Language.get("information.created_on", ctx):format_time(guild.created_at), Language.get("information.region", ctx):guild.region, Language.get("information.member_count_title", ctx).format(len(guild.members)):Language.get("information.member_count", ctx).format(human_count, bot_count), Language.get("information.channel_count_title", ctx).format(len(guild.channels)):Language.get("information.channel_count", ctx).format(len(guild.text_channels), len(guild.voice_channels)), Language.get("information.role_count", ctx):len(guild.roles), Language.get("information.owner", ctx):guild.owner, Language.get("information.owner_id", ctx):guild.owner_id, Language.get("information.afk_channel", ctx):guild.afk_channel, Language.get("information.afk_timeout", ctx):timeout_times[guild.afk_timeout], Language.get("information.verification_level", ctx):str(ctx.guild.verification_level).capitalize().replace("High", tableflip).replace("Extreme", doubleflip), Language.get("information.2fa_enabled", ctx):convert_to_bool(guild.mfa_level)}
         embed = make_list_embed(fields)
         embed.title = guild.name
         embed.color = 0xFF0000

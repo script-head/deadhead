@@ -153,6 +153,7 @@
 	"information.self_muted":"Autosilenciado",
 	"information.self_deafened":"Audio autosilenciado",
 	"information.server_muted":"Servidor Silenciado",
+	"information.server_deafened":"Server Deafened",
 	"information.avatar":"El url del avatar de {0} es {1}",
 	"information.non-custom_emote":"Eso no es un emoticono personalizado",
 	"information.no_discrims_found":"No pude encontrar ningún usuario con el discriminador `{0}` dentro de los servidores en los que estoy.",

@@ -2,6 +2,7 @@ import asyncio
 import cat
 import random
 import os
+import hashlib
 
 from discord.ext import commands
 from utils.tools import *
@@ -257,10 +258,37 @@ class Fun():
         decoded_message = ""
         for char in msg.split():
             if char == " ":
-                print("space")
                 continue
             decoded_message += decode_morse[char]
         await ctx.send(decoded_message)
+
+    @commands.command()
+    async def randomnumber(self, ctx, *, digits:int=1):
+        """Generates a random number with the specified length of digits"""
+        number = ""
+        for i in range(digits):
+            number += str(random.randint(0, 9))
+        await ctx.send(number)
+
+    @commands.command()
+    async def rolldice(self, ctx):
+        """Roll some die"""
+        await ctx.send("You rolled a {}!".format(random.randint(1, 6)))
+
+    @commands.command()
+    async def md5(self, ctx, *, msg:str):
+        """Convert something to MD5"""
+        await ctx.send("`{}`".format(hashlib.md5(bytes(msg.encode("utf-8"))).hexdigest()))\
+
+    @commands.command()
+    async def sha256(self, ctx, *, msg: str):
+        """Convert something to sha256"""
+        await ctx.send("`{}`".format(hashlib.sha256(bytes(msg.encode("utf-8"))).hexdigest()))
+
+    @commands.command()
+    async def sha512(self, ctx, *, msg: str):
+        """Convert something to sha512"""
+        await ctx.send("`{}`".format(hashlib.sha512(bytes(msg.encode("utf-8"))).hexdigest()))
 
 def setup(bot):
     bot.add_cog(Fun(bot))
