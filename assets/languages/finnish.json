@@ -19,7 +19,7 @@
 	"bot.changelog":"Lue komento luettelo  https://ruby.zeroepoch1969.rip  Tai tee `{0}help` (`{0}help command` )\n{1}",
 	"bot.version":"Botin version: {0}\nTekija(s): {1}\nKoodin nimi: {2}\nKoodaus paivamaara: {3}",
 	"bot.uptime":"olen ollut paalla %d viikkoa, %d paivaa, %d tuntia, %d minuuttia, %d sekunttia",
-	"bot.joinserver":"Taalta voi kutsua minut palvelimellesi: https://invite.ruby.zeroepoch1969.rip",
+	"bot.joinserver":"Taalta voi kutsua minut palvelimellesi: {}",
 	"bot.invite":"Tassa on linkki minun palvelimeen: <{0}>\n\n(jos kutsulinkki on vanhentunut, ilmoita siita {1}notifydev)",
 	"bot.pinging":"Lasketaan...",
 	"bot.website":"Minun virallinen nettisivu löytyy taalta: https://ruby.zeroepoch1969.rip",

@@ -19,7 +19,7 @@
 	"bot.changelog":"Para la lista y el uso de comandos ve a https://ruby.zeroepoch1969.rip o haz `{0}help` (`{0}help command` para el uso del comando)\n{1}",
 	"bot.version":"Versión actual: {0}\nAutor(es): {1}\nNombre del código: {2}\nFecha de la Build: {3}",
 	"bot.uptime":"He estado en línea por %d semanas, %d días, %d horas, %d minutos, %d segundos",
-	"bot.joinserver":"Aquí está la liga para añadirme a tu servidor: https://invite.ruby.zeroepoch1969.rip",
+	"bot.joinserver":"Aquí está la liga para añadirme a tu servidor: {}",
 	"bot.invite":"Aquí está la liga para mi servidor: <{0}>\n\n(si la liga expiró, repórtalo a los desarrolladores usando {1}notifydev)",
 	"bot.pinging":"Probando...",
 	"bot.website":"Este es mi sitio oficial: https://ruby.zeroepoch1969.rip",

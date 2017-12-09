@@ -48,8 +48,10 @@ extensions = [
 # Thy changelog
 change_log = [
     "Commands:",
-    "Fixed userinfo",
-    "Fixed serverinfo",
+    "Fixed the userinfocommand ",
+    "Fixed the serverinfo command",
+    "Fixed the invite command ",
+    "Fixed the joinserver command"
     "Other things:",
     "Now using python 3.6",
 ]
@@ -517,12 +519,12 @@ async def reload(ctx, *, extension:str):
 @bot.command()
 async def joinserver(ctx):
     """Sends the bot's OAuth2 link"""
-    await ctx.author.send(Language.get("bot.join_server", ctx))
+    await ctx.author.send(Language.get("bot.joinserver", ctx).format("http://invite.ruby.zeroepoch1969.rip"))
 
 @bot.command()
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
-    await ctx.author.send(Language.get("bot.join_server", ctx).format("https://discord.gg/RJTFyBd", bot.command_prefix))
+    await ctx.author.send(Language.get("bot.invite", ctx).format("https://discord.gg/RJTFyBd", bot.command_prefix))
 
 @bot.command()
 async def ping(ctx):

@@ -19,7 +19,7 @@
 	"bot.changelog":"Pour une liste de commandes et comment les utiliser, allez sur https://ruby.zeroepoch1969.rip ou utilisez `{0}help` (`{0}help command` pour l’utilisation d’une commande)\n{1}",
 	"bot.version":"version du bot: {0}\nAuthor(s): {1}\nCode name: {2}\nBuild date: {3}",
 	"bot.uptime":"J’ai été en ligne pendant %d semaines, %d jours, %d heures, %d minutes, %d secondes",
-	"bot.joinserver":"Voici le lien pour m’ajouter à votre serveur: https://invite.ruby.zeroepoch1969.rip",
+	"bot.joinserver":"Voici le lien pour m’ajouter à votre serveur: {}",
 	"bot.invite":"Voici le lien pour mon serveur: <{0}>\n\n(si le lien a expiré, reportez-le en utilisant {1}notifydev)",
 	"bot.pinging":"Pinging...",
 	"bot.website":"Vouz pouvez trouver mon site officiel ici: https://ruby.zeroepoch1969.rip",
