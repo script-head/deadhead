@@ -269,7 +269,7 @@ async def debug(ctx, *, shit:str):
 @checks.is_owner()
 async def rename(ctx, *, name:str):
     """Renames the bot"""
-    await bot.edit_profile(username=name)
+    await bot.user.edit(username=name)
     await ctx.send("si")
 
 @bot.command(hidden=True)
