@@ -68,11 +68,11 @@ def getblacklistentry(id):
         id = cur.fetchone()[0]
     except:
         return None
-    cur.execute("""SELECT name FROM blacklist WHERE id=""" + id)
+    cur.execute("""SELECT name FROM blacklist WHERE id=""" + str(id))
     name = cur.fetchone()[0]
-    cur.execute("""SELECT discrim FROM blacklist WHERE id=""" + id)
+    cur.execute("""SELECT discrim FROM blacklist WHERE id=""" + str(id))
     discrim = cur.fetchone()[0]
-    cur.execute("""SELECT reason FROM blacklist WHERE id=""" + id)
+    cur.execute("""SELECT reason FROM blacklist WHERE id=""" + str(id))
     reason = cur.fetchone()[0]
     blacklistentry = {"id":id, "name":name, "discrim":discrim, "reason":reason}
     return blacklistentry
