@@ -1,7 +1,8 @@
 {
 	"bot.errors.disabled_command":"Tama komento to poistettu kaytösta.",
+	"bot.errors.owner_only":"Vain botin omistaja voi suorittaa taman komennon.",
 	"bot.errors.dev_only":"Vain kehittajat voivat kayttaa tata komentoa.",
-	"bot.errors.owner_only":"vain botin omistaja voi suorittaa taman komennon.",
+	"bot.errors.support_only":"This command can only be ran by the bot's support team.",
 	"bot.errors.not_nsfw_channel":"Tama komento voidaan suorittaa vain NSFW kanavissa.",
 	"bot.errors.not_guild_owner":"Ainoastaan Palvelimen omistaja  (`{0}`) voi suorittaa taman komennon.",
 	"bot.errors.no_permission":"Sinulla ei ole oikeuksia kayttaa tata komentoa.",
@@ -212,7 +213,7 @@
 	"myanimelist.no_anime_found":"Couldn't find any anime named `{0}`.",
 	"myanimelist.no_manga_found":"Couldn't find any manga named `{0}`.",
 	"configuration.set_success":"Successfully set the {0} to `{1}`",
-	"config.invalid_set_type":"`{0}` is not a valid type! Valid types are `mod-role` and `mute-role`",
+	"configuration.invalid_set_type":"`{0}` is not a valid type! Valid types are `mod-role` and `mute-role`",
 	"configuration.mod_role":"Mod Role",
 	"configuration.mute_role":"Mute Role",
 	"configuration.server_configuration":"Server Configuration",

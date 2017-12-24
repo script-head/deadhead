@@ -3,10 +3,13 @@ from utils.config import Config
 from utils.mysql import *
 config = Config()
 
+class owner_only(commands.CommandError):
+    pass
+
 class dev_only(commands.CommandError):
     pass
 
-class owner_only(commands.CommandError):
+class support_only(commands.CommandError):
     pass
 
 class not_nsfw_channel(commands.CommandError):
@@ -34,9 +37,17 @@ def is_dev():
             raise dev_only
     return commands.check(predicate)
 
+def is_support():
+    def predicate(ctx):
+        if ctx.author.id in config.support_ids or ctx.author.id in config.dev_ids or ctx.author.id == int(config.owner_id):
+            return True
+        else:
+            raise support_only
+    return commands.check(predicate)
+
 def is_nsfw_channel():
     def predicate(ctx):
-        if ctx.channel.is_nsfw():
+        if not isinstance(ctx.channel, discord.DMChannel) and ctx.channel.is_nsfw():
             return True
         else:
             raise not_nsfw_channel

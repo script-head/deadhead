@@ -11,6 +11,7 @@ class Defaults:
     owner_id = None
     command_prefix = "*"
     dev_ids = []
+    support_ids = []
     skip_votes_needed = 3
     channel_logger_id = None
     debug = False
@@ -55,6 +56,7 @@ class Config:
         self.command_prefix = config.get("Bot", "Command_Prefix", fallback=Defaults.command_prefix)
         self.max_nsfw_count = config.getint("Bot", "Max_NSFW_Count", fallback=Defaults.max_nsfw_count)
         self.dev_ids = config.get("Bot", "Developer_IDs", fallback=Defaults.dev_ids)
+        self.support_ids = config.get("Bot", "Support_IDs", fallback=Defaults.support_ids)
         self.skip_votes_needed = config.getint("Bot", "Skip_Votes_Needed", fallback=Defaults.skip_votes_needed)
         self.lock_status = config.getboolean("Status", "Lock_Status", fallback=Defaults.lock_status)
         self.enable_default_status = config.getboolean("Status", "Enable_Default_Status", fallback=Defaults.enable_default_status)
@@ -90,6 +92,16 @@ class Config:
             except:
                 log.warning("Developer IDs are invalid, all developer IDs have been ignored!")
                 self.dev_ids = Defaults.dev_ids
+
+        if len(self.support_ids) is not 0:
+            try:
+                ids = self.support_ids.split()
+                self.support_ids = []
+                for id in ids:
+                    self.support_ids.append(int(id))
+            except:
+                log.warning("Support IDs are invalid, all support member IDs have been ignored!")
+                self.support_ids = Defaults.support_ids
 
         if self.enableMal:
             if not self._malUsername and not self._malPassword:

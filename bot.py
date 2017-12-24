@@ -51,9 +51,14 @@ change_log = [
     "Fixed the userinfocommand ",
     "Fixed the serverinfo command",
     "Fixed the invite command ",
-    "Fixed the joinserver command"
+    "Fixed the joinserver command",
+    "Fixed the uploadfile command",
+    "+ uppercase",
+    "+ lowercase",
     "Other things:",
     "Now using python 3.6",
+    "Fixed the \"no nsfw channel\" message that wouldn't display in dms",
+    "Support team members now ave a seperate id config entry."
 ]
 
 async def _restart_bot():
@@ -151,11 +156,14 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.DisabledCommand):
         await ctx.send(Language.get("bot.errors.disabled_command", ctx))
         return
+    if isinstance(error, checks.owner_only):
+        await ctx.send(Language.get("bot.errors.owner_only", ctx))
+        return
     if isinstance(error, checks.dev_only):
         await ctx.send(Language.get("bot.errors.dev_only", ctx))
         return
-    if isinstance(error, checks.owner_only):
-        await ctx.send(Language.get("bot.errors.owner_only", ctx))
+    if isinstance(error, checks.support_only):
+        await ctx.send(Language.get("bot.errors.support_only", ctx))
         return
     if isinstance(error, checks.not_nsfw_channel):
         await ctx.send(Language.get("bot.errors.not_nsfw_channel", ctx))
@@ -321,6 +329,10 @@ async def notifydev(ctx, *, message:str):
         dev = bot.get_user(id)
         if dev:
             await dev.send("You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
+    for id in config.support_ids:
+        support_member = bot.get_user(id)
+        if support_member:
+            await support_member.send("You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
     await ctx.author.send(Language.get("bot.dev_notify", ctx).format(message))
 
 @bot.command()
@@ -338,6 +350,10 @@ async def suggest(ctx, *, suggestion:str):
         dev = bot.get_user(id)
         if dev:
             await dev.send("You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
+    for id in config.support_ids:
+        support_member = bot.get_user(id)
+        if support_member:
+            await support_member.send("You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
     await ctx.author.send(Language.get("bot.errors.dev_suggest", ctx).format(suggestion))
 
 @bot.command(hidden=True)
@@ -458,7 +474,7 @@ async def uploadfile(ctx, *, path:str):
     """Uploads any file on the system. What is this hackery?"""
     await ctx.channel.trigger_typing()
     try:
-        await bot.send_file(ctx.channel, path)
+        await ctx.send(file=discord.File(path))
     except FileNotFoundError:
         await ctx.send("That file does not exist!")
 
@@ -473,7 +489,7 @@ async def version(ctx):
     await ctx.send(Language.get("bot.version", ctx).format(BUILD_VERSION, BUILD_AUTHORS, BUILD_CODENAME, BUILD_DATE))
 
 @bot.command(hidden=True)
-@checks.is_dev()
+@checks.is_support()
 async def dm(ctx, id:int, *, message:str):
     """DMs a user"""
     msg = make_message_embed(ctx.author, 0xFF0000, message, formatUser=True)
@@ -566,6 +582,7 @@ async def stats(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
+@commands.guild_only()
 @checks.is_dev()
 async def editmessage(ctx, id:int, *, newmsg:str):
     """Edits a message sent by the bot"""

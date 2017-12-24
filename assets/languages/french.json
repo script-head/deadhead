@@ -1,7 +1,8 @@
 {
 	"bot.errors.disabled_command":"Cette commande a été désactivé.",
-	"bot.errors.dev_only":"Cette commande ne peut être utilisé que par les développeurs du bot.",
 	"bot.errors.owner_only":"Cette commande ne peut être utilisé que par le propriétaire.",
+	"bot.errors.dev_only":"Cette commande ne peut être utilisé que par les développeurs du bot.",
+	"bot.errors.support_only":"This command can only be ran by the bot's support team.",
 	"bot.errors.not_nsfw_channel":" Cette commande ne peut être utilisé que dans les salons NSFW.",
 	"bot.errors.not_guild_owner":"Seulement le propriétaire du serveur (`{0}`) peut utiliser cette commande.",
 	"bot.errors.no_permission":"Vouz n’avez pas le droit d’utiliser cette commande.",
@@ -211,7 +212,7 @@
 	"myanimelist.no_anime_found":"Impossible de trouver un anime nommé `{0}`.",
 	"myanimelist.no_manga_found":"Impossible de trouver un manga nommé `{0}`.",
 	"configuration.set_success":"Mit le {0} à `{1}`",
-	"config.invalid_set_type":"`{0}` N’est pas un type valide! Les types valides sont `mod-role` et `mute-role`",
+	"configuration.invalid_set_type":"`{0}` N’est pas un type valide! Les types valides sont `mod-role` et `mute-role`",
 	"configuration.mod_role":"Rôle de moderateur",
 	"configuration.mute_role":"Rôle de muet",
 	"configuration.server_configuration":"Configuration serveur",

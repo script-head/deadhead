@@ -1,7 +1,8 @@
 {
 	"bot.errors.disabled_command":"פונקציה זו כבויה.",
-	"bot.errors.dev_only":"פונקציה זו מיועדת למפתחים.",
 	"bot.errors.owner_only":"פונקציה זו מיועדת לבעלים.",
+	"bot.errors.dev_only":"פונקציה זו מיועדת למפתחים.",
+	"bot.errors.support_only":"This command can only be ran by the bot's support team.",
 	"bot.errors.not_nsfw_channel":"פונקציה זו חייבת להתבצע בערוץ NSFW.",
 	"bot.errors.not_guild_owner":"רק בעל השרת ('{0}') מיועדת לבצע את הפונקציה הזו.",
 	"bot.errors.no_permission":"אין לך רשות נאחוץ הפונקציה הזה.",
@@ -212,7 +213,7 @@
 	"myanimelist.no_anime_found":"לא מצאתי אנימה עם השם `{0}`.",
 	"myanimelist.no_manga_found":"לא מצאתי מנגה עם השם `{0}`.",
 	"configuration.set_success":"הצלחתי לשנות את ה-{0} ל-`{1}`",
-	"config.invalid_set_type":"`{0}` זה לא סוג זמין! סוגות זמינים הם `mod-role` ו-`mute-role`",
+	"configuration.invalid_set_type":"`{0}` זה לא סוג זמין! סוגות זמינים הם `mod-role` ו-`mute-role`",
 	"configuration.mod_role":"תפקיד מנחה",
 	"configuration.mute_role":"תפקיד אילם",
 	"configuration.server_configuration":"תצורה של השרת",

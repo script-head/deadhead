@@ -1,7 +1,8 @@
 {
 	"bot.errors.disabled_command":"Este comando ha sido deshabilitado.",
-	"bot.errors.dev_only":"Este comando solo puede ser usado por uno de los desarrolladores.",
 	"bot.errors.owner_only":"Este comando solo puede ser usado por el dueño del bot",
+	"bot.errors.dev_only":"Este comando solo puede ser usado por uno de los desarrolladores.",
+	"bot.errors.support_only":"This command can only be ran by the bot's support team.",
 	"bot.errors.not_nsfw_channel":"Este comando solo puede ser usado en los canales NSFW.",
 	"bot.errors.not_guild_owner":"Solo el dueño (`{0}`) puede usar este comando.",
 	"bot.errors.no_permission":"No tienes los permisos para usar este comando.",
@@ -212,7 +213,7 @@
 	"myanimelist.no_anime_found":"No se pudo encontrar ningún anime llamado`{0}`.",
 	"myanimelist.no_manga_found":"No se pudo encontrar ningún manga llamado `{0}`.",
 	"configuration.set_success":"Se ha puesto {0} a `{1}`",
-	"config.invalid_set_type":"`{0}` no es un tipo válido. Los tipos válidos son `mod-role` y `mute-role`",
+	"configuration.invalid_set_type":"`{0}` no es un tipo válido. Los tipos válidos son `mod-role` y `mute-role`",
 	"configuration.mod_role":"Rol de moderador",
 	"configuration.mute_role":"Rol de silenciado",
 	"configuration.server_configuration":"Configuración del servidor.",

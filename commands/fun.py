@@ -281,14 +281,24 @@ class Fun():
         await ctx.send("`{}`".format(hashlib.md5(bytes(msg.encode("utf-8"))).hexdigest()))\
 
     @commands.command()
-    async def sha256(self, ctx, *, msg: str):
+    async def sha256(self, ctx, *, msg:str):
         """Convert something to sha256"""
         await ctx.send("`{}`".format(hashlib.sha256(bytes(msg.encode("utf-8"))).hexdigest()))
 
     @commands.command()
-    async def sha512(self, ctx, *, msg: str):
+    async def sha512(self, ctx, *, msg:str):
         """Convert something to sha512"""
         await ctx.send("`{}`".format(hashlib.sha512(bytes(msg.encode("utf-8"))).hexdigest()))
+
+    @commands.command()
+    async def uppercase(self, ctx, *, msg:str):
+        """UPPERCASE DIS"""
+        await ctx.send(msg.upper())
+
+    @commands.command()
+    async def lowercase(self, ctx, *, msg: str):
+        """lowercase dis"""
+        await ctx.send(msg.lower())
 
 def setup(bot):
     bot.add_cog(Fun(bot))

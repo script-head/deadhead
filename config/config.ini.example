@@ -31,6 +31,11 @@ Command_Prefix = *
 ; Do NOT put the owner ID here!
 ;Developer_IDs =
 
+; Example: ID1 ID2 ID3
+; Be sure to uncomment if you are entering a developer ID!
+; Do NOT put the owner ID or any dev IDs here!
+;Support_IDs =
+
 ; How many results should the NSFW commands get?
 Max_NSFW_Count = 500
 
