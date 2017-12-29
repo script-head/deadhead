@@ -55,6 +55,7 @@ change_log = [
     "Fixed the uploadfile command",
     "+ uppercase",
     "+ lowercase",
+    "Fixed the color commannd",
     "Other things:",
     "Now using python 3.6",
     "Fixed the \"no nsfw channel\" message that wouldn't display in dms",

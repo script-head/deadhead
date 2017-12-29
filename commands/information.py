@@ -17,8 +17,8 @@ from utils.language import Language
 from utils import checks
 config = Config()
 
-halloween = date(2017, 10, 31)
-christmas = date(2017, 12, 25)
+halloween = date(2018, 10, 31)
+christmas = date(2018, 12, 25)
 
 class Information():
     def __init__(self, bot):
@@ -290,7 +290,7 @@ class Information():
         except ValueError:
             await ctx.send(Language.get("bot.invalid_color", ctx).format(hexcode))
             return
-            await ctx.send(file=discord.File("data/color.png", "{}.png".format(hexcode.strip("#"))))
+        await ctx.send(file=discord.File("data/color.png", "{}.png".format(hexcode.strip("#"))))
 
     @commands.command()
     async def getuserbyid(self, ctx, id:int):
@@ -313,6 +313,11 @@ class Information():
     async def roleid(self, ctx, role:discord.Role):
         """Gets the id for the specified role"""
         await ctx.send(Language.get("information.role_id", ctx).format(role.name, role.id))
+
+    @commands.command()
+    async def timestamp(self, ctx):
+        """Displays the current unix timestamp"""
+        await ctx.send(str(int(datetime.now().timestamp())))
 
 def setup(bot):
     bot.add_cog(Information(bot))
