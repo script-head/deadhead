@@ -123,7 +123,7 @@ class Music:
         """Enqueues a song to be played"""
         await ctx.channel.trigger_typing()
         if ctx.voice_client is None:
-            if ctx.author.voice.channel:
+            if ctx.author.voice:
                 try:
                     await ctx.author.voice.channel.connect()
                 except discord.errors.Forbidden:

@@ -111,16 +111,14 @@ class Information():
     @commands.command()
     async def emoteurl(self, ctx, *, emote:str):
         """Gets the url for a CUSTOM emote (meaning no unicode emotes)"""
-        emote_id = None
-        try:
-            if extract_emote_id(emote) is not None:
-                emote_id = extract_emote_id(emote)
-        except:
-            pass
+        emote_id = extract_emote_id(emote)
         if emote_id is None:
-            await ctx.send(Language.get("information.non-custm_emote", ctx))
+            await ctx.send(Language.get("information.non-custom_emote", ctx))
             return
-        await ctx.send("https://discordapp.com/api/emojis/{}.png".format(emote_id))
+        extension = "png"
+        if emote.startswith("<a"):
+            extension = "gif"
+        await ctx.send("https://discordapp.com/api/emojis/{}.{}".format(emote_id, extension))
 
     @commands.command()
     async def discrim(self, ctx, *, discriminator:str):
@@ -179,6 +177,7 @@ class Information():
             await ctx.send(Language.get("information.no_server_emotes", ctx))
             return
         emotes = ["`:{}:` = {}".format(emote.name, emote) for emote in emotes]
+        print("\n".join(emotes))
         await ctx.send("\n".join(emotes))
 
     @commands.command()
@@ -284,7 +283,7 @@ class Information():
         """Displays the given hex color"""
         await ctx.channel.trigger_typing()
         if not hexcode.startswith("#"):
-            hexcode = "#{}".format(hex)
+            hexcode = "#{}".format(hexcode)
         try:
             Image.new("RGBA", (50, 50), hexcode).save("data/color.png")
         except ValueError:

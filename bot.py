@@ -55,7 +55,9 @@ change_log = [
     "Fixed the uploadfile command",
     "+ uppercase",
     "+ lowercase",
+    "+ timestamp",
     "Fixed the color commannd",
+    "The emoteurl command now supports animated emotes"
     "Other things:",
     "Now using python 3.6",
     "Fixed the \"no nsfw channel\" message that wouldn't display in dms",

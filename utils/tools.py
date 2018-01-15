@@ -4,9 +4,9 @@ import discord
 import io
 from datetime import datetime
 
-_USER_ID_MATCH = re.compile(r"<@(\d+)>")
+emote_id_match = re.compile(r"<:(.+?):(\d+)>")
 
-_EMOTE_ID_MATCH = re.compile(r"<:(.+?):(\d+)>")
+animated_emote_id_match = re.compile(r"<a:(.+?):(\d+)>")
 
 py = "```py\n{}```"
 
@@ -79,9 +79,15 @@ def download_file(url, destination):
     file.close()
 
 def extract_emote_id(arg):
-    match = _EMOTE_ID_MATCH.match(arg)
-    if match:
-        return str(match.group(2))
+    match = None
+    try:
+        match = emote_id_match.match(arg).group(2)
+    except:
+        try:
+            match = animated_emote_id_match.match(arg).group(2)
+        except:
+            pass
+    return match
 
 def get_avatar(user, animate=True):
     if user.avatar_url:
