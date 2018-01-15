@@ -177,7 +177,6 @@ class Information():
             await ctx.send(Language.get("information.no_server_emotes", ctx))
             return
         emotes = ["`:{}:` = {}".format(emote.name, emote) for emote in emotes]
-        print("\n".join(emotes))
         await ctx.send("\n".join(emotes))
 
     @commands.command()
