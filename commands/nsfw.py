@@ -19,29 +19,25 @@ class NSFW():
     @checks.is_nsfw_channel()
     @commands.command()
     async def rule34(self, ctx, *, tags:str):
+        await ctx.channel.trigger_typing()
         try:
-            await ctx.channel.trigger_typing()
-            try:
-                data = json.loads(requests.get("http://rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
-            except json.JSONDecodeError:
-                await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
-                return
+            data = json.loads(requests.get("http://rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
+        except json.JSONDecodeError:
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
+            return
 
-            count = len(data)
-            if count == 0:
-                await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
-                return
-            image_count = 4
-            if count < 4:
-                image_count = count
-            images = []
-            for i in range(image_count):
-                image = data[random.randint(0, count)]
-                images.append("http://img.rule34.xxx/images/{}/{}".format(image["directory"], image["image"]))
-            await ctx.send(Language.get("nsfw.results", ctx).format(image_count, count, tags, "\n".join(images)))
-        except IndexError:
-            log.error("it fucked up - " + str(count))
-            log.error(data)
+        count = len(data)
+        if count == 0:
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
+            return
+        image_count = 4
+        if count < 4:
+            image_count = count
+        images = []
+        for i in range(image_count):
+            image = data[random.randint(0, count)]
+            images.append("http://img.rule34.xxx/images/{}/{}".format(image["directory"], image["image"]))
+        await ctx.send(Language.get("nsfw.results", ctx).format(image_count, count, tags, "\n".join(images)))
 
     @checks.is_nsfw_channel()
     @commands.command()
