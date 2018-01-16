@@ -10,3 +10,5 @@ random-cat
 pythonwhois
 pillow
 requests
+steam
+lxml

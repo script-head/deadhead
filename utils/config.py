@@ -27,6 +27,8 @@ class Defaults:
     enableOsu = False
     osuKey = None
     max_nsfw_count = 500
+    enableSteam = False
+    steamAPIKey = None
 
 class Config:
     def __init__(self):
@@ -45,7 +47,7 @@ class Config:
         config = configparser.ConfigParser(interpolation=None)
         config.read(self.config_file, encoding="utf-8")
 
-        sections = {"Credentials", "Bot", "Status", "Logging", "MyAnimeList", "Osu"}.difference(config.sections())
+        sections = {"Credentials", "Bot", "Status", "Logging", "MyAnimeList", "Osu", "Steam"}.difference(config.sections())
         if sections:
             log.critical("Could not load a section in the config file, please obtain a new config file from the github repo if regenerating the config doesn't work!")
             os._exit(1)
@@ -71,6 +73,8 @@ class Config:
         self._malPassword = config.get("MyAnimeList", "password", fallback=Defaults.malPassword)
         self.enableOsu = config.getboolean("Osu", "enable", fallback=Defaults.enableOsu)
         self._osuKey = config.get("Osu", "key", fallback=Defaults.osuKey)
+        self.enableSteam = config.get("Steam", "enable", fallback=Defaults.osuKey)
+        self._steamAPIKey = config.get("Steam", "key", fallback=Defaults.osuKey)
 
         self.check()
 
@@ -115,7 +119,6 @@ class Config:
                 log.critical("The MyAnimeList module was enabled, but no MAL password was specified!")
                 os._exit(1)
 
-        if self.enableOsu:
-            if not self._osuKey:
-                log.critical("The osu! module was enabled but no osu! api key was specified!")
-                os._exit(1)
+        if self.enableOsu and not self._osuKey:
+            log.critical("The osu! module was enabled but no osu! api key was specified!")
+            os._exit(1)

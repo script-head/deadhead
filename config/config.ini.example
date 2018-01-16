@@ -91,3 +91,10 @@ enable = no
 ; If you enable the osu! api function, you MUST have an api key.
 ; If you don't have an api key, you can get one at https://osu.ppy.sh/p/api
 ;key =
+
+[Steam]
+; Should steam features be enabled?
+enable = no
+
+; Steam web api key. You can get one at http://steamcommunity.com/dev/apikey
+;key =

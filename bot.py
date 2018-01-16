@@ -61,7 +61,9 @@ change_log = [
     "Other things:",
     "Now using python 3.6",
     "Fixed the \"no nsfw channel\" message that wouldn't display in dms",
-    "Support team members now ave a seperate id config entry."
+    "Support team members now ave a seperate id config entry.",
+    "+ steamuser",
+    "+ steamid"
 ]
 
 async def _restart_bot():
@@ -151,6 +153,13 @@ async def on_ready():
             log.info("Carbonitex stats updated")
         else:
             log.error("Failed to update the carbonitex stats, double check the key in the config!")
+
+    if config.enableSteam:
+        if not config._steamAPIKey:
+            log.warning("The steam module was enabled but no steam web api key was specified, disabling...")
+        else:
+            bot.load_extension("commands.steam")
+            log.info("The steam module has been enabled!")
 
 @bot.event
 async def on_command_error(ctx, error):
