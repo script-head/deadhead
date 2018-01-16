@@ -63,7 +63,7 @@ class Steam():
             await ctx.send(embed=embed)
             return
         groupCount = len(steamAPI.ISteamUser.GetUserGroupList_v1(steamid="76561198448916526")["response"]["groups"])
-        games = requests.get("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={}&steamid={}&format=json".format(config._steamAPIKey, steamID)).json()["response"]
+        games = requests.get("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={}&steamid={}&include_played_free_games=1%format=json".format(config._steamAPIKey, steamID)).json()["response"]
         gamesPlayed = games["game_count"]
         state = EPersonaState(steamUser["personastate"]).name
         gameName = None
@@ -73,7 +73,7 @@ class Steam():
             gameName = requests.get("http://store.steampowered.com/api/appdetails?appids={}".format(gameID)).json()[gameID]["data"]["name"]
         lastOnline = format_time(datetime.fromtimestamp(steamUser["lastlogoff"]))
         creationDate = format_time(datetime.fromtimestamp(steamUser["timecreated"]))
-        fields = {"Status":state, "Created on":creationDate, "Group Count":groupCount, "Games Played":gamesPlayed}
+        fields = {"Status":state, "Created on":creationDate, "Group Count":groupCount, "Games Owned":gamesPlayed}
         if state == EPersonaState.Offline.name:
             fields["Last Online"] = lastOnline
         if gameName:
