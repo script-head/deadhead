@@ -308,7 +308,7 @@ class Information():
 
     @commands.guild_only()
     @commands.command()
-    async def roleid(self, ctx, role:discord.Role):
+    async def roleid(self, ctx, *, role:discord.Role):
         """Gets the id for the specified role"""
         await ctx.send(Language.get("information.role_id", ctx).format(role.name, role.id))
 
@@ -316,6 +316,31 @@ class Information():
     async def timestamp(self, ctx):
         """Displays the current unix timestamp"""
         await ctx.send(str(int(datetime.now().timestamp())))
+
+    @commands.command()
+    async def spotify(self, ctx, user:discord.Member=None):
+        """Get the current song that you or another user is playing"""
+        if user is None:
+            user = ctx.author
+        activity = ctx.author.activity
+        if activity is None:
+            await ctx.send("{} is not playing anything on spotify!".format(user.display_name))
+            return
+        if activity.type == discord.ActivityType.listening and activity.name == "Spotify":
+            embed = discord.Embed(description="\u200b")
+            embed.add_field(name="Artists", value=", ".join(activity.artists))
+            embed.add_field(name="Album", value=activity.album)
+            embed.add_field(name="Duration", value=str(activity.duration)[3:].split(".", 1)[0])
+            embed.title = "**{}**".format(activity.title)
+            embed.set_thumbnail(url=activity.album_cover_url)
+            embed.url = "https://open.spotify.com/track/{}".format(activity.track_id)
+            embed.color = activity.color
+            embed.set_footer(text="{} - is currently playing this song".format(ctx.author.display_name), icon_url=get_avatar(ctx.author))
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("{} is not playing anything on spotify!".format(user.display_name))
+            return
+
 
 def setup(bot):
     bot.add_cog(Information(bot))

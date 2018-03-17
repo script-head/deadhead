@@ -30,7 +30,7 @@ config = Config()
 log.setupRotator(config.log_date_format, config.log_time_format)
 if config.debug:
     log.enableDebugging() # pls no flame
-bot = commands.Bot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=None)
+bot = commands.AutoShardedBot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=None)
 channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
@@ -48,27 +48,16 @@ extensions = [
 # Thy changelog
 change_log = [
     "Commands:",
-    "Fixed the userinfocommand ",
-    "Fixed the serverinfo command",
-    "Fixed the invite command ",
-    "Fixed the joinserver command",
-    "Fixed the uploadfile command",
-    "+ uppercase",
-    "+ lowercase",
-    "+ timestamp",
-    "Fixed the color commannd",
-    "The emoteurl command now supports animated emotes"
+    "+ fight",
+    "+ spotify",
     "Other things:",
-    "Now using python 3.6",
-    "Fixed the \"no nsfw channel\" message that wouldn't display in dms",
-    "Support team members now ave a seperate id config entry.",
-    "+ steamuser",
-    "+ steamid"
+    "Music will now download hella faster",
+    "Bot is now sharded"
 ]
 
 async def _restart_bot():
     try:
-      aiosession.close()
+      await aiosession.close()
       await bot.cogs["Music"].disconnect_all_voice_clients()
     except:
        pass
@@ -87,20 +76,20 @@ async def set_default_status():
     if not config.enable_default_status:
         return
     type = config.default_status_type
-    game = config.default_status_name
+    name = config.default_status_name
     try:
         type = discord.Status(type)
     except:
         type = discord.Status.online
-    if game is not None:
+    if name is not None:
         if config.default_status_type == "stream":
             if config.default_status_name is None:
                 log.critical("If the status type is set to \"stream\" then the default status game must be specified")
                 os._exit(1)
-            game = discord.Game(name=game, url="http://twitch.tv/ZeroEpoch1969", type=1)
+            status = discord.Activity(name=name, url="http://twitch.tv/ZeroEpoch1969", type=discord.ActivityType.streaming)
         else:
-            game = discord.Game(name=game)
-        await bot.change_presence(status=type, game=game)
+            status = discord.Game(name=name, type=discord.ActivityType.playing)
+        await bot.change_presence(status=type, activity=status)
     else:
         await bot.change_presence(status=type)
 
@@ -114,7 +103,10 @@ async def on_ready():
     print("Logged in as:\n{}/{}#{}\n----------".format(bot.user.id, bot.user.name, bot.user.discriminator))
     print("Bot version: {}\nAuthor(s): {}\nCode name: {}\nBuild date: {}".format(BUILD_VERSION, BUILD_AUTHORS, BUILD_CODENAME, BUILD_DATE))
     log.debug("Debugging enabled!")
-    await set_default_status()
+    if config.enable_default_status:
+        await set_default_status()
+    else:
+        await bot.change_presence(activity=discord.Activity(name="Zwei", type=discord.ActivityType.watching), status=discord.Status.dnd)
     for extension in extensions:
         try:
             bot.load_extension(extension)
@@ -136,23 +128,30 @@ async def on_ready():
         log.info("The osu! module has been enabled in the config!")
     if config._dbots_token:
         log.info("Updating DBots Statistics...")
-        r = requests.post("https://bots.discord.pw/api/bots/{}/stats".format(bot.user.id), json={
-            "server_count":len(bot.guilds)}, headers={"Authorization":config._dbots_token})
-        if r.status_code == "200":
-            log.info("Discord Bots guild count updated.")
-        elif r.status_code == "401":
-            log.error("An error occurred while trying to update the guild count!")
+        try:
+            r = requests.post("https://bots.discord.pw/api/bots/{}/stats".format(bot.user.id), json={
+                "server_count": len(bot.guilds)}, headers={"Authorization": config._dbots_token}, timeout=5)
+            if r.status_code == "200":
+                log.info("Discord Bots guild count updated.")
+            elif r.status_code == "401":
+                log.error("An error occurred while trying to update the guild count!")
+        except requests.exceptions.Timeout:
+            log.error("Failed to update the guild count: request timed out.")
     if config._carbonitex_key:
         log.info("Updating Carbonitex Statistics...")
-        payload = {"key":config._carbonitex_key, "guildcount":len(bot.guilds), "botname":bot.user.name, "logoid":bot.user.avatar_url}
+        payload = {"key": config._carbonitex_key, "guildcount": len(bot.guilds), "botname": bot.user.name,
+                   "logoid": bot.user.avatar_url}
         owner = discord.utils.get(list(bot.get_all_members()), id=config.owner_id)
         if owner is not None:
             payload["ownername"] = owner.name
-        r = requests.post("https://www.carbonitex.net/discord/data/botdata.php", json=payload)
-        if r.text == "1 - Success":
-            log.info("Carbonitex stats updated")
-        else:
-            log.error("Failed to update the carbonitex stats, double check the key in the config!")
+        try:
+            r = requests.post("https://www.carbonitex.net/discord/data/botdata.php", json=payload, timeout=5)
+            if r.text == "1 - Success":
+                log.info("Carbonitex stats updated")
+            else:
+                log.error("Failed to update the carbonitex stats, double check the key in the config!")
+        except requests.exceptions.Timeout:
+            log.error("Failed to update the carbonitex stats: request timed out")
 
     if config.enableSteam:
         if not config._steamAPIKey:
@@ -439,10 +438,9 @@ async def stream(ctx, *, name:str):
         if not ctx.author.id == config.owner_id and not ctx.author.id in config.dev_ids:
             await ctx.send(Language.get("bot.status_locked", ctx))
             return
-    await bot.change_presence(game=discord.Game(name=name, type=1, url="https://www.twitch.tv/creeperseth"))
+    await bot.change_presence(activity=discord.Activity(name=name, type=discord.ActivityType.streaming, url="https://www.twitch.tv/ZeroEpoch1969"))
     await ctx.send(Language.get("bot.now_streaming", ctx).format(name))
-    await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(
-        ctx.author.id, ctx.author, name))
+    await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.author.id, ctx.author, name))
 
 @bot.command()
 async def changestatus(ctx, status:str, *, name:str=None):
@@ -451,7 +449,7 @@ async def changestatus(ctx, status:str, *, name:str=None):
         if not ctx.author.id == config.owner_id and not ctx.author.id in config.dev_ids:
             await ctx.send(Language.get("bot.status_locked", ctx))
             return
-    game = None
+    activity = None
     if status == "invisible" or status == "offline":
         await ctx.send(Language.get("bot.forbidden_status_type", ctx).format(status))
         return
@@ -461,8 +459,8 @@ async def changestatus(ctx, status:str, *, name:str=None):
         await ctx.send(Language.get("bot.valid_status_types", ctx))
         return
     if name != "":
-        game = discord.Game(name=name)
-    await bot.change_presence(game=game, status=statustype)
+        activity = discord.Activity(name=name, type=discord.ActivityType.playing)
+    await bot.change_presence(activity=activity, status=statustype)
     if name is not None:
         await ctx.send(Language.get("bot.status_change_with_name", ctx).format(name, status))
         await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the game name to `{}` with a(n) `{}` status type".format(ctx.author.id, ctx.author, name, status))
@@ -665,7 +663,7 @@ async def ranksysvoteresults(ctx):
             no += 1
     await ctx.send("Results for the rank system poll:\nYes: {}\nNo: {}".format(yes, no))
 
-@bot.command()
+@bot.command(hidden=True)
 async def test(ctx):
     await ctx.send("owo")
 
@@ -678,10 +676,15 @@ async def setlanguage(ctx, language:str):
 
 @bot.command()
 async def translators(ctx):
+    """Lists all of the bot's translators"""
     embed = make_list_embed(TRANSLATORS)
     embed.title = Language.get("bot.stats.translators", ctx)
     embed.color = 0xFF0000
     await ctx.send(embed=embed)
+
+@bot.command()
+async def shardid(ctx):
+    await ctx.send("{}/{}".format(bot.shard_id, bot.shard_count))
 
 print("Connecting...")
 bot.run(config._token)

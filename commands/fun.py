@@ -140,7 +140,7 @@ class Fun():
             await ctx.send(Language.get("bot.no_message_found", ctx).format(id))
             return
         embed = make_message_embed(message.author, message.author.color, message.content, formatUser=True)
-        embed.timestamp = message.timestamp
+        embed.timestamp = message.edited_at
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -296,9 +296,20 @@ class Fun():
         await ctx.send(msg.upper())
 
     @commands.command()
-    async def lowercase(self, ctx, *, msg: str):
+    async def lowercase(self, ctx, *, msg:str):
         """lowercase dis"""
         await ctx.send(msg.lower())
+
+    @commands.command()
+    async def fight(self, ctx, user:str=None, *, weapon:str=None):
+        """Fight someone with something"""
+        if user is None or user.lower() == ctx.author.mention or user == ctx.author.name.lower() or ctx.guild is not None and user == ctx.author.nick.lower():
+            await ctx.send("{} fought themself but only ended up in a mental hospital!".format(ctx.author.mention))
+            return
+        if weapon is None:
+            await ctx.send("{0} tried to fight {1} with nothing so {1} beat the breaks off of them!".format(ctx.author.mention, user))
+            return
+        await ctx.send("{} used **{}** on **{}** {}".format(ctx.author.mention, weapon, user, random.choice(fight_results).replace("%user%", user).replace("%attacker%", ctx.author.mention)))
 
 def setup(bot):
     bot.add_cog(Fun(bot))

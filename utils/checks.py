@@ -23,7 +23,7 @@ class no_permission(commands.CommandError):
 
 def is_owner():
     def predicate(ctx):
-        if ctx.author.id == int(config.owner_id):
+        if ctx.author.id == config.owner_id:
             return True
         else:
             raise owner_only
@@ -31,7 +31,7 @@ def is_owner():
 
 def is_dev():
     def predicate(ctx):
-        if ctx.author.id in config.dev_ids or ctx.author.id == int(config.owner_id):
+        if ctx.author.id in config.dev_ids or ctx.author.id == config.owner_id:
             return True
         else:
             raise dev_only
@@ -39,7 +39,7 @@ def is_dev():
 
 def is_support():
     def predicate(ctx):
-        if ctx.author.id in config.support_ids or ctx.author.id in config.dev_ids or ctx.author.id == int(config.owner_id):
+        if ctx.author.id in config.support_ids or ctx.author.id in config.dev_ids or ctx.author.id == config.owner_id:
             return True
         else:
             raise support_only

@@ -1,6 +1,7 @@
 import asyncio
 import traceback
 import shutil
+import subprocess
 import youtube_dl
 
 from discord.ext import commands
@@ -12,12 +13,13 @@ from utils.language import Language
 load_opus_lib()
 config = Config()
 
-ytdl_format_options = {"format": "bestaudio/best", "extractaudio": True, "audioformat": "mp3", "noplaylist": True, "nocheckcertificate": True, "ignoreerrors": False, "logtostderr": False, "quiet": True, "no_warnings": True, "default_search": "auto", "source_address": "0.0.0.0", "preferredcodec": "libmp3lame"}
+ytdl_options = {"default_search":"auto", "quiet":True}
+ytdl_download_options = ["--format", "bestaudio/best", "--extract-audio", "--audio-format", "mp3", "--default-search", "auto", "--quiet"]
 
 def get_ytdl(id):
-    format = ytdl_format_options
-    format["outtmpl"] = "data/music/{}/%(id)s.mp3".format(id)
-    return youtube_dl.YoutubeDL(format)
+    options = ytdl_options
+    options["outtmpl"] = "data/music/{}/%(id)s.mp3".format(id)
+    return youtube_dl.YoutubeDL(options)
 
 class Song():
     def __init__(self, entry, path, title, duration, requester):
@@ -95,7 +97,7 @@ class Music:
     @staticmethod
     def download_video(ctx, url):
         ytdl = get_ytdl(ctx.guild.id)
-        data = ytdl.extract_info(url, download=True)
+        data = ytdl.extract_info(url, download=False)
         if "entries" in data:
             data = data["entries"][0]
         title = data["title"]
@@ -106,6 +108,14 @@ class Music:
             duration = data["duration"]
         except KeyError:
             pass
+        # Looks shit but it works, running it normally gets fucked over by buffering and the buffer-size wont fucking work
+        options = ytdl_download_options
+        options.append("--output")
+        options.append("data/music/{}/%(id)s.mp3".format(ctx.guild.id))
+        options.append("https://youtube.com/watch?v={}".format(id))
+        command = ["/usr/local/bin/youtube-dl"]
+        command.extend(options)
+        subprocess.call(command)
         path = "data/music/{}".format(ctx.guild.id)
         filepath = "{}/{}.mp3".format(path, id)
         entry = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(filepath))
@@ -173,6 +183,9 @@ class Music:
     async def skip(self, ctx):
         """Skips a song"""
         queue = self.get_queue(ctx)
+        if not ctx.voice_client:
+            await ctx.send("I'm not in a voice channel.")
+            return
         if ctx.author.id in config.dev_ids or ctx.author.id == config.owner_id:
             queue.voice_client.stop()
             await ctx.send(Language.get("music.bot_dev_skip", ctx))
@@ -216,7 +229,7 @@ class Music:
     async def volume(self, ctx, amount:float=None):
         """Sets the volume, for developers only because you set the volume via the bot's volume slider. This command is for debugging."""
         queue = self.get_queue(ctx)
-        if not ctx.author.id == config.owner_id or ctx.author.id not in config.dev_ids:
+        if not ctx.author.id == config.owner_id and ctx.author.id not in config.dev_ids:
             await ctx.send(Language.get("music.volume_notice", ctx))
             return
         if not amount:
