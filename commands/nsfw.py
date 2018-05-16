@@ -129,7 +129,7 @@ class NSFW():
         images = []
         for i in range(image_count):
             try:
-                images.append("{}".format(data[random.randint(0, count)]["file_url"]))#http isn't needed
+                images.append("{}".format(data[random.randint(0, count)]["file_url"]))
             except KeyError:
                 await ctx.send(data["message"])
                 return
