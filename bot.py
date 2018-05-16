@@ -88,7 +88,7 @@ async def set_default_status():
                 os._exit(1)
             status = discord.Activity(name=name, url="http://twitch.tv/ZeroEpoch1969", type=discord.ActivityType.streaming)
         else:
-            status = discord.Game(name=name, type=discord.ActivityType.playing)
+            status = discord.Activity(name=name, type=discord.ActivityType.playing)
         await bot.change_presence(status=type, activity=status)
     else:
         await bot.change_presence(status=type)

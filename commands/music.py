@@ -7,7 +7,7 @@ import youtube_dl
 from discord.ext import commands
 from utils.mysql import *
 from utils.opus_loader import load_opus_lib
-from utils.config import Config;
+from utils.config import Config
 from utils.language import Language
 
 load_opus_lib()
