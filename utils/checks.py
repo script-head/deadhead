@@ -63,6 +63,8 @@ def is_guild_owner():
 
 def server_mod_or_perms(**permissions):
     def predicate(ctx):
+        if not ctx.guild:
+            return True
         mod_role_name = read_data_entry(ctx.guild.id, "mod-role")
         mod = discord.utils.get(ctx.author.roles, name=mod_role_name)
         if mod or permissions and all(getattr(ctx.channel.permissions_for(ctx.author), name, None) == value for name, value in permissions.items()):

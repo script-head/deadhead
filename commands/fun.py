@@ -303,7 +303,7 @@ class Fun():
     @commands.command()
     async def fight(self, ctx, user:str=None, *, weapon:str=None):
         """Fight someone with something"""
-        if user is None or user.lower() == ctx.author.mention or user == ctx.author.name.lower() or ctx.guild is not None and user == ctx.author.nick.lower():
+        if user is None or user.lower() == ctx.author.mention or user == ctx.author.name.lower() or ctx.guild is not None and ctx.author.nick is not None and user == ctx.author.nick.lower():
             await ctx.send("{} fought themself but only ended up in a mental hospital!".format(ctx.author.mention))
             return
         if weapon is None:
