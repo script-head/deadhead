@@ -2,6 +2,7 @@ import re
 import requests
 import discord
 import io
+from cowpy import cow
 from datetime import datetime
 
 emote_id_match = re.compile(r"<:(.+?):(\d+)>")
@@ -61,6 +62,28 @@ encode_morse ={
     "@":".--.-.",
     "=":"-...-",
     " ":"/"
+}
+
+cowList = {
+    "cow":cow.Cowacter(),
+    "hellokitty":cow.HelloKitty(),
+    "bunny":cow.Bunny(),
+    "cheese":cow.Cheese(),
+    "milk":cow.Milk(),
+    "bong":cow.BongCow(),
+    "eyes":cow.Eyes(),
+    "legitvore":cow.HeadInCow(),
+    "666":cow.Satanic(),
+    "frogs":cow.BudFrogs(),
+    "daemon":cow.Daemon(),
+    "moofasa":cow.Moofasa(),
+    "mutilated":cow.Mutilated(),
+    "skeleton":cow.Skeleton(),
+    "small":cow.Small(),
+    "excusemewhatthefuck":cow.Sodomized(),
+    "garfield":cow.Stimpy(),
+    "tux":cow.Tux(),
+    "vader":cow.Vader()
 }
 
 decode_morse = dict((morse_char, char) for (char, morse_char) in encode_morse.items())

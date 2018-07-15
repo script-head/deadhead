@@ -8,6 +8,7 @@ from discord.ext import commands
 from utils.tools import *
 from utils.unicode import *
 from utils.fun.lists import *
+from utils.fun.fortunes import fortunes
 from utils import imagetools
 from PIL import Image
 from utils.language import Language
@@ -310,6 +311,30 @@ class Fun():
             await ctx.send("{0} tried to fight {1} with nothing so {1} beat the breaks off of them!".format(ctx.author.mention, user))
             return
         await ctx.send("{} used **{}** on **{}** {}".format(ctx.author.mention, weapon, user, random.choice(fight_results).replace("%user%", user).replace("%attacker%", ctx.author.mention)))
+
+    @commands.command()
+    async def nou(self, ctx):
+        """no u"""
+        await ctx.send("no u")
+
+    @commands.command()
+    async def cowsay(self, ctx, type:str, *, message:str):
+        """moo"""
+        try:
+            cow = cowList[type]
+        except KeyError:
+            await ctx.send("`{}` is not a usable character type.".format(type))
+            return
+        msg = "```{}```".format(cow.milk(message))
+        if len(msg) > 2000:
+            await ctx.send("Sorry, the message length with the cow in it has a total character length of {}. Discord only allows 2000 characters per message.".format(len(msg)))
+            return
+        await ctx.send(msg)
+
+    @commands.command()
+    async def fortune(self, ctx):
+        """Get your fortune read, not as authentic as a fortune cookie."""
+        await ctx.send("```{}```".format(random.choice(fortunes)))
 
 def setup(bot):
     bot.add_cog(Fun(bot))

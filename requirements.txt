@@ -12,3 +12,4 @@ pillow
 requests
 steam
 lxml
+cowpy
