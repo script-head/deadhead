@@ -48,11 +48,11 @@ extensions = [
 # Thy changelog
 change_log = [
     "Commands:",
-    "+ fight",
-    "+ spotify",
+    "+ nou",
+	"+ cow",
+	"+ fortune",
     "Other things:",
-    "Music will now download hella faster",
-    "Bot is now sharded"
+    "None"
 ]
 
 async def _restart_bot():
