@@ -13,3 +13,4 @@ requests
 steam
 lxml
 cowpy
+fortune
