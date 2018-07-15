@@ -49,8 +49,9 @@ extensions = [
 change_log = [
     "Commands:",
     "+ nou",
-	"+ cow",
-	"+ fortune",
+    "+ cow",
+    "+ fortune",
+    "+ cows"
     "Other things:",
     "None"
 ]

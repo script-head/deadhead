@@ -321,9 +321,9 @@ class Fun():
     async def cowsay(self, ctx, type:str, *, message:str):
         """moo"""
         try:
-            cow = cowList[type]
+            cow = cowList[type.lower()]
         except KeyError:
-            await ctx.send("`{}` is not a usable character type.".format(type))
+            await ctx.send("`{}` is not a usable character type. Run **{}cows** for a list of cows.".format(type, ctx.prefix))
             return
         msg = "```{}```".format(cow.milk(message))
         if len(msg) > 2000:
@@ -335,6 +335,11 @@ class Fun():
     async def fortune(self, ctx):
         """Get your fortune read, not as authentic as a fortune cookie."""
         await ctx.send("```{}```".format(random.choice(fortunes)))
+
+    @commands.command()
+    async def cows(self, ctx):
+        """Cow list for the cowsay command"""
+        await ctx.send("Current list of cows:```{}```".format(", ".join(cowList.keys())))
 
 def setup(bot):
     bot.add_cog(Fun(bot))
