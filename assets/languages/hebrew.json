@@ -156,6 +156,7 @@
 	"information.server_muted":"אילם מהרשת",
 	"information.server_deafened":"Server Deafened",
 	"information.avatar":"ה-URL של תמונת הפרופיל של {0} זה: {1}",
+	"information.default_avatar":"{0}'s default avatar url is: {1}",
 	"information.non-custom_emote":"זה לא אימוג'י מותאם אישית.",
 	"information.no_discrims_found":"לא מצאתי משתמשים ברשתים עם discriminator של `{0}`.",
 	"information.days_till_halloween":"ימים עד ליל כל הקדושים: `{0} days`",

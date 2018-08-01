@@ -155,6 +155,7 @@
 	"information.server_muted":"Muet dans le serveur",
 	"information.server_muted":"Server Deafened",
 	"information.avatar":"l’url de l’avater de {0} est: {1}",
+	"information.default_avatar":"{0}'s default avatar url is: {1}",
 	"information.non-custom_emote":"Cela n’est pas un émoji personnalisé.",
 	"information.no_discrims_found":"Je n’ai pas pu trouver aucun utilisateur dans aucun des serveurs ou je me trouve avec un discriminateur `{0}`.",
 	"information.days_till_halloween":"Jours jusqu’à Halloween: `{0} jours`",

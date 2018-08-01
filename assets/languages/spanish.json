@@ -156,6 +156,7 @@
 	"information.server_muted":"Servidor Silenciado",
 	"information.server_deafened":"Server Deafened",
 	"information.avatar":"El url del avatar de {0} es {1}",
+	"information.default_avatar":"{0}'s default avatar url is: {1}",
 	"information.non-custom_emote":"Eso no es un emoticono personalizado",
 	"information.no_discrims_found":"No pude encontrar ningún usuario con el discriminador `{0}` dentro de los servidores en los que estoy.",
 	"information.days_till_halloween":"Días para halloween: `{0} days`",

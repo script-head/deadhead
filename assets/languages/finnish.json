@@ -156,6 +156,7 @@
 	"information.server_muted":"Server Muted",
 	"information.server_deafened":"Server Deafened",
 	"information.avatar":"{0}'s avatar url is: {1}",
+	"information.default_avatar":"{0}'s default avatar url is: {1}",
 	"information.non-custom_emote":"That is not a custom emote.",
 	"information.no_discrims_found":"I could not find any users in any of the servers I'm in with a discriminator of `{0}`.",
 	"information.days_till_halloween":"Days until halloween: `{0} days`",

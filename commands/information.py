@@ -80,14 +80,14 @@ class Information():
         """Gets your avatar url or the avatar url of the specified user"""
         if user is None:
             user = ctx.author
-        await ctx.send(Language.get("information.avatar", ctx).format(user.mention, get_avatar(user)))
+        await ctx.send(Language.get("information.avatar", ctx).format(user.name, get_avatar(user)))
 
     @commands.command()
     async def defaultavatar(self, ctx, *, user:discord.User=None):
         """Gets your default avatar url or the default avatar url of the specified user"""
         if user is None:
             user = ctx.author
-        await ctx.send(Language.get("default.id", ctx).format(user.mention, user.default_avatar_url))
+        await ctx.send(Language.get("information.default_avatar", ctx).format(user.mention, user.default_avatar_url))
 
     # Not gonna bother maintaining the roleinfo command anymore because
     # of permission changes and because its a giant block

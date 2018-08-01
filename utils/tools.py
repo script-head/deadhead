@@ -114,7 +114,7 @@ def extract_emote_id(arg):
 
 def get_avatar(user, animate=True):
     if user.avatar_url:
-        avatar = user.avatar_url
+        avatar = user.avatar_url.replace(".webp", ".png")
     else:
         avatar = user.default_avatar_url
     if not animate:
