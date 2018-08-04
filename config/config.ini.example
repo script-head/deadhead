@@ -98,3 +98,12 @@ enable = no
 
 ; Steam web api key. You can get one at http://steamcommunity.com/dev/apikey
 ;key =
+
+[Twitch]
+; Your twitch app ID
+;client_id =
+
+[Google]
+; Google API key
+; In order to create an api key, do this, go to https://console.developers.google.com/apis/credentials and under "create credentials" select "API key"
+;api_key =

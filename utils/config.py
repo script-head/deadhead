@@ -29,6 +29,8 @@ class Defaults:
     max_nsfw_count = 500
     enableSteam = False
     steamAPIKey = None
+    twitchClientID = None
+    googleAPIKey = None
 
 class Config:
     def __init__(self):
@@ -75,6 +77,8 @@ class Config:
         self._osuKey = config.get("Osu", "key", fallback=Defaults.osuKey)
         self.enableSteam = config.get("Steam", "enable", fallback=Defaults.osuKey)
         self._steamAPIKey = config.get("Steam", "key", fallback=Defaults.osuKey)
+        self._twitchClientID = config.get("Twitch", "client_id", fallback=Defaults.twitchClientID)
+        self._googleAPIKey = config.get("Google", "api_key", fallback=Defaults.googleAPIKey)
 
         self.check()
 

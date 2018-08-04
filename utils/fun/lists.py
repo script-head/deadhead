@@ -107,3 +107,73 @@ fight_results = [
     "but %attacker% activated %user%'s trap card!",
     "and %user% was killed!"
 ]
+
+# SFW neko types for the neko command
+sfw_neko_types = [
+    "neko",
+    "wallpaper",
+    "ngif",
+    "tickle",
+    "meow",
+    "feed",
+    "gecg",
+    "kemonomimi",
+    "poke",
+    "slap",
+    "avatar",
+    "holo",
+    "lizard",
+    "waifu",
+    "pat",
+    "8ball",
+    "kiss",
+    "cuddle",
+    "fox_girl",
+    "hug"
+]
+
+# NSFW neko types for the neko command
+nsfw_neko_types = [
+    "feet",
+    "yuri",
+    "trap",
+    "futanari",
+    "hololewd",
+    "lewdkemo",
+    "solog",
+    "feetg",
+    "cum",
+    "erokemo",
+    "les",
+    "lewdk",
+    "lewd",
+    "eroyuri",
+    "eron",
+    "cum_jpg",
+    "bj",
+    "nsfw_neko_gif",
+    "solo",
+    "kemonomimi",
+    "nsfw_avatar",
+    "gasm",
+    "anal",
+    "hentai",
+    "erofeet",
+    "keta",
+    "blowjob",
+    "pussy",
+    "tits",
+    "holoero",
+    "pussy_jpg",
+    "pwankg",
+    "classic",
+    "kuni",
+    "8ball",
+    "femdom",
+    "spank",
+    "erok",
+    "boobs"
+    "Random_hentai_gif",
+    "smallboobs",
+    "ero"
+]

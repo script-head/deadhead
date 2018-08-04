@@ -6,7 +6,6 @@ from utils.tools import *
 from utils.config import Config
 from utils import checks
 from utils.language import Language
-from utils.logger import log
 config = Config()
 
 # This is the limit to how many posts are selected
@@ -21,7 +20,7 @@ class NSFW():
     async def rule34(self, ctx, *, tags:str):
         await ctx.channel.trigger_typing()
         try:
-            data = json.loads(requests.get("http://rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
+            data = requests.get("http://rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
             await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
@@ -45,7 +44,7 @@ class NSFW():
         """Searches e621.net for the specified tagged images"""
         await ctx.channel.trigger_typing()
         try:
-            data = json.loads(requests.get("https://e621.net/post/index.json?limit={}&tags={}".format(limit, tags)).text)
+            data = requests.get("https://e621.net/post/index.json?limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
             await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
@@ -67,7 +66,7 @@ class NSFW():
         """Searches yande.re for the specified tagged images"""
         await ctx.channel.trigger_typing()
         try:
-            data = json.loads(requests.get("https://yande.re/post/index.json?limit={}&tags={}".format(limit, tags)).text)
+            data = requests.get("https://yande.re/post/index.json?limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
             await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
@@ -89,7 +88,7 @@ class NSFW():
         """Searches danbooru.donmai.us for the specified tagged images"""
         await ctx.channel.trigger_typing()
         try:
-            data = json.loads(requests.get("https://danbooru.donmai.us/post/index.json?limit={}&tags={}".format(limit, tags)).text)
+            data = requests.get("https://danbooru.donmai.us/post/index.json?limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
             await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
@@ -103,7 +102,7 @@ class NSFW():
         images = []
         for i in range(image_count):
             try:
-                images.append("http://danbooru.donmai.us{}".format(data[random.randint(0, count)]["file_url"]))
+                images.append(data[random.randint(0, count)]["file_url"])
             except KeyError:
                 await ctx.send(data["message"])
                 return
@@ -115,7 +114,7 @@ class NSFW():
         """Searches gelbooru.com for the specified tagged images"""
         await ctx.channel.trigger_typing()
         try:
-            data = json.loads(requests.get("https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
+            data = requests.get("https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
             await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return
@@ -141,7 +140,7 @@ class NSFW():
         """Searches xbooru.com for the specified tagged images"""
         await ctx.channel.trigger_typing()
         try:
-            data = json.loads(requests.get("https://xbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags)).text)
+            data = requests.get("https://xbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags),  headers=header).json()
         except json.JSONDecodeError:
             await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
             return

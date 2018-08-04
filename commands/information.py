@@ -3,9 +3,6 @@ import nmap
 import socket
 import pythonwhois
 
-#TODO: remove
-import traceback
-
 from discord.ext import commands
 from datetime import date
 from utils.tools import *
@@ -15,14 +12,22 @@ from utils.unicode import *
 from PIL import Image
 from utils.language import Language
 from utils import checks
+from twitch import TwitchClient
+from googleapiclient.discovery import build
+
 config = Config()
 
 halloween = date(2018, 10, 31)
 christmas = date(2018, 12, 25)
 
+twitch = None
+youtubeAPI = youtubeAPI = build("youtube", "v3", developerKey=config._googleAPIKey)
+
 class Information():
     def __init__(self, bot):
         self.bot = bot
+        if config._twitchClientID is not None:
+            twitch = TwitchClient(client_id=config._twitchClientID)
 
     @commands.command()
     async def id(self, ctx, user:discord.User=None):
@@ -341,6 +346,73 @@ class Information():
             await ctx.send("{} is not playing anything on spotify!".format(user.display_name))
             return
 
+    @commands.command()
+    async def twitch(self, ctx, *, name:str):
+        """Gets a twitch channel's statistics."""
+        if twitch is None:
+            await ctx.send("The bot owner did not specify a twitch api key, therefore this command is disabled.")
+            return
+        try:
+            channel = twitch.search.channels(name, limit=1)[0]
+        except IndexError:
+            await ctx.send("Could not find any channel by the name of **{}**".format(name))
+            return
+        stream =  twitch.streams.get_stream_by_user(channel["id"])
+        streaming = False
+        fields = {"Broadcast Name":channel["status"], "For mature audiences":channel["mature"], "Game":channel["game"], "Created On":format_time(channel["created_at"]), "Total Views":format_number(channel["views"]), "Followers":format_number(channel["followers"])}
+        if stream is not None:
+            streaming = True
+            fields["Live Viewers"] = format_number(stream["viewers"])
+        fields["Live"] = streaming
+        embed = make_list_embed(fields)
+        embed.description = channel["description"]
+        embed.title = channel["display_name"]
+        embed.url = channel["url"]
+        if streaming:
+            embed.set_image(url=stream["preview"]["large"] + "?v={}".format(random.randint(0, 10000)))
+            embed.color = 0xFF0000
+        else:
+            embed.set_image(url=channel["video_banner"])
+            embed.color = 0x593695
+        embed.set_thumbnail(url=channel["logo"])
+        await ctx.send(embed=embed)
+
+    @commands.command(hidden=True)
+    @checks.is_dev()
+    async def infodebug(self, ctx, *, shit:str):
+        """This is the part where I make 20,000 typos before I get it right"""
+        # "what the fuck is with your variable naming" - EJH2
+        # seth seriously what the fuck - Robin
+        import asyncio
+        import os
+        import random
+        import re
+        from datetime import datetime, timedelta
+        try:
+            rebug = eval(shit)
+            if asyncio.iscoroutine(rebug):
+                rebug = await rebug
+            await ctx.send(py.format(rebug))
+        except Exception as damnit:
+            await ctx.send(py.format("{}: {}".format(type(damnit).__name__, damnit)))
+
+    @commands.command()
+    async def youtube(self, ctx, *, name:str):
+        """Gets statistics on a youtube channel"""
+        channel = get_youtube_channel(youtubeAPI, name)
+        if channel is None:
+            await ctx.send("No YouTube channel was found by the name of **{}**".format(name))
+            return
+        fields = {"Subscribers":format_number(int(channel["statistics"]["subscriberCount"])), "Subscriber Count Hidden":channel["statistics"]["hiddenSubscriberCount"], "Channel View Count":format_number(int(channel["statistics"]["viewCount"])), "Total Videos":format_number(int(channel["statistics"]["videoCount"]))}
+        fields["Created On"] = format_time(datetime.strptime(channel["snippet"]["publishedAt"], "%Y-%m-%dT%H:%M:%S.000Z"))
+        embed = make_list_embed(fields)
+        embed.set_thumbnail(url=channel["snippet"]["thumbnails"]["high"]["url"])
+        embed.set_image(url=channel["brandingSettings"]["image"]["bannerTvHighImageUrl"])
+        embed.description = channel["snippet"]["description"]
+        embed.color = 0xFF0000
+        embed.title = channel["snippet"]["title"]
+        embed.url = "https://youtube.com/channel/{}".format(channel["id"])
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Information(bot))

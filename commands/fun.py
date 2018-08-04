@@ -341,5 +341,31 @@ class Fun():
         """Cow list for the cowsay command"""
         await ctx.send("Current list of cows:```{}```".format(", ".join(cowList.keys())))
 
+    @commands.command()
+    async def neko(self, ctx, type:str):
+        """Gets an image from nekos.life"""
+        if type == "sfwlist":
+            await ctx.send("```{}```".format(", ".join(sfw_neko_types)))
+            return
+        elif type == "nsfwlist":
+            if not ctx.channel.is_nsfw():
+                await ctx.send("I can only list nsfw types in a nsfw channel.")
+            else:
+                await ctx.send("```{}```".format(", ".join(nsfw_neko_types)))
+            return
+        elif type in nsfw_neko_types:
+            if not ctx.channel.is_nsfw():
+                await ctx.send("This type can only be displayed in nsfw channels.")
+                return
+        elif type not in sfw_neko_types:
+            await ctx.send("Please run `{0}neko sfwlist` for sfw image types, and `{0}neko nsfwlist` for nsfw image types.".format(ctx.prefix))
+            return
+        await ctx.send(embed=get_neko_image(type, ctx.author))
+
+    @commands.command()
+    async def owo(self, ctx, *, text:str):
+        """OwO, owoify something >w<"""
+        await ctx.send(owoify(text))
+
 def setup(bot):
     bot.add_cog(Fun(bot))

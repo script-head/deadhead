@@ -51,9 +51,16 @@ change_log = [
     "+ nou",
     "+ cow",
     "+ fortune",
-    "+ cows"
+    "+ cows",
+    "+ neko",
+    "+ twitch",
+    "+ youtube",
+    "+ owu",
     "Other things:",
-    "None"
+    "The avatar command will now display png instead of webp for non-animated avatars",
+    "Fixed NSFW commands so they don't return the JSONDecodeError (hopefully)",
+    "The defaultavatar command works again.",
+    "The shardid command actually shows what shard you're on now"
 ]
 
 async def _restart_bot():
@@ -683,9 +690,11 @@ async def translators(ctx):
     embed.color = 0xFF0000
     await ctx.send(embed=embed)
 
+@commands.guild_only()
 @bot.command()
 async def shardid(ctx):
-    await ctx.send("{}/{}".format(bot.shard_id, bot.shard_count))
+    """Display what shard you're on and count how many total shards exist"""
+    await ctx.send("{}/{}".format(ctx.guild.shard_id, bot.shard_count))
 
 print("Connecting...")
 bot.run(config._token)

@@ -14,3 +14,5 @@ steam
 lxml
 cowpy
 fortune
+python-twitch-client
+google-api-python-client

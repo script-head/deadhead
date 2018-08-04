@@ -2,8 +2,10 @@ import re
 import requests
 import discord
 import io
+import random
+
 from cowpy import cow
-from datetime import datetime
+from .unicode import *
 
 emote_id_match = re.compile(r"<:(.+?):(\d+)>")
 
@@ -14,6 +16,8 @@ py = "```py\n{}```"
 xl = "```xl\n{}```"
 
 diff = "```diff\n{}```"
+
+header = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:61.0) Gecko/20100101 Firefox/61.0"}
 
 encode_morse ={
     "1":".----",
@@ -64,6 +68,8 @@ encode_morse ={
     " ":"/"
 }
 
+decode_morse = dict((morse_char, char) for (char, morse_char) in encode_morse.items())
+
 cowList = {
     "cow":cow.Cowacter(),
     "hellokitty":cow.HelloKitty(),
@@ -85,8 +91,6 @@ cowList = {
     "tux":cow.Tux(),
     "vader":cow.Vader()
 }
-
-decode_morse = dict((morse_char, char) for (char, morse_char) in encode_morse.items())
 
 def write_file(filename, contents):
     with open(filename, "w", encoding="utf8") as file:
@@ -175,3 +179,29 @@ def url_to_bytes(url):
     content = io.BytesIO(data.content)
     filename = url.rsplit("/", 1)[-1]
     return {"content":content, "filename":filename}
+
+def get_neko_image(type, user):
+    embed = discord.Embed(color=0xFF0000)
+    embed.set_footer(text="{} ({})".format(user.display_name, user), icon_url=get_avatar(user))
+    url = "https://nekos.life/api/v2/img/" + type
+    url = requests.get(url, headers=header).json()["url"]
+    embed.set_image(url=url)
+    return embed
+
+def get_youtube_channel(service, name):
+    try:
+        id = service.search().list(q=name, part="id", type="channel").execute()["items"][0]["id"]["channelId"]
+    except IndexError:
+        return None
+    return service.channels().list(part="snippet,statistics,brandingSettings", id=id).execute()["items"][0]
+
+def owoify(text):
+    faces = [misc_weeb_face, "w", "owo", "UwU", ">w<", "^w^"]
+    text = re.sub("(?:r|l)", "w", text)
+    text = re.sub("(?:R|L)", "W", text)
+    text = re.sub("n([aeiou])", "ny\g<1>", text)
+    text = re.sub("N([aeiou])", "Ny\g<1>", text)
+    text = re.sub("N([AEIOU])", "Ny\g<1>", text)
+    text = re.sub("ove", "uv", text)
+    text = re.sub("\!+", " " + random.choice(faces) + " ", text)
+    return text
