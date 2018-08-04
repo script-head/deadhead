@@ -55,7 +55,7 @@ change_log = [
     "+ neko",
     "+ twitch",
     "+ youtube",
-    "+ owu",
+    "+ owo",
     "Other things:",
     "The avatar command will now display png instead of webp for non-animated avatars",
     "Fixed NSFW commands so they don't return the JSONDecodeError (hopefully)",
