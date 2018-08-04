@@ -21,14 +21,12 @@ config = Config()
 halloween = date(2018, 10, 31)
 christmas = date(2018, 12, 25)
 
-twitch = None
+twitch = TwitchClient(client_id=config._twitchClientID)
 youtubeAPI = youtubeAPI = build("youtube", "v3", developerKey=config._googleAPIKey)
 
 class Information():
     def __init__(self, bot):
         self.bot = bot
-        if config._twitchClientID is not None:
-            twitch = TwitchClient(client_id=config._twitchClientID)
 
     @commands.command()
     async def id(self, ctx, user:discord.User=None):
@@ -360,12 +358,17 @@ class Information():
             return
         stream =  twitch.streams.get_stream_by_user(channel["id"])
         streaming = False
-        fields = {"Broadcast Name":channel["status"], "For mature audiences":channel["mature"], "Game":channel["game"], "Created On":format_time(channel["created_at"]), "Total Views":format_number(channel["views"]), "Followers":format_number(channel["followers"])}
+        game = None
+        if channel["game"]:
+            game = channel["game"]
+        fields = {"Broadcast Name":channel["status"], "For mature audiences":channel["mature"], "Game":game, "Created On":format_time(channel["created_at"]), "Total Views":format_number(channel["views"]), "Followers":format_number(channel["followers"])}
         if stream is not None:
             streaming = True
             fields["Live Viewers"] = format_number(stream["viewers"])
         fields["Live"] = streaming
         embed = make_list_embed(fields)
+        if channel["logo"] is not None:
+            embed.set_thumbnail(url=channel["logo"])
         embed.description = channel["description"]
         embed.title = channel["display_name"]
         embed.url = channel["url"]
@@ -373,9 +376,9 @@ class Information():
             embed.set_image(url=stream["preview"]["large"] + "?v={}".format(random.randint(0, 10000)))
             embed.color = 0xFF0000
         else:
-            embed.set_image(url=channel["video_banner"])
+            if channel["video_banner"] is not None:
+                embed.set_image(url=channel["video_banner"])
             embed.color = 0x593695
-        embed.set_thumbnail(url=channel["logo"])
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
@@ -407,8 +410,10 @@ class Information():
         fields = {"Subscribers":format_number(int(channel["statistics"]["subscriberCount"])), "Subscriber Count Hidden":channel["statistics"]["hiddenSubscriberCount"], "Channel View Count":format_number(int(channel["statistics"]["viewCount"])), "Total Videos":format_number(int(channel["statistics"]["videoCount"]))}
         fields["Created On"] = format_time(datetime.strptime(channel["snippet"]["publishedAt"], "%Y-%m-%dT%H:%M:%S.000Z"))
         embed = make_list_embed(fields)
-        embed.set_thumbnail(url=channel["snippet"]["thumbnails"]["high"]["url"])
-        embed.set_image(url=channel["brandingSettings"]["image"]["bannerTvHighImageUrl"])
+        if channel["snippet"]["thumbnails"]["high"]["url"] is not None:
+            embed.set_thumbnail(url=channel["snippet"]["thumbnails"]["high"]["url"])
+        if channel["brandingSettings"]["image"]["bannerTvHighImageUrl"] is not None:
+            embed.set_image(url=channel["brandingSettings"]["image"]["bannerTvHighImageUrl"])
         embed.description = channel["snippet"]["description"]
         embed.color = 0xFF0000
         embed.title = channel["snippet"]["title"]
