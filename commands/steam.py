@@ -7,6 +7,7 @@ from steam.enums import EPersonaState
 from utils.config import Config
 from utils.tools import *
 from utils import checks
+from datetime import datetime
 config = Config()
 
 steamAPI = WebAPI(config._steamAPIKey)
