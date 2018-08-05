@@ -410,10 +410,14 @@ class Information():
         fields = {"Subscribers":format_number(int(channel["statistics"]["subscriberCount"])), "Subscriber Count Hidden":channel["statistics"]["hiddenSubscriberCount"], "Channel View Count":format_number(int(channel["statistics"]["viewCount"])), "Total Videos":format_number(int(channel["statistics"]["videoCount"]))}
         fields["Created On"] = format_time(datetime.strptime(channel["snippet"]["publishedAt"], "%Y-%m-%dT%H:%M:%S.000Z"))
         embed = make_list_embed(fields)
-        if channel["snippet"]["thumbnails"]["high"]["url"] is not None:
+        try:
             embed.set_thumbnail(url=channel["snippet"]["thumbnails"]["high"]["url"])
-        if channel["brandingSettings"]["image"]["bannerTvHighImageUrl"] is not None:
+        except KeyError:
+            pass
+        try:
             embed.set_image(url=channel["brandingSettings"]["image"]["bannerTvHighImageUrl"])
+        except KeyError:
+            pass
         embed.description = channel["snippet"]["description"]
         embed.color = 0xFF0000
         embed.title = channel["snippet"]["title"]

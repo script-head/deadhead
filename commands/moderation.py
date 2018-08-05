@@ -410,7 +410,7 @@ class Moderation():
         success = 0
         for id in ids:
             try:
-                await self.bot.http.ban(id, ctx.guild.id, delete_message_days=0)
+                await self.bot.http.ban(int(id), ctx.guild.id, delete_message_days=0)
                 success += 1
             except:
                 failed_ids.append("`{}`".format(id))
