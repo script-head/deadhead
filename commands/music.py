@@ -113,7 +113,7 @@ class Music:
         options.append("--output")
         options.append("data/music/{}/%(id)s.mp3".format(ctx.guild.id))
         options.append("https://youtube.com/watch?v={}".format(id))
-        command = ["/usr/local/bin/youtube-dl"]
+        command = ["youtube-dl"]
         command.extend(options)
         subprocess.call(command)
         path = "data/music/{}".format(ctx.guild.id)
