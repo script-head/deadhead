@@ -1,6 +1,5 @@
 import asyncio
 import cat
-import random
 import os
 import hashlib
 
@@ -13,7 +12,7 @@ from utils import imagetools
 from PIL import Image
 from utils.language import Language
 
-class Fun():
+class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -21,7 +20,7 @@ class Fun():
     async def say(self, ctx, *, message:str):
         """Make the bot say whatever you want it to say"""
         try:
-            await self.bot.delete_message(ctx.message)
+            await ctx.message.delete()
         except:
             pass
         await ctx.send(strip_global_mentions(message, ctx))

@@ -24,7 +24,7 @@ christmas = date(2018, 12, 25)
 twitch = TwitchClient(client_id=config._twitchClientID)
 youtubeAPI = youtubeAPI = build("youtube", "v3", developerKey=config._googleAPIKey)
 
-class Information():
+class Information(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

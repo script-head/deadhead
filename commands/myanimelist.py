@@ -9,7 +9,7 @@ from utils.tools import *
 from utils.language import Language
 config = Config()
 
-class MyAnimeList():
+class MyAnimeList(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

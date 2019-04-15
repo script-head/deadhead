@@ -2,7 +2,7 @@ import discord
 
 from discord.ext import commands
 
-class Reactions():
+class Reactions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

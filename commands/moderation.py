@@ -7,7 +7,7 @@ from utils.tools import *
 from utils import checks
 from utils.language import Language
 
-class Moderation():
+class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logger = Channel_Logger(bot)

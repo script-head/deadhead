@@ -12,7 +12,7 @@ config = Config()
 
 steamAPI = WebAPI(config._steamAPIKey)
 
-class Steam():
+class Steam(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
