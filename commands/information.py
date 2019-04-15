@@ -59,8 +59,8 @@ class Information(commands.Cog):
         if user is None:
             user = ctx.author
         game = None
-        if user.game:
-            game = user.game.name
+        if user.activity:
+            game = user.activity.name
         voice_channel = None
         self_mute = False
         self_deaf = False
@@ -77,6 +77,18 @@ class Information(commands.Cog):
         embed.title = str(user)
         embed.color = user.color
         embed.set_thumbnail(url=get_avatar(user))
+        await ctx.send(embed=embed)
+
+    @commands.guild_only()
+    @commands.command()
+    async def fuckyou(self, ctx, *, user: discord.Member = None):
+        """Gets your information or the information of the specified user"""
+        user = ctx.author
+        fields = {"fuck":"you"}
+        embed = make_list_embed(fields)
+        embed.title = str(user)
+        embed.color = user.color
+        #embed.set_thumbnail(url=get_avatar(user))
         await ctx.send(embed=embed)
 
     @commands.command()

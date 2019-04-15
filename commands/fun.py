@@ -135,12 +135,15 @@ class Fun(commands.Cog):
     async def quote(self, ctx, id:int):
         """Quotes a message with the specified message ID"""
         try:
-            message = await ctx.channel.get_message(id)
+            message = await ctx.channel.fetch_message(id)
         except discord.errors.NotFound:
             await ctx.send(Language.get("bot.no_message_found", ctx).format(id))
             return
         embed = make_message_embed(message.author, message.author.color, message.content, formatUser=True)
-        embed.timestamp = message.edited_at
+        timestamp = message.created_at
+        if message.edited_at:
+            timestamp = message.edited_at
+        embed.timestamp = timestamp
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -216,7 +219,7 @@ class Fun(commands.Cog):
     async def react(self, ctx, id:int, emote:str):
         """Reacts to a message with the specifed message id and the specified emote"""
         try:
-             message = await ctx.channel.get_message(id)
+             message = await ctx.channel.fetch_message(id)
         except discord.errors.NotFound:
             await ctx.send(Language.get("bot.no_message_found", ctx).format(id))
             return

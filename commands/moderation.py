@@ -184,7 +184,7 @@ class Moderation(commands.Cog):
     async def pin(self, ctx, id:int):
         """Pins the message with the specified ID to the channel"""
         try:
-            message = await ctx.channel.get_message(id)
+            message = await ctx.channel.fetch_message(id)
         except discord.errors.NotFound:
             await ctx.send(Language.get("bot.no_message_found", ctx).format(id))
             return
@@ -424,7 +424,7 @@ class Moderation(commands.Cog):
     async def removereactions(self, ctx, id:int):
         """Clear reactions from a message"""
         try:
-            message = await ctx.channel.get_message(id)
+            message = await ctx.channel.fetch_message(id)
         except discord.errors.NotFound:
             await ctx.send(Language.get("bot.no_message_found", ctx).format(id))
             return
