@@ -30,7 +30,7 @@ config = Config()
 log.setupRotator(config.log_date_format, config.log_time_format)
 if config.debug:
     log.enableDebugging() # pls no flame
-bot = commands.AutoShardedBot(command_prefix=config.command_prefix, description="A multi-purpose Ruby Rose from RWBY themed discord bot", pm_help=None)
+bot = commands.AutoShardedBot(command_prefix=config.command_prefix, description="A multi-purpose discord bot.", pm_help=None)
 channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
@@ -47,20 +47,6 @@ extensions = [
 
 # Thy changelog
 change_log = [
-    "Commands:",
-    "+ nou",
-    "+ cow",
-    "+ fortune",
-    "+ cows",
-    "+ neko",
-    "+ twitch",
-    "+ youtube",
-    "+ owo",
-    "Other things:",
-    "The avatar command will now display png instead of webp for non-animated avatars",
-    "Fixed NSFW commands so they don't return the JSONDecodeError (hopefully)",
-    "The defaultavatar command works again.",
-    "The shardid command actually shows what shard you're on now"
 ]
 
 async def _restart_bot():
@@ -114,7 +100,7 @@ async def on_ready():
     if config.enable_default_status:
         await set_default_status()
     else:
-        await bot.change_presence(activity=discord.Activity(name="Zwei", type=discord.ActivityType.watching), status=discord.Status.dnd)
+        await bot.change_presence(activity=discord.Activity(name="code failure", type=discord.ActivityType.watching), status=discord.Status.dnd)
     for extension in extensions:
         try:
             bot.load_extension(extension)
@@ -553,7 +539,7 @@ async def reload(ctx, *, extension:str):
 @bot.command()
 async def joinserver(ctx):
     """Sends the bot's OAuth2 link"""
-    await ctx.author.send(Language.get("bot.joinserver", ctx).format("http://invite.ruby.zeroepoch1969.rip"))
+    await ctx.author.send(Language.get("bot.joinserver", ctx).format("https://deadhead.scripthead.me"))
 
 @bot.command()
 async def invite(ctx):
@@ -565,7 +551,7 @@ async def ping(ctx):
     """Pings the bot"""
     pingms = await ctx.send(Language.get("bot.pinging", ctx))
     start = time.time()
-    async with aiosession.get("https://discordapp.com"):
+    async with aiosession.get("https://discord.com"):
         duration = time.time() - start
     duration = round(duration * 1000)
     await pingms.edit(content="{0} // **{1}ms**".format(pingms.content, duration))

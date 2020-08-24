@@ -15,5 +15,4 @@ def load_opus_lib(opus_libs=OPUS_LIBS):
             return
         except OSError:
             pass
-    log.critical("Could not load an opus lib. Tried {}".format(", ".join(opus_libs)))
-    os._exit(1)
+    log.error("Could not load an opus lib. Tried {}".format(", ".join(opus_libs)))

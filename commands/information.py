@@ -79,18 +79,6 @@ class Information(commands.Cog):
         embed.set_thumbnail(url=get_avatar(user))
         await ctx.send(embed=embed)
 
-    @commands.guild_only()
-    @commands.command()
-    async def fuckyou(self, ctx, *, user: discord.Member = None):
-        """Gets your information or the information of the specified user"""
-        user = ctx.author
-        fields = {"fuck":"you"}
-        embed = make_list_embed(fields)
-        embed.title = str(user)
-        embed.color = user.color
-        #embed.set_thumbnail(url=get_avatar(user))
-        await ctx.send(embed=embed)
-
     @commands.command()
     async def avatar(self, ctx, *, user:discord.User=None):
         """Gets your avatar url or the avatar url of the specified user"""
@@ -158,16 +146,6 @@ class Information(commands.Cog):
     async def daystillchristmas(self, ctx):
         """Displays how many days until it's christmas"""
         await ctx.send(Language.get("information.days_till_christmas", ctx).format((christmas - date.today()).days))
-
-    @commands.command(hidden=True)
-    @checks.is_dev()
-    async def getserverinfo(self, ctx, *, name:str):
-        """Gets very basic server info on the server with the specified name"""
-        guild = discord.utils.get(self.bot.guilds, name=name)
-        if guild is None:
-            await ctx.send("I could not find a server by the name of `{}`".format(name))
-        else:
-            await ctx.send("```Name: {}\nID: {}\nOwner: {}\nOwner ID: {}\nMember count: {}\nDate created: {}```".format(guild.name, guild.id, guild.owner, guild.owner.id, len(guild.members), format_time(guild.created_at)))
 
     @commands.command()
     async def isitdown(self, ctx, *, url:str):
@@ -243,37 +221,6 @@ class Information(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def portscan(self, ctx, host:str, ports:str):
-        """Uses nmap to scan the specified ports from the specified host"""
-        await ctx.channel.trigger_typing()
-        forbidden_hosts = ["localhost", "0.0.0.0", "127.0.0.1"]
-        if host in forbidden_hosts:
-            await ctx.send(Language.get("information.forbidden_host", ctx).format(host))
-            return
-        scanner = nmap.PortScanner()
-        try:
-            host = socket.gethostbyname(host)
-        except socket.gaierror:
-            await ctx.send("`{}` is not a valid address".format(host))
-            return
-        ports = scanner.scan(host, ports)["scan"][host]["tcp"]
-        results = []
-        for port, data in ports.items():
-            service = data["name"]
-            if service == "":
-                service = Language.get("information.unknown", ctx)
-            results.append(Language.get("information.port_status", ctx).format(port, service, data["state"]))
-        await ctx.send(xl.format("\n".join(results)))
-
-    @commands.command()
-    async def getnumericip(self, ctx, address:str):
-        """Resolves the numeric ip of a domain"""
-        try:
-            await ctx.send(socket.gethostbyname(address))
-        except socket.gaierror:
-            await ctx.send(Language.get("information.invalid_address", ctx).format(address))
-
-    @commands.command()
     async def whois(self, ctx, domain:str):
         """Gets whois information on a domain"""
         try:
@@ -305,22 +252,6 @@ class Information(commands.Cog):
             await ctx.send(Language.get("bot.invalid_color", ctx).format(hexcode))
             return
         await ctx.send(file=discord.File("data/color.png", "{}.png".format(hexcode.strip("#"))))
-
-    @commands.command()
-    async def getuserbyid(self, ctx, id:int):
-        """Gets a user by id"""
-        user = discord.utils.get(list(self.bot.get_all_members()), id=id)
-        if not user:
-            await ctx.send(Language.get("information.no_mutual_servers", ctx).format(id))
-            return
-        if user.game:
-            game = user.game.name
-        fields = {Language.get("information.name", ctx):user.name, Language.get("information.discriminator", ctx):user.discriminator, Language.get("information.id", ctx):user.id, Language.get("information.statud", ctx):str(user.status).replace("dnd", "do not disturb"), Language.get("information.game", ctx):game, Language.get("information.boot", ctx):user.bot}
-        embed = make_list_embed(fields)
-        embed.title = str(user)
-        embed.color = 0xFF0000
-        embed.set_thumbnail(url=get_avatar(user))
-        await ctx.send(embed=embed)
 
     @commands.guild_only()
     @commands.command()

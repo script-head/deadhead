@@ -1,5 +1,4 @@
-# Ruby Rose - The Discord bot
-If you are looking for a command list, run the command ``r!help`` if you want a command syntax do ``r!help <command>`` For the support server do ``r!invite``
+# deadhead - An API bot
+If you are looking for a command list, run the command ``dh.help`` if you want a command syntax run ``dh.help <command>`` For the support server run ``dh.invite``
 
-# Website
-The official documentation for the bot can be found at [https://ruby.zeroepoch1969.rip](https://ruby.zeroepoch1969.rip)
+You can invite the bot to your server at [https://deadhead.scripthead.me](https://deadhead.scripthead.me)
