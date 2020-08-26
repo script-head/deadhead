@@ -45,12 +45,6 @@ class Fun(commands.Cog):
         await ctx.send("http://niceme.me")
 
     @commands.command()
-    async def yiffinhell(self, ctx):
-        """snek yiff"""
-        await ctx.channel.trigger_typing()
-        await ctx.send(file=discord.File("assets/imgs/yiffinhell.png"))
-
-    @commands.command()
     async def spam(self, ctx):
         """SPAM SPAM SPAM"""
         await ctx.channel.trigger_typing()
@@ -61,12 +55,6 @@ class Fun(commands.Cog):
         """The rules of the internet"""
         await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/InternetRules.txt"))
-
-    @commands.command()
-    async def quoteaf(self, ctx):
-        """Don't quote me on that"""
-        await ctx.channel.trigger_typing()
-        await ctx.send(file=discord.File("assets/imgs/quotes/{}.png".format(random.randint(1, len([file for file in os.listdir("assets/imgs/quotes")])))))
 
     @commands.command()
     async def b1nzy(self, ctx):

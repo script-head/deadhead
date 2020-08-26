@@ -30,7 +30,7 @@ config = Config()
 log.setupRotator(config.log_date_format, config.log_time_format)
 if config.debug:
     log.enableDebugging() # pls no flame
-bot = commands.AutoShardedBot(command_prefix=config.command_prefix, description="A multi-purpose discord bot.", pm_help=None)
+bot = commands.AutoShardedBot(command_prefix=config.command_prefix, description="A multi-purpose API-centric discord bot.", pm_help=True)
 channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
