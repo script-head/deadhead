@@ -1,9 +1,6 @@
 import sqlite3
-import discord
 
-from utils.tools import convert_to_bool
-
-conn = sqlite3.connect("data/Ruby.db")
+conn = sqlite3.connect("data/data.db")
 conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 
@@ -22,23 +19,14 @@ def read_data_entry(id, type):
         val = cur.fetchone()[0]
     except:
         if type == "mod-role":
-            insert_data_entry(id, type, "Mods")
-            val = "Mods"
+            val = None
+        elif type == "admin-role":
+            val = None
         elif type == "mute-role":
-            insert_data_entry(id, type, "Muted")
-            val = "Muted"
-        elif type == "join-message":
-            insert_data_entry(id, type, None)
-            val = None
-        elif type == "leave-message":
-            insert_data_entry(id, type, None)
-            val = None
-        elif type == "join-leave-channel":
-            insert_data_entry(id, type, None)
             val = None
         elif type == "join-role":
-            insert_data_entry(id, type, None)
             val = None
+        insert_data_entry(id, type, val)
     return val
 
 def update_data_entry(id, type, value):
@@ -60,10 +48,6 @@ def unblacklistuser(id):
 
 def getblacklistentry(id):
     cur.execute("""SELECT id FROM blacklist WHERE id=""" + str(id))
-    id = None
-    name = None
-    discrim = None
-    reason = None
     try:
         id = cur.fetchone()[0]
     except:

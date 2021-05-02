@@ -1,7 +1,7 @@
 import time
 import nmap
 import socket
-import pythonwhois
+#import pythonwhois
 
 from discord.ext import commands
 from datetime import date
@@ -18,8 +18,8 @@ from datetime import datetime
 
 config = Config()
 
-halloween = date(2018, 10, 31)
-christmas = date(2018, 12, 25)
+halloween = date(2021, 10, 31)
+christmas = date(2021, 12, 25)
 
 twitch = TwitchClient(client_id=config._twitchClientID)
 youtubeAPI = youtubeAPI = build("youtube", "v3", developerKey=config._googleAPIKey)
@@ -30,7 +30,7 @@ class Information(commands.Cog):
 
     @commands.command()
     async def id(self, ctx, user:discord.User=None):
-        """Gets your ID or if you @mention a user it gets their id"""
+        """Gets your ID or the specified user's ID"""
         if user is None:
             await ctx.send(Language.get("information.author_id", ctx).format(ctx.author.id))
         else:
@@ -93,24 +93,30 @@ class Information(commands.Cog):
             user = ctx.author
         await ctx.send(Language.get("information.default_avatar", ctx).format(user.mention, user.default_avatar_url))
 
-    # Not gonna bother maintaining the roleinfo command anymore because
-    # of permission changes and because its a giant block
     @commands.guild_only()
-    @checks.is_dev()
     @commands.command(hidden=True)
-    async def roleinfo(self, ctx, *, name:str):
+    async def roleinfo(self, ctx, *, role:discord.Role):
         """Gets information on a role"""
-        role = discord.utils.get(ctx.guild.roles, name=name)
         if role is None:
-            await ctx.send("`{}` is not a valid role".format(name))
+            await ctx.send("`{}` is not a valid role".format(role))
             return
         color = role.color
         if color == discord.Color(value=0x000000):
             color = None
         count = len([member for member in ctx.guild.members if discord.utils.get(member.roles, name=role.name)])
-        perms = role.permissions
-        permlist = "Can ban members: {}\nCan change nickname: {}\nCan connect to voice channels: {}\nCan create instant invites: {}\nCan deafen members: {}\nCan embed links: {}\nCan use external emojis: {}\nCan manage channel: {}\nCan manage emojis: {}\nCan manage messages: {}\nCan manage nicknames: {}\nCan manage roles: {}\nCan manage server: {}\nCan mention everyone: {}\nCan move members: {}\nCan mute members: {}\nCan read message history: {}\nCan send messages: {}\nCan speak: {}\nCan use voice activity: {}\nCan manage webbooks: {}\nCan add reactions: {}\nCan view audit logs: {}".format(perms.ban_members, perms.change_nickname, perms.connect, perms.create_instant_invite, perms.deafen_members, perms.embed_links, perms.external_emojis, perms.manage_channels, perms.manage_emojis, perms.manage_messages, perms.manage_nicknames, perms.manage_roles, perms.manage_guild, perms.mention_everyone, perms.move_members, perms.mute_members, perms.read_message_history, perms.send_messages, perms.speak, perms.use_voice_activation, perms.manage_webhooks, perms.add_reactions, perms.view_audit_log)
-        await ctx.send(py.format("Name: \"{}\"\nID: {}\nColor: {}\nPosition: {}\nUser count: {}\nMentionable: {}\nDisplay separately: {}\n".format(role.name, role.id, color, role.position, count, role.mentionable, role.hoist) + permlist))
+        fields = {
+            "id":role.id,
+            "Members":count,
+            "Creation Date":role.created_at,
+            "Hierarchy Position":role.position,
+            "Managed by Integration":role.managed,
+            "Mentionable":role.mentionable,
+            "Displayed Separately":role.hoist
+        }
+        embed = make_list_embed(fields)
+        embed.title = role.name
+        embed.color = color
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def emoteurl(self, ctx, *, emote:str):
@@ -122,20 +128,7 @@ class Information(commands.Cog):
         extension = "png"
         if emote.startswith("<a"):
             extension = "gif"
-        await ctx.send("https://discordapp.com/api/emojis/{}.{}".format(emote_id, extension))
-
-    @commands.command()
-    async def discrim(self, ctx, *, discriminator:str):
-        """Gets a username#discriminator list of all users that the bot can see with the specified discriminator"""
-        members = []
-        for member in list(self.bot.get_all_members()):
-            if member.discriminator == discriminator and str(member) not in members:
-                members.append(str(member))
-        if len(members) == 0:
-            members = Language.get("information.no_discrims_found", ctx).format(discriminator)
-        else:
-            members = "```{}```".format(", ".join(members))
-        await ctx.send(members)
+        await ctx.send("https://cdn.discordapp.com/emojis/{}.{}?v=1".format(emote_id, extension))
 
     @commands.command()
     async def daystillhalloween(self, ctx):
@@ -154,13 +147,20 @@ class Information(commands.Cog):
         url = url.strip("<>")
         if not url.startswith("http://") and not url.startswith("https://"):
             url = "http://{}".format(url)
+        embed = discord.Embed()
+        embed.title = url
+        embed.url = url
         try:
             starttime = time.time()
             requests.get(url, timeout=3)
             ping = Language.get("information.ping_time", ctx) % (time.time() - starttime)
-            await ctx.send(Language.get("information.online_ping", ctx).format(url, ping))
+            embed.description = "Website online"
+            embed.add_field(name="Ping", value=str(ping))
+            embed.color = 0x00FF00
         except:
-            await ctx.send(Language.get("information.offline_ping", ctx).format(url))
+            embed.description = "Website offline"
+            embed.color = 0xFF0000
+        await ctx.send(embed=embed)
 
     @commands.guild_only()
     @commands.command()
@@ -213,32 +213,32 @@ class Information(commands.Cog):
     @commands.command()
     async def emoteinfo(self, ctx, *, emote:discord.Emoji):
         """Gets information on a custom emote (Only works for servers the bot is on)"""
-        fields = {Language.get("information.name", ctx):emote.name, Language.get("information.id", ctx):emote.id, Language.get("information.server_origin", ctx):emote.guild.name, Language.get("information.created_on", ctx):format_time(emote.created_at), Language.get("information.colons_required", ctx):emote.require_colons, Language.get("information.managed_by_twitch", ctx):emote.managed}
+        fields = {Language.get("information.name", ctx):emote.name, Language.get("information.id", ctx):emote.id, Language.get("information.server_origin", ctx):emote.guild.name, Language.get("information.created_on", ctx):format_time(emote.created_at), Language.get("information.colons_required", ctx):emote.require_colons, Language.get("information.managed_by_twitch", ctx):emote.managed, "Animated":emote.animated}
         embed = make_list_embed(fields)
         embed.title = ":{}:".format(emote.name)
         embed.color = 0xFF0000
         embed.set_thumbnail(url=emote.url)
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def whois(self, ctx, domain:str):
-        """Gets whois information on a domain"""
-        try:
-            info = pythonwhois.get_whois(domain)
-        except pythonwhois.shared.WhoisException:
-            await ctx.send(Language.get("information.root_server_not_found", ctx))
-            return
-        except KeyError:
-            await ctx.send(Language.get("information.failed_domain_lookup", ctx))
-            return
-        if info["contacts"]["registrant"] is None:
-            await ctx.send(embed=discord.Embed(title=Language.get("information.domain_available_title", ctx), description=Language.get("information.domain_available_description", ctx).format(domain), color=0x00FF00))
-            return
-        fields = {Language.get("information.registrar", ctx):info["registrar"][0], Language.get("information.registered_on", ctx):format_time(info["creation_date"][0]), Language.get("information.expires_on", ctx):format_time(info["expiration_date"][0]), Language.get("information.last_updated", ctx):format_time(info["updated_date"][0]), Language.get("information.name_servers", ctx):", ".join(info["nameservers"])}
-        embed = make_list_embed(fields)
-        embed.title = Language.get("information.domain_unavailable", ctx)
-        embed.color = 0xFF0000
-        await ctx.send(embed=embed)
+    #@commands.command()
+    #async def whois(self, ctx, domain:str):
+    #    """Gets whois information on a domain"""
+    #    try:
+    #        info = pythonwhois.get_whois(domain)
+    #    except pythonwhois.shared.WhoisException:
+    #        await ctx.send(Language.get("information.root_server_not_found", ctx))
+    #        return
+    #    except KeyError:
+    #        await ctx.send(Language.get("information.failed_domain_lookup", ctx))
+    #        return
+    #    if info["contacts"]["registrant"] is None:
+    #        await ctx.send(embed=discord.Embed(title=Language.get("information.domain_available_title", ctx), description=Language.get("information.domain_available_description", ctx).format(domain), color=0x00FF00))
+    #        return
+    #    fields = {Language.get("information.registrar", ctx):info["registrar"][0], Language.get("information.registered_on", ctx):format_time(info["creation_date"][0]), Language.get("information.expires_on", ctx):format_time(info["expiration_date"][0]), Language.get("information.last_updated", ctx):format_time(info["updated_date"][0]), Language.get("information.name_servers", ctx):", ".join(info["nameservers"])}
+    #    embed = make_list_embed(fields)
+    #    embed.title = Language.get("information.domain_unavailable", ctx)
+    #    embed.color = 0xFF0000
+    #    await ctx.send(embed=embed)
 
     @commands.command()
     async def color(self, ctx, *, hexcode:str):
@@ -249,7 +249,7 @@ class Information(commands.Cog):
         try:
             Image.new("RGBA", (50, 50), hexcode).save("data/color.png")
         except ValueError:
-            await ctx.send(Language.get("bot.invalid_color", ctx).format(hexcode))
+            await ctx.send(Language.get("bot.invalid_color", ctx).format(strip_global_mentions(hexcode, ctx)))
             return
         await ctx.send(file=discord.File("data/color.png", "{}.png".format(hexcode.strip("#"))))
 
@@ -297,7 +297,7 @@ class Information(commands.Cog):
         try:
             channel = twitch.search.channels(name, limit=1)[0]
         except IndexError:
-            await ctx.send("Could not find any channel by the name of **{}**".format(name))
+            await ctx.send("Could not find any channel by the name of **{}**".format(strip_global_mentions(name, ctx)))
             return
         stream =  twitch.streams.get_stream_by_user(channel["id"])
         streaming = False
@@ -348,7 +348,7 @@ class Information(commands.Cog):
         """Gets statistics on a youtube channel"""
         channel = get_youtube_channel(youtubeAPI, name)
         if channel is None:
-            await ctx.send("No YouTube channel was found by the name of **{}**".format(name))
+            await ctx.send("No YouTube channel was found by the name of **{}**".format(strip_global_mentions(name, ctx)))
             return
         fields = {"Subscribers":format_number(int(channel["statistics"]["subscriberCount"])), "Subscriber Count Hidden":channel["statistics"]["hiddenSubscriberCount"], "Channel View Count":format_number(int(channel["statistics"]["viewCount"])), "Total Videos":format_number(int(channel["statistics"]["videoCount"]))}
         fields["Created On"] = format_time(datetime.strptime(channel["snippet"]["publishedAt"], "%Y-%m-%dT%H:%M:%S.000Z"))
@@ -366,6 +366,59 @@ class Information(commands.Cog):
         embed.title = channel["snippet"]["title"]
         embed.url = "https://youtube.com/channel/{}".format(channel["id"])
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def catbreed(self, ctx, *, breed: str):
+        """Get information on a cat breed"""
+        await ctx.channel.trigger_typing()
+        req = requests.get("https://api.thecatapi.com/v1/breeds/search?q=" + breed,
+                           headers={"x-api-key": config._catAPIKey})
+        try:
+            data = req.json()[0]
+        except IndexError:
+            await ctx.send("No cat breed by the name of **" + breed + "** was found")
+            return
+        fields = {
+            "Origin": data["origin"],
+            "Temperament": data["temperament"],
+            "Life Span": data["life_span"] + " years",
+            "Indoor": convert_to_bool(data["indoor"]),
+            "Likes Laps": convert_to_bool(data["lap"]),
+            "Hairless": convert_to_bool(data["hairless"]),
+            "Suppressed Tail": convert_to_bool(data["suppressed_tail"]),
+            "Short Legs": convert_to_bool(data["short_legs"]),
+            "Experimental": convert_to_bool(data["experimental"]),
+            "Adapatability": str(data["adaptability"]) + "/5",
+            "Affection Level": str(data["affection_level"]) + "/5",
+            "Child Friendliness": str(data["child_friendly"]) + "/5",
+            "Dog Friendliness": str(data["dog_friendly"]) + "/5",
+            "Stranger Friendliness": str(data["stranger_friendly"]) + "/5",
+            "Energy Level": str(data["energy_level"]) + "/5",
+            "Groomability": str(data["grooming"]) + "/5",
+            "Health Issue Level": str(data["health_issues"]) + "/5",
+            "Intelligence": str(data["intelligence"]) + "/5",
+            "Shedding Level": str(data["shedding_level"]) + "/5",
+            "Social Need Level": str(data["social_needs"]) + "/5",
+            "Vocal Level": str(data["vocalisation"]) + "/5"
+        }
+        embed = make_list_embed(fields)
+        embed.description = data["description"]
+        embed.title = data["name"]
+        embed.url = data["wikipedia_url"]
+        embed.color = 0xFF0000
+        img = requests.get("https://api.thecatapi.com/v1/images/search?breed_ids=" + data["id"], headers={"x-api-key": config._catAPIKey})
+        embed.set_image(url=img.json()[0]["url"])
+        embed.set_footer(text="Powered by The Cat API")
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def catbreeds(self, ctx):
+        """List cat breeds on The Cat API for the catbreed command"""
+        req = requests.get("https://api.thecatapi.com/v1/breeds", headers={"x-api-key": config._catAPIKey})
+        breeds = []
+        for breed in req.json():
+            breeds.append(breed["name"])
+        await ctx.send(", ".join(breeds))
 
 def setup(bot):
     bot.add_cog(Information(bot))

@@ -24,7 +24,7 @@
 	"bot.invite":"Here is the link to my server: <{0}>\n\n(if the invite link is expired, report it using {1}notifydev)",
 	"bot.pinging":"Pinging...",
 	"bot.website":"My official website can be found here: https://ruby.zeroepoch1969.rip",
-	"bot.github":"My official github repository can be found here: https://github.com/ZeroEpoch1969/RubyRoseBot",
+	"bot.github":"My official github repository can be found here: {0}",
 	"bot.stats.users":"Users",
 	"bot.stats.servers":"Servers",
 	"bot.stats.channels":"Channels",

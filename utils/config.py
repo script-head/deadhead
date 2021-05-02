@@ -31,6 +31,7 @@ class Defaults:
     steamAPIKey = None
     twitchClientID = None
     googleAPIKey = None
+    catAPIKey = None
 
 class Config:
     def __init__(self):
@@ -79,6 +80,7 @@ class Config:
         self._steamAPIKey = config.get("Steam", "key", fallback=Defaults.osuKey)
         self._twitchClientID = config.get("Twitch", "client_id", fallback=Defaults.twitchClientID)
         self._googleAPIKey = config.get("Google", "api_key", fallback=Defaults.googleAPIKey)
+        self._catAPIKey = config.get("Cats", "api_key", fallback=Defaults.googleAPIKey)
 
         self.check()
 

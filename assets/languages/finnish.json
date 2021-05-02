@@ -24,7 +24,7 @@
 	"bot.invite":"Tassa on linkki minun palvelimeen: <{0}>\n\n(jos kutsulinkki on vanhentunut, ilmoita siita {1}notifydev)",
 	"bot.pinging":"Lasketaan...",
 	"bot.website":"Minun virallinen nettisivu löytyy taalta: https://ruby.zeroepoch1969.rip",
-	"bot.github":"Minun viruallinen github arkisto löytyy taalta: https://github.com/ZeroEpoch1969/RubyRoseBot",
+	"bot.github":"Minun viruallinen github arkisto löytyy taalta: https://github.com/ZeroEpoch1969/{0}",
 	"bot.stats.users":"Kayttajat",
 	"bot.stats.servers":"Palvelimet",
 	"bot.stats.channels":"Kanavat",

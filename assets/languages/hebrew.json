@@ -24,7 +24,7 @@
 	"bot.invite":"הינה האתר להזמין אותך לסרבר שלי: <{0}>\n\n(אם הההזמנה אינה עובדת, תשתמש באפונקציה {1}notifydev לעגיד למפתחים)",
 	"bot.pinging":"שלח פינג...",
 	"bot.website":"האתר שלי הוא: https://ruby.zeroepoch1969.rip",
-	"bot.github":"ה-GitHub repo באתר הזו:: https://github.com/ZeroEpoch1969/RubyRoseBot",
+	"bot.github":"ה-GitHub repo באתר הזו:: {0}",
 	"bot.stats.users":"משתמשים",
 	"bot.stats.servers":"סרברים",
 	"bot.stats.channels":"ערוצים",

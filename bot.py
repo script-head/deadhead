@@ -34,8 +34,10 @@ bot = commands.AutoShardedBot(command_prefix=config.command_prefix, description=
 channel_logger = Channel_Logger(bot)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 lock_status = config.lock_status
+bot.remove_command("help")
 
 extensions = [
+    "commands.help",
     "commands.fun",
     "commands.information",
     "commands.moderation",
@@ -80,7 +82,7 @@ async def set_default_status():
             if config.default_status_name is None:
                 log.critical("If the status type is set to \"stream\" then the default status game must be specified")
                 os._exit(1)
-            status = discord.Activity(name=name, url="http://twitch.tv/ZeroEpoch1969", type=discord.ActivityType.streaming)
+            status = discord.Activity(name=name, url="http://twitch.tv/script_head", type=discord.ActivityType.streaming)
         else:
             status = discord.Activity(name=name, type=discord.ActivityType.playing)
         await bot.change_presence(status=type, activity=status)
@@ -105,7 +107,7 @@ async def on_ready():
         try:
             bot.load_extension(extension)
         except Exception as e:
-            log.error("Failed to load extension {}\n{}: {}".format(extension, type(e).__name__, e))
+            log.error("Failed to load extension {}\n{}: {}".format(extension, type(e).__name__, traceback.format_exc()))
     if os.path.isdir("data/music"):
         try:
             bot.cogs["Music"].clear_data()
@@ -214,16 +216,6 @@ async def on_message(message):
 
 @bot.event
 async def on_member_join(member:discord.Member):
-    join_message = read_data_entry(member.guild.id, "join-message")
-    if join_message is not None:
-        join_message = join_message.replace("%user%", member.mention).replace("%server%", member.guild.name)
-    join_leave_channel_id = read_data_entry(member.guild.id, "join-leave-channel")
-    if join_leave_channel_id is not None:
-        join_leave_channel = discord.utils.get(member.guild.channels, id=join_leave_channel_id)
-        if join_leave_channel is None:
-            update_data_entry(member.guild.id, "join-leave-channel", None)
-    else:
-        join_leave_channel = None
     join_role_id = read_data_entry(member.guild.id, "join-role")
     if join_role_id is not None:
         join_role = discord.utils.get(member.guild.roles, id=join_role_id)
@@ -231,34 +223,11 @@ async def on_member_join(member:discord.Member):
             update_data_entry(member.guild.id, "join-role", None)
     else:
         join_role = None
-    if join_leave_channel is not None and join_message is not None:
-        try:
-            await join_leave_channel.send(join_message)
-        except:
-            pass
     if join_role is not None:
         try:
             await member.add_roles(join_role)
         except:
             None
-
-@bot.event
-async def on_member_remove(member:discord.Member):
-    leave_message = read_data_entry(member.guild.id, "leave-message")
-    if leave_message is not None:
-        leave_message = leave_message.replace("%user%", member.mention).replace("%guild%", member.guild.name)
-    join_leave_channel_id = read_data_entry(member.guild.id, "join-leave-channel")
-    if join_leave_channel_id is not None:
-        join_leave_channel = discord.utils.get(member.guild.channels, id=join_leave_channel_id)
-        if join_leave_channel is None:
-            update_data_entry(member.guild.id, "join-leave-channel", None)
-    else:
-        join_leave_channel = None
-    if join_leave_channel is not None and leave_message is not None:
-        try:
-            await join_leave_channel.send(leave_message)
-        except:
-            pass
 
 @bot.command(hidden=True)
 @checks.is_dev()
@@ -340,27 +309,6 @@ async def notifydev(ctx, *, message:str):
             await support_member.send("You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
     await ctx.author.send(Language.get("bot.dev_notify", ctx).format(message))
 
-@bot.command()
-async def suggest(ctx, *, suggestion:str):
-    """Sends a suggestion to the developers"""
-    if isinstance(ctx.channel, discord.DMChannel):
-        guild = "`No server! Sent via Private Message!`"
-    else:
-        guild = "`{}` / `{}`".format(ctx.guild.id, ctx.guild.name)
-    msg = make_message_embed(ctx.author, 0xFF0000, suggestion, formatUser=True)
-    owner = bot.get_user(config.owner_id)
-    if owner:
-        await owner.send("You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
-    for id in config.dev_ids:
-        dev = bot.get_user(id)
-        if dev:
-            await dev.send("You have received a new suggestion! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
-    for id in config.support_ids:
-        support_member = bot.get_user(id)
-        if support_member:
-            await support_member.send("You have received a new message! The user's ID is `{}` Server: {}".format(ctx.author.id, guild), embed=msg)
-    await ctx.author.send(Language.get("bot.errors.dev_suggest", ctx).format(suggestion))
-
 @bot.command(hidden=True)
 @checks.is_dev()
 async def blacklist(ctx, id:int, *, reason:str):
@@ -432,7 +380,7 @@ async def stream(ctx, *, name:str):
         if not ctx.author.id == config.owner_id and not ctx.author.id in config.dev_ids:
             await ctx.send(Language.get("bot.status_locked", ctx))
             return
-    await bot.change_presence(activity=discord.Activity(name=name, type=discord.ActivityType.streaming, url="https://www.twitch.tv/ZeroEpoch1969"))
+    await bot.change_presence(activity=discord.Activity(name=name, type=discord.ActivityType.streaming, url="https://www.twitch.tv/script_head"))
     await ctx.send(Language.get("bot.now_streaming", ctx).format(name))
     await channel_logger.log_to_channel(":information_source: `{}`/`{}` has changed the streaming status to `{}`".format(ctx.author.id, ctx.author, name))
 
@@ -481,11 +429,6 @@ async def uploadfile(ctx, *, path:str):
         await ctx.send(file=discord.File(path))
     except FileNotFoundError:
         await ctx.send("That file does not exist!")
-
-@bot.command()
-async def changelog(ctx):
-    """The latest changelog"""
-    await ctx.send(Language.get("bot.changelog", ctx).format(bot.command_prefix, diff.format("\n".join(map(str, change_log)))))
 
 @bot.command()
 async def version(ctx):
@@ -539,12 +482,14 @@ async def reload(ctx, *, extension:str):
 @bot.command()
 async def joinserver(ctx):
     """Sends the bot's OAuth2 link"""
-    await ctx.author.send(Language.get("bot.joinserver", ctx).format("https://deadhead.scripthead.me"))
+    await ctx.author.send(Language.get("bot.joinserver", ctx).format("https://deadhead.scripthead.me/invite"))
+    await ctx.send("Check your DMs!")
 
 @bot.command()
 async def invite(ctx):
     """Sends an invite link to the bot's server"""
     await ctx.author.send(Language.get("bot.invite", ctx).format("https://discord.gg/RJTFyBd", bot.command_prefix))
+    await ctx.send("Check your DMs!")
 
 @bot.command()
 async def ping(ctx):
@@ -557,14 +502,9 @@ async def ping(ctx):
     await pingms.edit(content="{0} // **{1}ms**".format(pingms.content, duration))
 
 @bot.command()
-async def website(ctx):
-    """Gives the link to the bot docs"""
-    await ctx.send(Language.get("bot.website", ctx))
-
-@bot.command()
 async def github(ctx):
     """Gives the link to the github repo"""
-    await ctx.send(Language.get("bot.github", ctx))
+    await ctx.send(Language.get("bot.github", ctx).format("https://github.com/script-head/deadhead"))
 
 @bot.command()
 async def stats(ctx):
@@ -601,6 +541,7 @@ async def editmessage(ctx, id:int, *, newmsg:str):
     await msg.edit(content=newmsg)
     await ctx.send("edit af")
 
+@checks.is_dev()
 @bot.command()
 async def top10servers(ctx):
     """Gets the top 10 most populated servers the bot is on"""
@@ -660,13 +601,6 @@ async def ranksysvoteresults(ctx):
 @bot.command(hidden=True)
 async def test(ctx):
     await ctx.send("owo")
-
-@commands.guild_only()
-@checks.server_mod_or_perms(manage_server=True)
-@bot.command()
-async def setlanguage(ctx, language:str):
-    """Sets the bot's language for the server"""
-    await ctx.send(Language.set_language(ctx.guild, language))
 
 @bot.command()
 async def translators(ctx):

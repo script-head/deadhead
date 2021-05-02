@@ -15,10 +15,13 @@ class Moderation(commands.Cog):
     @checks.server_mod_or_perms(kick_members=True)
     @commands.guild_only()
     @commands.command()
-    async def kick(self, ctx, user:discord.Member):
+    async def kick(self, ctx, user:discord.Member, *, reason:str=None):
         """Kicks the specified user from the server"""
+        if reason is None:
+            reason = Language.get("moderation.no_reason", ctx)
+        reason += Language.get("moderation.kicked_by", ctx).format(ctx.author)
         try:
-            await ctx.guild.kick(user)
+            await ctx.guild.kick(user, reason=reason)
         except discord.errors.Forbidden:
             if user.top_role.position == ctx.me.top_role.position:
                 await ctx.send(Language.get("moderation.no_kick_highest_role", ctx))
@@ -90,31 +93,6 @@ class Moderation(commands.Cog):
                 user = ban.user
         await ctx.send(Language.get("moderation.ban_success", ctx).format(user))
 
-    @commands.guild_only()
-    @commands.command()
-    async def banlist(self, ctx):
-        """Displays the server's banlist"""
-        try:
-            banlist = await ctx.guild.bans()
-        except discord.errors.Forbidden:
-            await ctx.send(Language.get("moderation.no_ban_perms", ctx))
-            return
-        bancount = len(banlist)
-        display_bans = []
-        bans = None
-        if bancount == 0:
-            bans = Language.get("moderation.no_bans", ctx)
-        else:
-            for ban in banlist:
-                if len(", ".join(display_bans)) < 1800:
-                    display_bans.append(str(ban.user))
-                else:
-                    bans = ", ".join(display_bans) + Language.get("moderation.banlist_and_more", ctx).format(len(banlist) - len(display_bans))
-                    break
-        if not bans:
-            bans = ", ".join(display_bans)
-        await ctx.send(Language.get("moderation.banlist", ctx).format(bancount, bans))
-
     @checks.server_mod_or_perms(manage_roles=True)
     @commands.guild_only()
     @commands.command()
@@ -164,7 +142,7 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @commands.command()
     async def prune(self, ctx, amount:int):
-        """Prunes the specified amount of messages (you can also prune messages from a specific user too)"""
+        """Prunes the specified amount of messages"""
         try:
             await ctx.message.delete()
         except discord.errors.Forbidden:
@@ -182,7 +160,7 @@ class Moderation(commands.Cog):
     @checks.server_mod_or_perms(manage_messages=True)
     @commands.command()
     async def pin(self, ctx, id:int):
-        """Pins the message with the specified ID to the channel"""
+        """Pins the message with the specified ID to the current channel"""
         try:
             message = await ctx.channel.fetch_message(id)
         except discord.errors.NotFound:
@@ -196,7 +174,7 @@ class Moderation(commands.Cog):
     @checks.server_mod_or_perms(manage_messages=True)
     @commands.command()
     async def unpin(self, ctx, id:int):
-        """Unpins the message with the specified ID from the channel"""
+        """Unpins the message with the specified ID from the current channel"""
         pinned_messages = await ctx.channel.pins()
         message = discord.utils.get(pinned_messages, id=id)
         if message is None:
@@ -211,15 +189,11 @@ class Moderation(commands.Cog):
     @checks.server_mod_or_perms(manage_roles=True)
     @commands.guild_only()
     @commands.command()
-    async def addrole(self, ctx, user:discord.Member, *, name:str):
+    async def addrole(self, ctx, user:discord.Member, *, role:discord.Role):
         """Adds the specified role to the specified user"""
-        role = discord.utils.get(ctx.guild.roles, name=name)
-        if role is None:
-            await ctx.send(Language.get("moderation.role_not_found", ctx).format(name))
-            return
         try:
             await user.add_roles(role, reason=Language.get("moderation.addrole_reason", ctx).format(role.name, ctx.author))
-            await ctx.send(Language.get("moderation.addrole_success", ctx).format(name, user))
+            await ctx.send(Language.get("moderation.addrole_success", ctx).format(role.name, user))
         except discord.errors.Forbidden:
             if role.position == ctx.me.top_role.position:
                 await ctx.send(Language.get("moderation.no_addrole_highest_role", ctx))
@@ -231,15 +205,11 @@ class Moderation(commands.Cog):
     @checks.server_mod_or_perms(manage_roles=True)
     @commands.guild_only()
     @commands.command()
-    async def removerole(self, ctx, user:discord.Member, *, name:str):
+    async def removerole(self, ctx, user:discord.Member, *, role:discord.Role):
         """Removes the specified role from the specified user"""
-        role = discord.utils.get(ctx.guild.roles, name=name)
-        if role is None:
-            await ctx.send(Language.get("moderation.role_not_found", ctx).format(name))
-            return
         try:
             await user.remove_roles(role, reason=Language.get("moderation.removerole_reason", ctx).format(role.name, ctx.author))
-            await ctx.send(Language.get("moderation.remove_role_success", ctx).format(name, user))
+            await ctx.send(Language.get("moderation.remove_role_success", ctx).format(role.name, user))
         except discord.errors.Forbidden:
             if role.position == ctx.me.top_role.position:
                 await ctx.send(Language.get("moderation.no_removerole_highest_role", ctx))
@@ -248,7 +218,7 @@ class Moderation(commands.Cog):
             else:
                 await ctx.send(Language.get("moderation.no_manage_role_perms", ctx))
 
-    @checks.server_mod_or_perms(manage_roles=True)
+    @checks.server_admin_or_perms(manage_roles=True)
     @commands.guild_only()
     @commands.command()
     async def createrole(self, ctx, *, name:str):
@@ -259,18 +229,14 @@ class Moderation(commands.Cog):
         except discord.errors.Forbidden:
             await ctx.send(Language.get("moderation.no_manage_role_perms", ctx))
 
-    @checks.server_mod_or_perms(manage_roles=True)
+    @checks.server_admin_or_perms(manage_roles=True)
     @commands.guild_only()
     @commands.command()
-    async def deleterole(self, ctx, *, name:str):
+    async def deleterole(self, ctx, *, role:discord.Role):
         """Deletes the role with the specified name"""
-        role = discord.utils.get(ctx.guild.roles, name=name)
-        if role is None:
-            await ctx.send(Language.get("moderation.role_not_found", ctx).format(name))
-            return
         try:
             await role.delete(reason=Language.get("moderation.deleterole_reason", ctx).format(ctx.author))
-            await ctx.send(Language.get("moderation.deleterole_success", ctx).format(name))
+            await ctx.send(Language.get("moderation.deleterole_success", ctx).format(role.name))
         except discord.errors.Forbidden:
             if role.position == ctx.me.top_role.position:
                 await ctx.send(Language.get("moderation.no_deleterole_highest_role", ctx))
@@ -279,15 +245,11 @@ class Moderation(commands.Cog):
             else:
                 await ctx.send(Language.get("moderation.no_manage_role_perms", ctx))
 
-    @checks.server_mod_or_perms(manage_roles=True)
+    @checks.server_admin_or_perms(manage_roles=True)
     @commands.guild_only()
     @commands.command()
-    async def editrole(self, ctx, type:str, value:str, *, name:str):
+    async def editrole(self, ctx, type:str, value:str, *, role:discord.Role):
         """Edits a role with the specified name"""
-        role = discord.utils.get(ctx.guild.roles, name=name)
-        if role is None:
-            await ctx.send(Language.get("moderation.role_not_found", ctx).format(name))
-            return
         if type == "color":
             if value != "remove":
                 try:
@@ -299,7 +261,7 @@ class Moderation(commands.Cog):
                 color = discord.Color.default()
             try:
                 await role.edit(reason=Language.get("moderation.editrole_reason", ctx).format(ctx.author), color=color)
-                await ctx.send(Language.get("moderation.editrole_success", ctx).format(name))
+                await ctx.send(Language.get("moderation.editrole_success", ctx).format(role.name))
             except discord.errors.Forbidden:
                 if role.position == ctx.me.top_role.position:
                     await ctx.send(Language.get("moderation.no_editrole_highest_role", ctx))
@@ -315,7 +277,7 @@ class Moderation(commands.Cog):
                 return
             try:
                 await role.edit(reason=Language.get("moderation.editrole_reason", ctx).format(ctx.author), permissions=perms)
-                await ctx.send(Language.get("moderation.editrole_success", ctx).format(name))
+                await ctx.send(Language.get("moderation.editrole_success", ctx).format(role.name))
             except discord.errors.Forbidden:
                 if role.position == ctx.me.top_role.position:
                     await ctx.send(Language.get("moderation.no_editrole_highest_role", ctx))
@@ -336,7 +298,7 @@ class Moderation(commands.Cog):
                 if pos <= 0:
                     pos = 1
                 await role.edit(reason=Language.get("moderation.moverole_reason", ctx).format(ctx.author), position=pos)
-                await ctx.send(Language.get("moderation.editrole_success", ctx).format(name))
+                await ctx.send(Language.get("moderation.editrole_success", ctx).format(role.name))
             except discord.errors.Forbidden:
                 if role.position == ctx.me.top_role.position:
                     await ctx.send(Language.get("moderation.no_editrole_highest_role", ctx))
@@ -352,7 +314,7 @@ class Moderation(commands.Cog):
                 return
             try:
                 await role.edit(reason=Language.get("moderation.editrole_reason", ctx).format(ctx.author), hoist=bool)
-                await ctx.send(Language.get("moderation.editrole_success", ctx).format(name))
+                await ctx.send(Language.get("moderation.editrole_success", ctx).format(role.name))
             except discord.errors.Forbidden:
                 if role.position == ctx.me.top_role.position:
                     await ctx.send(Language.get("moderation.no_editrole_highest_role", ctx))
@@ -368,7 +330,7 @@ class Moderation(commands.Cog):
                 return
             try:
                 await role.edit(reason=Language.get("moderation.editrole_reason", ctx).format(ctx.author), mentionable=bool)
-                await ctx.send(Language.get("moderation.editrole_success", ctx).format(name))
+                await ctx.send(Language.get("moderation.editrole_success", ctx).format(role.name))
             except discord.errors.Forbidden:
                 if role.position == ctx.me.top_role.position:
                     await ctx.send(Language.get("moderation.no_editrole_highest_role", ctx))
@@ -379,18 +341,14 @@ class Moderation(commands.Cog):
         else:
             await ctx.send(Language.get("moderation.invalid_editrole_type", ctx))
 
-    @checks.server_mod_or_perms(manage_roles=True)
+    @checks.server_admin_or_perms(manage_roles=True)
     @commands.guild_only()
     @commands.command()
-    async def renamerole(self, ctx, name:str, newname:str):
-        """Renames a role with the specified name, be sure to put double quotes (\") around the name and the new name"""
-        role = discord.utils.get(ctx.guild.roles, name=name)
-        if role is None:
-            await ctx.send(Language.get("moderation.role_not_found", ctx).format(name))
-            return
+    async def renamerole(self, ctx, role:discord.Role, *, newname:str):
+        """Renames a role with the specified name"""
         try:
             await role.edit(reason=Language.get("moderation.renamerole_reason", ctx).format(ctx.author), name=newname)
-            await ctx.send(Language.get("moderation.renamerole_success", ctx).format(name, newname))
+            await ctx.send(Language.get("moderation.renamerole_success", ctx).format(role.name, newname))
         except discord.errors.Forbidden:
             if role.position == ctx.me.top_role.position:
                 await ctx.send(Language.get("moderation.no_renamerole_highest_role", ctx))
@@ -422,7 +380,7 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @commands.command()
     async def removereactions(self, ctx, id:int):
-        """Clear reactions from a message"""
+        """Clear reactions from a message in the current channel"""
         try:
             message = await ctx.channel.fetch_message(id)
         except discord.errors.NotFound:
