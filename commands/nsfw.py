@@ -18,11 +18,13 @@ class NSFW(commands.Cog):
     @checks.is_nsfw_channel()
     @commands.command()
     async def rule34(self, ctx, *, tags:str):
+        """Searches rule34.xxx for the specified tagged images"""
         await ctx.channel.trigger_typing()
+        tags = strip_global_mentions(tags, ctx)
         try:
             data = requests.get("http://rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
-            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(tags))
+            await ctx.send(Language.get("nsfw.no_results_found", ctx).format(strip_global_mentions(tags, ctx)))
             return
 
         count = len(data)
@@ -43,6 +45,7 @@ class NSFW(commands.Cog):
     async def e621(self, ctx, *, tags:str):
         """Searches e621.net for the specified tagged images"""
         await ctx.channel.trigger_typing()
+        tags = strip_global_mentions(tags, ctx)
         try:
             data = requests.get("https://e621.net/post/index.json?limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
@@ -65,6 +68,7 @@ class NSFW(commands.Cog):
     async def yandere(self, ctx, *, tags:str):
         """Searches yande.re for the specified tagged images"""
         await ctx.channel.trigger_typing()
+        tags = strip_global_mentions(tags, ctx)
         try:
             data = requests.get("https://yande.re/post/index.json?limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
@@ -87,6 +91,7 @@ class NSFW(commands.Cog):
     async def danbooru(self, ctx, *, tags:str):
         """Searches danbooru.donmai.us for the specified tagged images"""
         await ctx.channel.trigger_typing()
+        tags = strip_global_mentions(tags, ctx)
         try:
             data = requests.get("https://danbooru.donmai.us/post/index.json?limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
@@ -113,6 +118,7 @@ class NSFW(commands.Cog):
     async def gelbooru(self, ctx, *, tags:str):
         """Searches gelbooru.com for the specified tagged images"""
         await ctx.channel.trigger_typing()
+        tags = strip_global_mentions(tags, ctx)
         try:
             data = requests.get("https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags), headers=header).json()
         except json.JSONDecodeError:
@@ -139,6 +145,7 @@ class NSFW(commands.Cog):
     async def xbooru(self, ctx, *, tags: str):
         """Searches xbooru.com for the specified tagged images"""
         await ctx.channel.trigger_typing()
+        tags = strip_global_mentions(tags, ctx)
         try:
             data = requests.get("https://xbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={}&tags={}".format(limit, tags),  headers=header).json()
         except json.JSONDecodeError:

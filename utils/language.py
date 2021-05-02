@@ -3,6 +3,8 @@ import traceback
 
 file_path = "data/languages.json"
 
+lang_list = ["English (en)", "Spanish (es)", "Hebrew (he)", "Finnish (fi)", "French (fr)"]
+
 language_settings = {}
 
 class Languages:

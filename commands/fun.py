@@ -1,7 +1,8 @@
 import asyncio
-import cat
 import os
 import hashlib
+import requests
+import traceback
 
 from discord.ext import commands
 from utils.tools import *
@@ -11,6 +12,9 @@ from utils.fun.fortunes import fortunes
 from utils import imagetools
 from PIL import Image
 from utils.language import Language
+from utils.config import Config
+
+config = Config()
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -27,12 +31,12 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def cat(self, ctx):
-        """Sends a random cute catto gif because cats are soooo cuteeee <3 >.<"""
+        """Shows a random cat"""
         # Watch Nero spam this command until the bot crashes
         await ctx.channel.trigger_typing()
-        cat.getCat(directory="data", filename="cat", format="gif")
-        await asyncio.sleep(1) # This is so the bot has enough time to download the file
-        await ctx.send(file=discord.File("data/cat.gif", "cat.gif"))
+        cat = requests.get("https://api.thecatapi.com/v1/images/search", headers={"x-api-key": config._catAPIKey})
+        url = cat.json()[0]["url"]
+        await ctx.send(url)
 
     @commands.command()
     async def f(self, ctx):
@@ -46,7 +50,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def spam(self, ctx):
-        """SPAM SPAM SPAM"""
+        """bad meme"""
         await ctx.channel.trigger_typing()
         await ctx.send(file=discord.File("assets/imgs/spam.png"))
 
@@ -63,14 +67,8 @@ class Fun(commands.Cog):
         await ctx.send(file=discord.File("assets/imgs/b1nzy_with_banhammer.png"))
 
     @commands.command()
-    async def cykablyat(self, ctx):
-        """Cyka blyat!"""
-        await ctx.channel.trigger_typing()
-        await ctx.send(file=discord.File("assets/imgs/cykablyat.jpg"))
-
-    @commands.command()
     async def sombra(self, ctx):
-        """Boop me Sombra <3"""
+        """this was cool in ~2017"""
         await ctx.send(sombra)
 
     @commands.command()
@@ -80,7 +78,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def psat(self, ctx):
-        """Please."""
+        """Please. (old memes)"""
         await ctx.send(random.choice(psat_memes))
 
     @commands.command(name="8ball")
@@ -90,13 +88,8 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def insult(self, ctx, *, user:str):
-        """Insult those ass wipes"""
+        """horrible insulter"""
         await ctx.send("{} {}".format(user, random.choice(insults)))
-
-    @commands.command()
-    async def actdrunk(self, ctx):
-        """I got drunk on halloween in 2016 it was great"""
-        await ctx.send(random.choice(drunkaf))
 
     @commands.command()
     async def rate(self, ctx, user:discord.User=None):
@@ -109,11 +102,6 @@ class Fun(commands.Cog):
             await ctx.send(Language.get("fun.rate_user", ctx).format(user.name, random.randint(0, 10)))
 
     @commands.command()
-    async def honk(self, ctx):
-        """Honk honk mother fucka"""
-        await ctx.send(random.choice(honkhonkfgt))
-
-    @commands.command()
     async def plzmsgme(self, ctx, *, message:str):
         """Makes the bot DM you with the specified message"""
         await ctx.author.send(message)
@@ -121,7 +109,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def quote(self, ctx, id:int):
-        """Quotes a message with the specified message ID"""
+        """Quotes a message in the current channel with the specified message ID"""
         try:
             message = await ctx.channel.fetch_message(id)
         except discord.errors.NotFound:
@@ -160,7 +148,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def memegen(self, ctx, name:str, line1:str, line2:str):
-        """Run r!memelist of the list of memes. Example: r!memegen snek \"No booper\" \"do NOT!\""""
+        """Run dh.memelist of the list of memes. Example: dh.memegen snek \"No booper\" \"do NOT!\""""
         def escape_literals(url):
             return url.replace("-", "--").replace("_", "__").replace("?", "~q").replace(" ", "%20").replace("''", "\"")
         url = "https://memegen.link/{}/{}/{}.jpg".format(name, escape_literals(line1), escape_literals(line2))
@@ -201,11 +189,11 @@ class Fun(commands.Cog):
     @commands.command()
     async def reverse(self, ctx, *, msg:str):
         """ffuts esreveR"""
-        await ctx.send(msg[::-1])
+        await ctx.send(strip_global_mentions(msg[::-1], ctx))
 
     @commands.command()
     async def react(self, ctx, id:int, emote:str):
-        """Reacts to a message with the specifed message id and the specified emote"""
+        """Reacts to a message with the specifed message id and the specified emote in the current channel"""
         try:
              message = await ctx.channel.fetch_message(id)
         except discord.errors.NotFound:
@@ -251,7 +239,7 @@ class Fun(commands.Cog):
             if char == " ":
                 continue
             decoded_message += decode_morse[char]
-        await ctx.send(decoded_message)
+        await ctx.send(strip_global_mentions(decoded_message, ctx))
 
     @commands.command()
     async def randomnumber(self, ctx, *, digits:int=1):
@@ -268,17 +256,17 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def md5(self, ctx, *, msg:str):
-        """Convert something to MD5"""
-        await ctx.send("`{}`".format(hashlib.md5(bytes(msg.encode("utf-8"))).hexdigest()))\
+        """Encrypt something into MD5"""
+        await ctx.send("`{}`".format(hashlib.md5(bytes(msg.encode("utf-8"))).hexdigest()))
 
     @commands.command()
     async def sha256(self, ctx, *, msg:str):
-        """Convert something to sha256"""
+        """Encrypt something into sha256"""
         await ctx.send("`{}`".format(hashlib.sha256(bytes(msg.encode("utf-8"))).hexdigest()))
 
     @commands.command()
     async def sha512(self, ctx, *, msg:str):
-        """Convert something to sha512"""
+        """Encrypt something into sha512"""
         await ctx.send("`{}`".format(hashlib.sha512(bytes(msg.encode("utf-8"))).hexdigest()))
 
     @commands.command()
@@ -313,7 +301,7 @@ class Fun(commands.Cog):
         try:
             cow = cowList[type.lower()]
         except KeyError:
-            await ctx.send("`{}` is not a usable character type. Run **{}cows** for a list of cows.".format(type, ctx.prefix))
+            await ctx.send("`{}` is not a usable character type. Run **{}cows** for a list of cows.".format(strip_global_mentions(type, ctx), ctx.prefix))
             return
         msg = "```{}```".format(cow.milk(message))
         if len(msg) > 2000:
@@ -322,14 +310,14 @@ class Fun(commands.Cog):
         await ctx.send(msg)
 
     @commands.command()
-    async def fortune(self, ctx):
-        """Get your fortune read, not as authentic as a fortune cookie."""
-        await ctx.send("```{}```".format(random.choice(fortunes)))
-
-    @commands.command()
     async def cows(self, ctx):
         """Cow list for the cowsay command"""
         await ctx.send("Current list of cows:```{}```".format(", ".join(cowList.keys())))
+
+    @commands.command()
+    async def fortune(self, ctx):
+        """Get your fortune read, not as authentic as a fortune cookie."""
+        await ctx.send("```{}```".format(random.choice(fortunes)))
 
     @commands.command()
     async def neko(self, ctx, type:str):
@@ -355,7 +343,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def owo(self, ctx, *, text:str):
         """OwO, owoify something >w<"""
-        await ctx.send(owoify(text))
+        await ctx.send(owoify(strip_global_mentions(owoify(text), ctx)))
 
 def setup(bot):
     bot.add_cog(Fun(bot))

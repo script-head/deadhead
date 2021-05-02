@@ -205,3 +205,21 @@ def owoify(text):
     text = re.sub("ove", "uv", text)
     text = re.sub("\!+", " " + random.choice(faces) + " ", text)
     return text
+
+def id_to_name(array, id):
+    if id is None:
+        return None
+    id = int(id)
+    object = discord.utils.get(array, id=id)
+    if object is None:
+        return None
+    return object.name
+
+def by_name_or_id(array, value):
+    object = discord.utils.get(array, name=value)
+    if object is None:
+        try:
+            object = discord.utils.get(array, id=int(value))
+        except Exception:
+            return None
+    return object

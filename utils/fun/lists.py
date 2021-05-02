@@ -64,32 +64,6 @@ insults = [
     "is on the sex offender list"
 ]
 
-# Drunk lines for the actdrunk command
-drunkaf = [
-    "UDNDUNDUNDUNDUDNUDNDUNDUNDUNDUNDUNDUDNUDNDUNDUNDUNDUNDUNDUNDUNDNUDNDUN",
-    "AMERICAN IDIOTS YAAAS",
-    "HEH HEH HEH HEH IM SO FUKED UP LOL",
-    "lol Ill fuk u up n@4f3 fucjing fite me4",
-    "fite me u lil fuck",
-    "i have somethin to tell you: fedc",
-    "weeeeeeew",
-    "\*falls*",
-    "lol wana fuk some suc tonight #5SdE2@"
-]
-
-# Image urls for the honk command
-honkhonkfgt = [
-    "https://i.imgur.com/c53XQCI.gif",
-    "https://i.imgur.com/ObWBP14.png",
-    "https://i.imgur.com/RZP2tB4.jpg",
-    "https://i.imgur.com/oxQ083P.gif",
-    "https://i.imgur.com/byBB7ln.jpg",
-    "https://i.imgur.com/NvUiLGG.gif",
-    "https://i.imgur.com/QDyvO4x.jpg",
-    "https://i.imgur.com/HtrRYSS.png",
-    "https://i.imgur.com/bvrFQnX.jpg"
-]
-
 # Fight command results
 fight_results = [
     "and it was super effective!",

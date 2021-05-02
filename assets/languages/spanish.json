@@ -24,7 +24,7 @@
 	"bot.invite":"Aquí está la liga para mi servidor: <{0}>\n\n(si la liga expiró, repórtalo a los desarrolladores usando {1}notifydev)",
 	"bot.pinging":"Probando...",
 	"bot.website":"Este es mi sitio oficial: https://ruby.zeroepoch1969.rip",
-	"bot.github":"Este es mi Github oficial: https://github.com/ZeroEpoch1969/RubyRoseBot",
+	"bot.github":"Este es mi Github oficial: {0}",
 	"bot.stats.users":"Usuarios",
 	"bot.stats.servers":"Servidores",
 	"bot.stats.channels":"Canales",

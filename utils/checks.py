@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from utils.config import Config
 from utils.mysql import *
@@ -65,9 +66,23 @@ def server_mod_or_perms(**permissions):
     def predicate(ctx):
         if not ctx.guild:
             return True
-        mod_role_name = read_data_entry(ctx.guild.id, "mod-role")
-        mod = discord.utils.get(ctx.author.roles, name=mod_role_name)
-        if mod or permissions and all(getattr(ctx.channel.permissions_for(ctx.author), name, None) == value for name, value in permissions.items()):
+        mod_role_id = read_data_entry(ctx.guild.id, "mod-role")
+        mod = discord.utils.get(ctx.author.roles, id=mod_role_id)
+        admin_role_id = read_data_entry(ctx.guild.id, "admin-role")
+        admin = discord.utils.get(ctx.author.roles, id=admin_role_id)
+        if mod or admin or permissions and all(getattr(ctx.channel.permissions_for(ctx.author), name, None) == value for name, value in permissions.items()):
+            return True
+        else:
+            raise no_permission
+    return commands.check(predicate)
+
+def server_admin_or_perms(**permissions):
+    def predicate(ctx):
+        if not ctx.guild:
+            return True
+        admin_role_id = read_data_entry(ctx.guild.id, "admin-role")
+        admin = discord.utils.get(ctx.author.roles, id=admin_role_id)
+        if admin or permissions and all(getattr(ctx.channel.permissions_for(ctx.author), name, None) == value for name, value in permissions.items()):
             return True
         else:
             raise no_permission

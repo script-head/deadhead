@@ -6,7 +6,6 @@ cffi
 pynacl
 aiohttp
 python-nmap
-random-cat
 pythonwhois
 pillow
 requests

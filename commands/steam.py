@@ -1,8 +1,8 @@
 import xml.etree.ElementTree as etree
 
 from discord.ext import commands
-from steam import WebAPI
-from steam import SteamID
+from steam.webapi import WebAPI
+from steam.steamid import SteamID
 from steam.enums import EPersonaState
 from utils.config import Config
 from utils.tools import *
@@ -45,7 +45,7 @@ class Steam(commands.Cog):
         try:
             steamUser = steamAPI.ISteamUser.GetPlayerSummaries_v2(steamids=steamID)["response"]["players"][0]
         except IndexError:
-            await ctx.send("User not found! Make sure you are using steam community IDs!")
+            await ctx.send("User not found! Make sure you are using steam community IDs! (steamcommunity.com/id/<ID>)")
             return
         bans = steamAPI.ISteamUser.GetPlayerBans_v1(steamids=steamID)["players"][0]
         vacBanned = bans["VACBanned"]
@@ -91,7 +91,7 @@ class Steam(commands.Cog):
 
     @commands.command()
     async def steamid(self, ctx, communityid:str):
-        """Gets a steam id in all formats"""
+        """Gets a steam user's steam id in all formats"""
         await ctx.channel.trigger_typing()
         steamID = SteamID.from_url("http://steamcommunity.com/id/{}".format(communityid))
         if steamID is None:

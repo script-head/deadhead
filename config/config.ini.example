@@ -107,3 +107,7 @@ enable = no
 ; Google API key
 ; In order to create an api key, do this, go to https://console.developers.google.com/apis/credentials and under "create credentials" select "API key"
 ;api_key =
+
+[Cats]
+; You can get an api key from https://thecatapi.com/signup
+;cat_api_key =

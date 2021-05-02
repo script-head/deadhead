@@ -2,10 +2,10 @@ import asyncio
 import traceback
 import shutil
 import subprocess
+import discord
 import youtube_dl
 
 from discord.ext import commands
-from utils.mysql import *
 from utils.opus_loader import load_opus_lib
 from utils.config import Config
 from utils.language import Language
@@ -123,10 +123,6 @@ class Music(commands.Cog):
         entry.volume = 0.4
         song = Song(entry, path, title, duration, ctx.author)
         return song
-
-    @commands.command()
-    async def summon(self, ctx):
-        await ctx.send(Language.get("music.summon_notice", ctx).format(self.bot.command_prefix))
 
     @commands.command()
     async def play(self, ctx, *, url:str):
