@@ -17,7 +17,7 @@
 	"bot.valid_status_types":"`{0}` n’est pas un type de statut valide, les types de statut valides sont `online`, `idle`, `do_not_disturb`, et `dnd`",
 	"bot.status_change_with_name":"Le nom du jeu a été changé à `{0}` avec un type de statut de `{1}`.",
 	"bot.status_change":"Le type de statut a été changé à `{0}`.",
-	"bot.changelog":"Pour une liste de commandes et comment les utiliser, allez sur https://ruby.zeroepoch1969.rip ou utilisez `{0}help` (`{0}help command` pour l’utilisation d’une commande)\n{1}",
+	"bot.changelog":"Pour une liste de commandes et comment les utiliser, allez sur https://deadhead.scripthead.me ou utilisez `{0}help` (`{0}help command` pour l’utilisation d’une commande)\n{1}",
 	"bot.version":"version du bot: {0}\nAuteur(s): {1}\nNom code: {2}\nBuild date: {3}",
 	"bot.uptime":"J’ai été en ligne pendant %d semaines, %d jours, %d heures, %d minutes, %d secondes",
 	"bot.joinserver":"Voici le lien pour m’ajouter à votre serveur: {}",
