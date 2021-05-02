@@ -1,8 +1,8 @@
 import xml.etree.ElementTree as etree
 
 from discord.ext import commands
-from steam import WebAPI
-from steam import SteamID
+from steam.webapi import WebAPI
+from steam.steamid import SteamID
 from steam.enums import EPersonaState
 from utils.config import Config
 from utils.tools import *
